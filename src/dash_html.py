@@ -3,6 +3,7 @@ HTML = r"""<meta charset="utf-8">
 <title>SkillSelect 189 Explorer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <style>__CSS__</style>
+<a class="skip" href="#results">Skip to your result</a>
 <div class="wrap">
 <header>
   <div>
@@ -26,7 +27,7 @@ HTML = r"""<meta charset="utf-8">
 
 </div>
 
-<div class="verdict">
+<div class="verdict" id="results" tabindex="-1">
   <div class="vmain">
     <div id="flag" class="vflag good"></div>
     <div class="hero" id="hero"></div>
@@ -169,10 +170,12 @@ function tipOn(ev,html){const t=$("tip");t.innerHTML=html;t.style.display="block
   const r=12;t.style.left=Math.min(ev.clientX+r,innerWidth-t.offsetWidth-8)+"px";
   t.style.top=Math.max(8,ev.clientY-t.offsetHeight-r)+"px";}
 function tipOff(){$("tip").style.display="none";}
-function hover(node,html){node.addEventListener("pointermove",e=>tipOn(e,html));
-  node.addEventListener("pointerleave",tipOff);node.setAttribute("tabindex","0");
-  node.addEventListener("focus",e=>{const b=node.getBoundingClientRect();
-    tipOn({clientX:b.left+b.width/2,clientY:b.top},html);});node.addEventListener("blur",tipOff);}
+/* Pointer-only. Marks are deliberately NOT tab stops: making 500+ of them focusable
+   traps keyboard users. Every number in these charts is also in a table or the CSV. */
+function hover(node,html){
+  node.addEventListener("pointermove",e=>tipOn(e,html));
+  node.addEventListener("pointerleave",tipOff);
+  node.setAttribute("aria-hidden","true");}
 
 function axisTitle(s,W,H,MB,xt,yt){
   const x=el("text",{x:W/2,y:H-MB+33,class:"tick","text-anchor":"middle","font-weight":"600"});
@@ -662,16 +665,46 @@ function renderAll(pts){
 /* ---------- controls ---------- */
 function initCombo(){
   const inp=$("occ"),box=$("opts");
-  function show(f){box.innerHTML="";
+  let active=-1;
+  inp.setAttribute("role","combobox");
+  inp.setAttribute("aria-expanded","false");
+  inp.setAttribute("aria-autocomplete","list");
+  inp.setAttribute("aria-controls","opts");
+  function opts(){return [...box.children];}
+  function mark(i){
+    const o=opts();
+    o.forEach(d=>{d.classList.remove("sel");d.removeAttribute("aria-selected");});
+    if(i>=0&&i<o.length){
+      active=i;o[i].classList.add("sel");o[i].setAttribute("aria-selected","true");
+      o[i].id="opt"+i;inp.setAttribute("aria-activedescendant","opt"+i);
+      o[i].scrollIntoView({block:"nearest"});
+    } else { active=-1; inp.removeAttribute("aria-activedescendant"); }
+  }
+  function open(on){box.classList.toggle("on",on);inp.setAttribute("aria-expanded",on?"true":"false");
+    if(!on){active=-1;inp.removeAttribute("aria-activedescendant");}}
+  function pick(o){S.occ=o;inp.value=o;open(false);render();}
+  function show(f){
+    box.innerHTML="";
     const m=OCCS.filter(o=>o.toLowerCase().includes(f.toLowerCase())).slice(0,60);
-    m.forEach(o=>{const d=document.createElement("div");d.textContent=o;d.setAttribute("role","option");
-      if(o===S.occ)d.className="sel";
-      d.addEventListener("mousedown",e=>{e.preventDefault();S.occ=o;inp.value=o;box.classList.remove("on");render();});
+    m.forEach((o,i)=>{
+      const d=document.createElement("div");d.textContent=o;d.setAttribute("role","option");d.id="opt"+i;
+      d.addEventListener("mousedown",e=>{e.preventDefault();pick(o);});
       box.appendChild(d);});
-    box.classList.toggle("on",m.length>0);}
-  inp.addEventListener("focus",()=>show(""));
+    open(m.length>0);
+    mark(m.findIndex(o=>o===S.occ));
+  }
+  inp.addEventListener("focus",()=>show(inp.value===S.occ?"":inp.value));
   inp.addEventListener("input",()=>show(inp.value));
-  inp.addEventListener("blur",()=>setTimeout(()=>box.classList.remove("on"),120));
+  inp.addEventListener("blur",()=>setTimeout(()=>open(false),120));
+  inp.addEventListener("keydown",e=>{
+    const o=opts();
+    if(e.key==="ArrowDown"){e.preventDefault();if(!o.length)return show("");mark(Math.min(active+1,o.length-1));}
+    else if(e.key==="ArrowUp"){e.preventDefault();mark(Math.max(active-1,0));}
+    else if(e.key==="Home"&&o.length){e.preventDefault();mark(0);}
+    else if(e.key==="End"&&o.length){e.preventDefault();mark(o.length-1);}
+    else if(e.key==="Enter"){if(active>=0&&o[active]){e.preventDefault();pick(o[active].textContent);}}
+    else if(e.key==="Escape"){open(false);inp.value=S.occ;}
+  });
   inp.value=S.occ;
 }
 

@@ -45,7 +45,13 @@ header a{color:var(--brand);font-size:13px}
 .f label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600}
 .f input,.f select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;
   background:var(--paper);color:var(--ink);font:inherit;font-size:14px}
+.f input:focus-visible,.f select:focus-visible,button:focus-visible,a:focus-visible,
+select:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
 .f input:focus,.f select:focus{outline:2px solid var(--brand);outline-offset:1px}
+.opts div[aria-selected="true"]{background:var(--brand-soft);color:var(--ink);font-weight:600}
+.skip{position:absolute;left:-9999px;top:0;background:var(--card);color:var(--ink);padding:9px 14px;
+  border:1px solid var(--brand);border-radius:0 0 8px 0;z-index:99}
+.skip:focus{left:0}
 .combo{position:relative}
 .opts{position:absolute;z-index:40;top:100%;left:0;right:0;max-height:300px;overflow-y:auto;margin-top:4px;
   background:var(--card);border:1px solid var(--line);border-radius:9px;box-shadow:var(--shadow);display:none}
