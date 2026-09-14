@@ -725,8 +725,17 @@ function switchTable(){
   const hs=$("hswn"); if(hs) hs.textContent=B.sw.switched_off.length+" groups, "+fmt(B.sw.people_affected)+" people";
   say("tsw","crit",
     "<b>"+B.sw.switched_off.length+" occupation groups</b> holding <b>"+fmt(B.sw.people_affected)+
-    "</b> people &mdash; <b>60% of the whole 189 pool</b> &mdash; were switched off at the 2025&ndash;26 program year "+
-    "and have had nothing since. Not a ceiling: a ceiling caps, this is a switch.");
+    "</b> people &mdash; <b>60% of the whole 189 pool</b> &mdash; stopped receiving invitations at the 2025&ndash;26 "+
+    "program year. An FOI'd Home Affairs paper from May 2025 sets out a four-tier priority model that matches: "+
+    "Tier 4 gets <b>"+(B.tiers?B.tiers.by_tier[4].per_1000.toFixed(1):"1.3")+"</b> invitations per 1,000 waiting "+
+    "against <b>"+(B.tiers?B.tiers.by_tier[2].per_1000.toFixed(0):"117")+"</b> for Tier 2.");
+}
+const TIERNAMES={1:"Tier 1 — highest priority (health)",2:"Tier 2 — government priority (teaching, social work)",3:"Tier 3 — broad skills mix (engineers, trades, sciences)",4:"Tier 4 — oversupplied (accounting, ICT, chefs)"};
+function tierLabel(gk){
+  const t=B.tiers&&B.tiers.tier_of&&B.tiers.tier_of[gk];
+  if(!t) return "—";
+  const per=B.tiers.by_tier&&B.tiers.by_tier[t];
+  return "Tier "+t+(per?" · "+per.per_1000.toFixed(0)+" per 1,000 waiting":"");
 }
 /* ---------- render ---------- */
 function render(){
@@ -759,7 +768,8 @@ function render(){
     ["Forecast cut-off",fc===null?"—":fc+" pts (80% "+bb[0]+"–"+bb[1]+")"],
     ["Likely next round",fmt(B.rs.q50)+" ("+fmt(B.rs.q10)+"–"+fmt(B.rs.q90)+")"],
     ["Ahead of you in "+o.g,fmt(ge)],
-    ["Risk this group gets nothing",Math.round(pZero(o.g)*100)+"%"]];
+    ["Risk this group gets nothing",Math.round(pZero(o.g)*100)+"%"],
+    ["Priority tier (FOI model)",tierLabel(o.g)]];
   rows.forEach(([k,val])=>{const dl=document.createElement("dl");dl.className="kv";
     const dt=document.createElement("dt");dt.textContent=k;const dd=document.createElement("dd");dd.textContent=val;
     dl.appendChild(dt);dl.appendChild(dd);$("vside").appendChild(dl);});
