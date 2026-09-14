@@ -325,6 +325,8 @@ function fcVerdict(c,pts){
 const NS="http://www.w3.org/2000/svg";
 function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
 function clear(s){while(s.childNodes.length>1)s.removeChild(s.lastChild);}
+/* the code that draws owns the viewBox: a static one in the markup silently clips */
+function frame(s,W,H){s.setAttribute("viewBox","0 0 "+W+" "+H);}
 function tipOn(ev,html){const t=$("tip");t.innerHTML=html;t.style.display="block";
   const r=12;t.style.left=Math.min(ev.clientX+r,innerWidth-t.offsetWidth-8)+"px";
   t.style.top=Math.max(8,ev.clientY-t.offsetHeight-r)+"px";}
@@ -341,15 +343,13 @@ function hover(node,html){
 function axisTitle(s,W,H,MB,xt,yt){
   const x=el("text",{x:W/2,y:H-MB+33,class:"tick","text-anchor":"middle","font-weight":"600"});
   x.textContent=xt;s.appendChild(x);
-  if(yt){const y=el("text",{x:10,y:H/2,class:"tick","text-anchor":"middle","font-weight":"600",
-    transform:"rotate(-90 10 "+(H/2)+")"});y.textContent=yt;s.appendChild(y);}}
-function panel(s,letter){
-  const t=el("text",{x:2,y:11,fill:"var(--ink)","font-size":"12","font-weight":"750"});
-  t.textContent=letter;s.appendChild(t);}
+  if(yt){const y=el("text",{x:13,y:H/2,class:"tick","text-anchor":"middle","font-weight":"600",
+    transform:"rotate(-90 13 "+(H/2)+")"});y.textContent=yt;s.appendChild(y);}}
 /* ---------- chart 1: cut-off by round ---------- */
 function chartRounds(o,pts){
   const s=$("c1"); if(!s) return; clear(s);
   const W=520,H=230,ML=36,MR=18,MT=22,MB=54,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
   const rs=o.rounds, vals=rs.map(r=>r.b).filter(v=>v!==null);
   const lo=Math.min(60,pts-5,...vals), hi=Math.max(pts+5,...vals,100);
   const X=i=>ML+(rs.length===1?pw/2:pw*i/(rs.length-1));
@@ -387,13 +387,14 @@ function chartRounds(o,pts){
     const nl=el("text",{x:X(i),y:H-MB+47,class:"tick","text-anchor":"middle"});
     nl.textContent=r.n?fmt(r.n):"";s.appendChild(nl);});
   const yl=el("text",{x:ML-7,y:MT-8,class:"tick","text-anchor":"end"});yl.textContent="pts";s.appendChild(yl);
-  const nl2=el("text",{x:ML-7,y:H-MB+47,class:"tick","text-anchor":"end"});nl2.textContent="invites";s.appendChild(nl2);
-  panel(s,"a");
+  const nl2=el("text",{x:2,y:H-MB+47,class:"tick","text-anchor":"start"});nl2.textContent="invites";s.appendChild(nl2);
+  
 }
 /* ---------- chart 4: the mechanism itself - cumulative queue vs allocation ---------- */
 function chartQueue(g,pts){
   const s=$("c4"); if(!s) return; clear(s);
   const W=520,H=220,ML=46,MR=60,MT=16,MB=42,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
   if(!g){const t=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
     t.textContent="No unit-group data.";s.appendChild(t);return;}
   const keys=Object.keys(g.dist).map(Number).sort((a,b)=>b-a).filter(k=>k>=B.floor);
@@ -438,7 +439,7 @@ function chartQueue(g,pts){
       const q=el("text",{x:X(i),y:H-MB+15,class:"tick","text-anchor":"middle"});q.textContent=k;s.appendChild(q);}
     const hit=el("rect",{x:X(i)-8,y:MT,width:16,height:ph,class:"hit"});
     hover(hit,"<b>"+fmt(step[i].cum)+"</b><span>EOIs at "+k+" points or above</span>");s.appendChild(hit);});
-  axisTitle(s,W,H,MB,"points, highest first","people ahead (cumulative)");panel(s,"d");
+  axisTitle(s,W,H,MB,"points, highest first","people ahead (cumulative)");
 }
 /* ---------- chart 5: forecast matrix (score x round size) ---------- */
 const SCORES=[120,115,110,105,100,95,90,85,80,75,70,65];
@@ -471,7 +472,7 @@ function chartLandscape(selG,pts){
   const cw=(W-ML-MR)/B.rounds.length;
   B.rounds.forEach((r,i)=>{const q=el("text",{x:ML+cw*(i+.5),y:MT-10,class:"tick","text-anchor":"middle",
     "font-weight":"600"});q.textContent=RL[r];s.appendChild(q);});
-  panel(s,"f");
+  
   keys.forEach((gk,ri)=>{
     const G=B.groups[gk], y=MT+ri*rh, on=(gk===selG);
     const nm=G.name.replace(/^\d+\s/,"");
@@ -504,6 +505,7 @@ function lastCut(gk){ return cutOf(gk,B.rounds[B.rounds.length-1]); }
 function chartScatter(selG,pts){
   const s=$("c7"); if(!s) return; clear(s);
   const W=520,H=312,ML=42,MR=18,MT=18,MB=62,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
   const P=[];
   for(const gk in B.groups){
     const G=B.groups[gk], pool=Object.values(G.dist).reduce((a,b)=>a+b,0);
@@ -545,7 +547,7 @@ function chartScatter(selG,pts){
     c.addEventListener("click",()=>{const f=OCCS.find(o=>B.occ[o].g===p.gk);
       if(f){S.occ=f;put("occ","value",f);render();window.scrollTo({top:0,behavior:"smooth"});}});});
   axisTitle(s,W,H,MB,"people per invitation","lowest score invited");
-  panel(s,"g");
+  
   const nt=el("text",{x:(ML+W-MR)/2,y:H-MB+50,class:"tick","text-anchor":"middle","font-style":"italic"});
   nt.textContent="right = more competition";s.appendChild(nt);
 }
@@ -685,6 +687,7 @@ function pMarginal(g,pts,gk){
 function chartProb(g,pts){
   const s=$("c8"); if(!s) return; clear(s);
   const W=586,H=268,ML=44,MR=66,MT=30,MB=46,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
   if(!g||g.share<=0){const q=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
     q.textContent="No invitations last round, so there is nothing to forecast at any size.";s.appendChild(q);return;}
   const S0=2000,S1=20000;
@@ -750,7 +753,7 @@ function chartProb(g,pts){
     hover(hit,"<b>"+Math.round(p*100)+"% chance</b><span>if the round invites "+fmt(v)+
       "</span><span>cut-off would be about "+c+" points</span>");s.appendChild(hit);}
   axisTitle(s,W,H,MB,"invitations in the round","chance of an invitation");
-  panel(s,"h");
+  
 }
 /* ---------- every round-size case, side by side ---------- */
 /* The range quoted everywhere: across the 10-90% band of plausible round sizes. */
@@ -916,26 +919,16 @@ function render(){
   if($("mleft"))$("mleft").textContent="last round allocated "+fmt(al)+" to this group";
   if($("mright"))$("mright").textContent=fmt(ge)+" sit at "+pts+"+ · "+(ge>0?ratio.toFixed(2)+"×":"—");
   const vside=$("vside"); if(vside) vside.innerHTML="";
-  const rows=[["At likely round size",Pc===null?"—":Math.round(Pc*100)+"%"],
-    ["Forecast cut-off",fc===null?"—":fc+" pts (80% "+bb[0]+"–"+bb[1]+")"],
-    ["Likely round size",fmt(B.rs.q50)+" ("+fmt(B.rs.q10)+"–"+fmt(B.rs.q90)+")"],
-    ["Ahead of you in "+o.g,fmt(ge)],
+  /* "Your chance vs round size" already plots the chance and the size range,
+     and "Who is ahead" plots the queue - only what no chart shows survives here */
+  const rows=[["Forecast cut-off",fc===null?"—":fc+" pts (80% "+bb[0]+"–"+bb[1]+")"],
     ["Risk of no invitations",Math.round(pZero(o.g)*100)+"%"],
     ["Priority tier",tierLabel(o.g)]];
   rows.forEach(([k,val])=>{const dl=document.createElement("dl");dl.className="kv";
     const dt=document.createElement("dt");dt.textContent=k;const dd=document.createElement("dd");dd.textContent=val;
     dl.appendChild(dt);dl.appendChild(dd);if(vside)vside.appendChild(dl);});
   const inv=o.rounds.filter(r=>verdictFor(r,pts).k==="good").length;
-  const tiles=[[inv+" of 5",'rounds that would have invited you at '+pts+' pts'],
-    [fmt(o.rounds.reduce((a,r)=>a+r.n,0)),"invitations to this occupation, all rounds"],
-    [last.b===null?"—":last.b,"lowest points invited, most recent round"],
-    [g?g.alloc.join(" → "):"—","allocation to your unit group, by round"],
-    [B.meta.cal_exact*100+"%","of occupations matched the official table exactly"]];
-  const tbox=$("tiles"); if(tbox) tbox.innerHTML="";
-  tiles.forEach(([v2,l])=>{const c=document.createElement("div");c.className="tile";
-    const a=document.createElement("div");a.className="tval";a.textContent=v2;
-    const b=document.createElement("div");b.className="tlab";b.textContent=l;
-    c.appendChild(a);c.appendChild(b);if(tbox)tbox.appendChild(c);});
+  /* the tile row restated "Past rounds" four different ways; the charts carry it */
   put("h1n","textContent",S.occ); put("h8n","textContent",""); 
   put("h4n","textContent","");
   chartRounds(o,pts);chartQueue(g,pts);
@@ -1077,6 +1070,8 @@ try{var v=JSON.parse(localStorage.getItem(k)||"{}");
 var q=new URLSearchParams(location.search);
 if(q.get("occ")&&B.occ[q.get("occ")])S.occ=q.get("occ");
 if(q.get("pts"))S.pts=+q.get("pts")||S.pts;
+var pf=document.getElementById("pts"); if(pf)pf.value=S.pts;
+var df=document.getElementById("doe"); if(df&&S.doe)df.value=S.doe;
 window.__saveState=function(){try{localStorage.setItem(k,JSON.stringify({occ:S.occ,pts:S.pts,doe:S.doe}))}catch(e){}};})();
 initCombo();render();
 if(window.__saveState)__saveState();

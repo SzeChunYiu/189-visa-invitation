@@ -26,7 +26,6 @@ hdr=block('<header>') or (body.index('<header>'), body.index('</header>')+9)
 hb=body[body.index('<header>'):body.index('</header>')+9]
 fs=block('<div class="filters">'); filters=body[fs[0]:fs[1]]
 vs=block('<div class="verdict"'); verdict=body[vs[0]:vs[1]]
-ti=body.find('<div class="tiles"'); tiles=body[ti:body.index('</div>',ti)+6]
 cards=[]; pos=0
 while True:
     b=block('<div class="card',pos)
@@ -44,7 +43,7 @@ def nav(cur):
 
 PAGES={
  "index.html":   dict(title="Will you be invited? · SkillSelect 189",
-                      parts=[filters,verdict,tiles,cards[0],cards[1],cards[2],cards[3],cards[8]]),
+                      parts=[filters,verdict,cards[0],cards[1],cards[2],cards[3],cards[8]]),
  "landscape.html":dict(title="All occupations · SkillSelect 189",
                       parts=[filters,cards[6],cards[7],cards[9]]),
  "policy.html":  dict(title="Policy · SkillSelect 189",
@@ -68,6 +67,8 @@ try{var v=JSON.parse(localStorage.getItem(k)||"{}");
 var q=new URLSearchParams(location.search);
 if(q.get("occ")&&B.occ[q.get("occ")])S.occ=q.get("occ");
 if(q.get("pts"))S.pts=+q.get("pts")||S.pts;
+var pf=document.getElementById("pts"); if(pf)pf.value=S.pts;
+var df=document.getElementById("doe"); if(df&&S.doe)df.value=S.doe;
 window.__saveState=function(){try{localStorage.setItem(k,JSON.stringify({occ:S.occ,pts:S.pts,doe:S.doe}))}catch(e){}};})();
 '''
 for fn,cfg in PAGES.items():
@@ -81,6 +82,9 @@ for fn,cfg in PAGES.items():
     page=page.replace('S.doe=e.target.value||null;render();','S.doe=e.target.value||null;render();if(window.__saveState)__saveState();')
     page=page.replace('function pick(o){S.occ=o;inp.value=o;open(false);render();}',
                       'function pick(o){S.occ=o;inp.value=o;open(false);render();if(window.__saveState)__saveState();}')
+    for marker,want in [("sk189-theme",1),("sk189-state",1),("initCombo();render();",1)]:
+        got=page.count(marker)
+        assert got==want, f"{fn}: {marker} injected {got}x, expected {want}"
     (R/"docs"/fn).write_text(page)
     print(f"  {fn:<16}{len(page)/1024:>7.0f} KB")
 print("pages written")

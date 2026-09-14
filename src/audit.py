@@ -92,15 +92,41 @@ def _code(html):
     """JS with the embedded data literal removed - occupation names parse as calls otherwise."""
     js="\n".join(_re.findall(r"<script>(.*?)</script>", html, _re.S))
     return _re.sub(r"const B=\{.*?\};", "const B={};", js, flags=_re.S)
-for page in ["index.html","findings.html"]:
+PAGES=["index.html","landscape.html","policy.html","findings.html"]
+SITE_IDS=set()
+SITE_REFS={}
+for page in PAGES:
     html=(pathlib.Path("../docs")/page).read_text()
     js=_code(html)
     ids=set(_re.findall(r'id="([A-Za-z0-9_-]+)"', html))
     refs=set(_re.findall(r'\$\("([A-Za-z0-9_-]+)"\)', js)) | set(
         _re.findall(r'getElementById\("([A-Za-z0-9_-]+)"\)', js))
-    missing=sorted(refs-ids)
-    chk(f"{page}: every element id referenced by JS exists",len(missing)==0,
-        f"missing {missing}" if missing else f"{len(refs)} refs checked")
+    SITE_IDS |= ids; SITE_REFS[page]=refs
+    # Post-split a page legitimately lacks ids owned by another page - the render helpers
+    # guard for it (on/put/early return), so the old per-page "id exists" check became a
+    # false positive by design. What must still hold is that every absent id is reached
+    # only through a guarded accessor.
+    def _guarded(r):
+        # reached through the null-safe accessors, or inline-tested
+        if f'on("{r}"' in js or f'put("{r}"' in js or f'if($("{r}"))' in js:
+            return True
+        # bound to a local that is then tested either way round: if(v) ... or if(!v) return
+        for m in _re.finditer(r'(?:(?:const|let|var)\s+|,\s*)(\w+)\s*=\s*\$\("%s"\)'%_re.escape(r), js):
+            v=_re.escape(m.group(1))
+            if _re.search(r'if\s*\(\s*!?\s*%s\s*[)&|]'%v, js): return True
+        return False
+    unguarded=sorted(r for r in refs-ids if not _guarded(r))
+    chk(f"{page}: absent ids are reached only through guarded accessors",len(unguarded)==0,
+        f"unguarded {unguarded}" if unguarded else f"{len(refs-ids)} absent, all guarded")
+    if page=="index.html":
+        # a guard detector that cannot fail is worthless: plant a bare $("x") with no guard
+        # and a guarded twin, and require exactly the bare one to be flagged
+        js_probe=js+'\n$("__bare_probe__");\nconst _pz=$("__safe_probe__"); if(!_pz) return;'
+        _js_save=js; js=js_probe
+        flagged=[r for r in ["__bare_probe__","__safe_probe__"] if not _guarded(r)]
+        js=_js_save
+        chk("  (control) the guard detector flags a bare $() and clears a tested one",
+            flagged==["__bare_probe__"], f"control flagged {flagged}")
     # Duplicate definitions: JS silently lets the LAST one win, so a stale copy can shadow a
     # rewritten function and every functional test still passes. This bit three times before it
     # was caught, once with bandTable defined FOUR times.
@@ -126,6 +152,15 @@ for page in ["index.html","findings.html"]:
     # be derived from the same file whose definition may have been deleted, so it passes when it should fail.
     # A deliberate rename of queueTable() slipped straight through it. Undefined-function regressions are
     # caught instead by loading the page and asserting an empty console - see scripts/check_console.md.
+
+allrefs=set().union(*SITE_REFS.values())
+orphans=sorted(allrefs-SITE_IDS)
+chk("no JS reference is orphaned across all four pages",len(orphans)==0,
+    f"orphaned {orphans}" if orphans else f"{len(allrefs)} refs, all defined on some page")
+# the check is only worth its PASS if it can fail: plant an id no page defines
+_ctl=sorted((allrefs|{"__planted_missing_id__"})-SITE_IDS)
+chk("  (control) the orphan check catches a planted missing id",
+    _ctl==["__planted_missing_id__"], f"control saw {_ctl}")
 
 print("\n"+"="*96)
 print(f"AUDIT: {len(fails)} failure(s)" + (": "+", ".join(fails) if fails else " - all checks pass"))
