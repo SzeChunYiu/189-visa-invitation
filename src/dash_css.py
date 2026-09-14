@@ -172,6 +172,10 @@ td:first-child{text-align:left;color:var(--ink)}
 tbody tr:last-child td{border-bottom:0}
 tbody tr.hl{background:var(--brand-soft)}
 .scroll{overflow-x:auto}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:10px}
+.tablewrap table{min-width:400px;margin:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:650}
 .pill.good{background:var(--good-bg);color:var(--good)} .pill.warn{background:var(--warn-bg);color:#8a6412}
 .pill.crit{background:var(--crit-bg);color:var(--crit)} .pill.n{background:var(--line);color:var(--muted)}

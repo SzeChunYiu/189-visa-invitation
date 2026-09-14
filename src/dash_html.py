@@ -52,7 +52,15 @@ HTML = r"""<meta charset="utf-8">
 
 
 <div class="grid2">
-  <div class="card"><div class="chead"><h2>Past rounds</h2>
+  <div class="card"><div class="chead"><h2>Forecast cut-off by round size</h2>
+  <span class="eyebrow" id="h2n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n2f" aria-label="Explain" data-note="n2f">?</button></div>
+  <p class="takeaway" id="t2f"></p>
+  <div class="chartwrap"><svg id="c2" viewBox="0 0 560 250" role="img" aria-labelledby="c2t">
+    <title id="c2t">Forecast cut-off against round size, with its 80% interval</title></svg></div>
+  <p class="note" id="n2f" hidden>The line is the cut-off the model predicts for your occupation group at each possible round size. The shaded band is the 80% interval on that prediction, taken from how wrong the same method was on rounds it had not seen. Your score is the horizontal line: where it sits above the band, the forecast clears you comfortably; inside the band, the round could go either way.</p>
+  <div class="tablewrap"><table id="fctab"><caption class="sr-only">Forecast cut-off at each round size</caption></table></div>
+</div>
+<div class="card"><div class="chead"><h2>Past rounds</h2>
     <span class="eyebrow" id="h1n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n2" aria-label="Explain" data-note="n2">?</button></div>
     <p class="takeaway" id="t1"></p>
     <div class="chartwrap"><svg id="c1" viewBox="0 0 520 220" role="img" aria-labelledby="c1t"><title id="c1t">Minimum points invited, by round</title></svg></div>
@@ -179,6 +187,78 @@ function axisTitle(s,W,H,MB,xt,yt){
   x.textContent=xt;s.appendChild(x);
   if(yt){const y=el("text",{x:13,y:H/2,class:"tick","text-anchor":"middle","font-weight":"600",
     transform:"rotate(-90 13 "+(H/2)+")"});y.textContent=yt;s.appendChild(y);}}
+
+/* ---------- chart 2: the forecast itself - cut-off vs round size, with its interval ---------- */
+function chartForecast(g,pts){
+  const s=$("c2"); if(!s) return; clear(s);
+  const W=560,H=250,ML=46,MR=20,MT=22,MB=54,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
+  if(!g||g.share<=0){
+    const q=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
+    q.textContent="No forecast: this group took no invitations last round";
+    s.appendChild(q); return;}
+  const grid=B.rs.grid, lo=B.floor, hi=100;
+  const X=N=>ML+pw*(N-grid[0])/(grid[grid.length-1]-grid[0]);
+  const Y=v=>MT+ph*(1-(v-lo)/(hi-lo));
+  for(let v=lo;v<=hi;v+=5){
+    s.appendChild(el("line",{x1:ML,y1:Y(v),x2:W-MR,y2:Y(v),class:"gl"}));
+    if(v%10===0){const q=el("text",{x:ML-7,y:Y(v)+3.5,class:"tick","text-anchor":"end"});
+      q.textContent=v;s.appendChild(q);}}
+  /* the 80% interval on the forecast, as a band */
+  const cs=grid.map(N=>cutoffAt(g,N));
+  let up="",dn="";
+  grid.forEach((N,i)=>{const c=cs[i]; if(c===null) return;
+    const t=Math.min(hi,c-B.unc.lo80), b=Math.max(lo,c-B.unc.hi80);
+    up+=(up?"L":"M")+X(N).toFixed(1)+","+Y(t).toFixed(1)+" ";
+    dn=("L"+X(N).toFixed(1)+","+Y(b).toFixed(1)+" ")+dn;});
+  if(up) s.appendChild(el("path",{d:up+dn+"Z",fill:"var(--brand)",opacity:"0.14",stroke:"none"}));
+  /* the forecast */
+  let d="";
+  grid.forEach((N,i)=>{const c=cs[i]; if(c===null) return;
+    d+=(d?"L":"M")+X(N).toFixed(1)+","+Y(c).toFixed(1)+" ";});
+  if(d) s.appendChild(el("path",{d:d,fill:"none",stroke:"var(--brand)","stroke-width":2.5,
+    "stroke-linejoin":"round"}));
+  /* your score */
+  if(pts>=lo&&pts<=hi){
+    s.appendChild(el("line",{x1:ML,y1:Y(pts),x2:W-MR,y2:Y(pts),class:"refl"}));
+    const q=el("text",{x:ML+2,y:Y(pts)-6,class:"reft"});q.textContent="your "+pts;s.appendChild(q);}
+  /* the likely-round-size window, so the reader knows which part of the x-axis matters */
+  s.appendChild(el("rect",{x:X(B.rs.q10),y:MT,width:Math.max(1,X(B.rs.q90)-X(B.rs.q10)),
+    height:ph,fill:"var(--gold)",opacity:"0.10"}));
+  [["q10",B.rs.q10],["q50",B.rs.q50],["q90",B.rs.q90]].forEach(([k,N])=>{
+    s.appendChild(el("line",{x1:X(N),y1:MT,x2:X(N),y2:MT+ph,
+      stroke:k==="q50"?"var(--ink)":"var(--muted)","stroke-width":k==="q50"?1.5:1,
+      "stroke-dasharray":"3 3"}));});
+  const ml=el("text",{x:X(B.rs.q50),y:MT-6,class:"tick","text-anchor":"middle","font-weight":"700"});
+  ml.textContent="likely round";s.appendChild(ml);
+  /* markers at the published sizes, each hoverable */
+  B.sizes.forEach((N,i)=>{const c=g.fc[i]; if(c===null||c===undefined) return;
+    const cc=el("circle",{cx:X(N),cy:Y(c),r:5,fill:"var(--brand)",stroke:"var(--card)","stroke-width":2});
+    s.appendChild(cc);
+    hover(cc,"<b>"+c+" points</b><span>if the round is "+fmt(N)+"</span><span>80% interval "+
+      (c-B.unc.hi80)+"&ndash;"+(c-B.unc.lo80)+"</span><span>At "+pts+" pts: "+fcVerdict(c,pts).t+"</span>");});
+  for(const N of [grid[0],B.rs.q50,grid[grid.length-1]]){
+    const q=el("text",{x:X(N),y:H-MB+18,class:"tick","text-anchor":"middle"});
+    q.textContent=fmt(N);s.appendChild(q);}
+  axisTitle(s,W,H,MB,"size of the next round","forecast cut-off (points)");
+}
+function fcTable(g,pts){
+  const t=$("fctab"); if(!t) return; t.innerHTML="";
+  if(!g||g.share<=0) return;
+  const hd=document.createElement("tr");
+  ["If the round is","Forecast cut-off","80% interval","At "+pts+" points"].forEach(h=>{
+    const th=document.createElement("th");th.textContent=h;hd.appendChild(th);});
+  t.appendChild(hd);
+  B.sizes.forEach((N,i)=>{const c=g.fc[i];
+    const tr=document.createElement("tr");
+    const v=fcVerdict(c,pts);
+    [[fmt(N),""],[c===null?"—":c+" pts","n"],
+     [c===null?"—":(c-B.unc.hi80)+"–"+(c-B.unc.lo80),"n"],[v.t,""]].forEach(([txt,cls],k)=>{
+      const td=document.createElement("td");td.textContent=txt;if(cls)td.className=cls;
+      if(k===3){td.innerHTML='<span class="pill '+v.k+'">'+txt+'</span>';}
+      tr.appendChild(td);});
+    t.appendChild(tr);});
+}
 /* ---------- chart 1: cut-off by round ---------- */
 function chartRounds(o,pts){
   const s=$("c1"); if(!s) return; clear(s);
@@ -403,6 +483,15 @@ function chartScatter(selG,pts){
 /* The range quoted everywhere: across the 10-90% band of plausible round sizes. */
 
 
+function fcTakeaway(g,pts,fc,bb){
+  const e=$("t2f"); if(!e) return;
+  if(!g||g.share<=0||fc===null){e.textContent="This group received no invitations last round, so it has no forecast.";return;}
+  const clears=B.sizes.filter((N,i)=>g.fc[i]!==null&&g.fc[i]<pts).length;
+  e.textContent="At a likely round the model puts the cut-off at "+fc+" points (80% of the time "+
+    bb[0]+"\u2013"+bb[1]+"). Your "+pts+" clears it in "+clears+" of the "+B.sizes.length+
+    " round sizes shown.";
+  const h=$("h2n"); if(h) h.textContent=g.name;
+}
 function probTakeaway(g,pts){
   if(!g||g.share<=0){say("t8","","No invitations last round, so nothing to forecast.");return;}
   const cen=B.policy?B.policy.per_round["3"]:10000;
@@ -708,6 +797,7 @@ function render(){
   const v=fcVerdict(fc,pts);
   const P=pMarginal(g,pts,o.g), Pc=pClear(fc,pts), bb=pBand(fc);
   chartProb(g,pts);probTakeaway(g,pts);moveStrip();
+  chartForecast(g,pts);fcTable(g,pts);fcTakeaway(g,pts,fc,bb);
   const band = P===null?null:(P>=.8?"good":P>=.6?"good":P>=.4?"warn":"crit");
   if($("flag")){$("flag").className="vflag "+(band||"crit");}
   if($("flag"))$("flag").textContent = P===null ? "✕ No forecast"

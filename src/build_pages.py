@@ -4,6 +4,7 @@ sys.path.insert(0,str(pathlib.Path(__file__).parent))
 from dash_css import CSS
 from dash_html import HTML
 from model_js import MODEL_JS
+from nav import nav_html
 R=pathlib.Path(__file__).resolve().parent.parent
 bundle=(R/"data"/"bundle.json").read_text()
 src=HTML.replace("__MODEL__",MODEL_JS).replace("__CSS__",CSS).replace("__BUNDLE__",bundle)
@@ -27,28 +28,35 @@ hdr=block('<header>') or (body.index('<header>'), body.index('</header>')+9)
 hb=body[body.index('<header>'):body.index('</header>')+9]
 fs=block('<div class="filters">'); filters=body[fs[0]:fs[1]]
 vs=block('<div class="verdict"'); verdict=body[vs[0]:vs[1]]
-cards=[]; pos=0
+# Cards are selected by their heading, not their index: picking by position meant
+# inserting a card silently moved every later one to a different page.
+cards={}; order=[]; pos=0
 while True:
     b=block('<div class="card',pos)
     if not b: break
-    cards.append(body[b[0]:b[1]]); pos=b[1]
+    blk=body[b[0]:b[1]]; pos=b[1]
+    h=re.search(r'<h2>(.*?)</h2>',blk,re.S)
+    key=re.sub(r'<[^>]+>','',h.group(1)).strip() if h else f"card{len(order)}"
+    assert key not in cards, f"two cards share the heading {key!r}"
+    cards[key]=blk; order.append(key)
 foot=body[body.index('<footer>'):body.index('</footer>')+10]
-assert len(cards)==10, f"expected 10 cards, found {len(cards)}"
+print(f"  {len(cards)} cards: "+", ".join(order))
 
-NAV=[("index.html","Your result"),("landscape.html","All occupations"),
-     ("policy.html","Policy"),("findings.html","Method")]
-def nav(cur):
-    links="".join(f'<a href="{h}"{' aria-current="page"'  if h==cur else ""}>{n}</a>' for h,n in NAV)
-    return ('<nav class="top">'+links+
-            '<button class="themebtn" id="themebtn" type="button" aria-pressed="false">Dark</button></nav>')
+def pick(*titles):
+    missing=[t for t in titles if t not in cards]
+    assert not missing, f"no card titled {missing}; have {order}"
+    return [cards[t] for t in titles]
 
 PAGES={
  "index.html":   dict(title="Will you be invited? · SkillSelect 189",
-                      parts=[filters,verdict,cards[0],cards[1],cards[2],cards[3],cards[8]]),
+                      parts=[filters,verdict]+pick("Your chance vs round size","Forecast cut-off by round size",
+                       "Past rounds","Who is ahead","Every score band",
+                       "This occupation, round by round")),
  "landscape.html":dict(title="All occupations · SkillSelect 189",
-                      parts=[filters,cards[6],cards[7],cards[9]]),
+                      parts=[filters]+pick("All occupations &times; all rounds","Competition drives the score",
+                       "All occupations at your score")),
  "policy.html":  dict(title="Policy · SkillSelect 189",
-                      parts=[cards[4],cards[5]]),
+                      parts=pick("Occupations cut off since 2025","2026&ndash;27 program")),
 }
 THEME='''
 (function(){var k="sk189-theme";try{var v=localStorage.getItem(k);if(v)document.documentElement.setAttribute("data-theme",v);}catch(e){}
@@ -74,7 +82,7 @@ window.__saveState=function(){try{localStorage.setItem(k,JSON.stringify({occ:S.o
 '''
 for fn,cfg in PAGES.items():
     hd=head.replace("<title>SkillSelect 189 Explorer</title>",f"<title>{cfg['title']}</title>")
-    page=hd+'<a class="skip" href="#results">Skip to result</a>\n<div class="wrap">\n'+nav(fn)+"\n"+hb+"\n"
+    page=hd+'<a class="skip" href="#results">Skip to result</a>\n<div class="wrap">\n'+nav_html(fn)+"\n"+hb+"\n"
     page+="\n".join(cfg["parts"])+"\n"+foot+"\n</div>\n"+tail
     page=page.replace("const S={occ:","/*STATE*/\nconst S={occ:")
     page=page.replace("initCombo();render();", STATE.strip()+"\ninitCombo();render();\nif(window.__saveState)__saveState();")

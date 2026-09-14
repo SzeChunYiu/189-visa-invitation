@@ -15,6 +15,7 @@ from paper_css import PAPER_CSS
 from model_js import MODEL_JS
 from paper_worked import WORKED_HTML, WORKED_JS
 import paper_figs as F
+from nav import nav_html
 
 R = pathlib.Path(__file__).resolve().parent.parent
 B = json.loads((R / "data" / "bundle.json").read_text())
@@ -519,12 +520,6 @@ def chapters_html():
     return "".join(out)
 
 
-NAV = [("index.html", "Your result"), ("landscape.html", "All occupations"),
-       ("policy.html", "Policy"), ("findings.html", "Method")]
-topnav = "".join(
-    f'<a href="{h}"{" aria-current=\"page\"" if h == "findings.html" else ""}>{n}</a>'
-    for h, n in NAV)
-
 ROUTER = r"""
 (function(){
   var chs=[].slice.call(document.querySelectorAll(".chap"));
@@ -587,7 +582,7 @@ page = f"""<!doctype html>
 <style>{CSS}{PAPER_CSS}</style>
 </head><body>
 <div class="wrap" style="padding-bottom:6px">
-<nav class="top">{topnav}<button class="themebtn" id="themebtn" type="button" aria-pressed="false">Dark</button></nav>
+{nav_html("findings.html")}
 <header>
   <p class="kicker">Method</p>
   <h1>How the invitation odds are calculated</h1>
