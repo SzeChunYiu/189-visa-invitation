@@ -3,9 +3,10 @@ import pathlib,re,sys,json
 sys.path.insert(0,str(pathlib.Path(__file__).parent))
 from dash_css import CSS
 from dash_html import HTML
+from model_js import MODEL_JS
 R=pathlib.Path(__file__).resolve().parent.parent
 bundle=(R/"data"/"bundle.json").read_text()
-src=HTML.replace("__CSS__",CSS).replace("__BUNDLE__",bundle)
+src=HTML.replace("__MODEL__",MODEL_JS).replace("__CSS__",CSS).replace("__BUNDLE__",bundle)
 
 head=src[:src.index('<div class="wrap">')]
 body=src[src.index('<div class="wrap">'):src.index('<div id="tip"')]

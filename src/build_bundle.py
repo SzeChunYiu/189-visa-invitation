@@ -28,12 +28,24 @@ tr=json.load(open("tiers.json"))
 hz=json.load(open("horizon_corr.json"))
 dr=json.load(open("drift.json"))
 
-def cutoff(pg,A):
+def half_up(x):
+    """JS Math.round semantics. Python's round() is half-to-even, so an allocation of
+    exactly x.5 rounded one way in the builder and the other way in the page."""
+    import math
+    return math.floor(x+0.5)
+
+def cutoff(dist,A):
+    """Walk the published dist, not the raw frame it came from.
+
+    dist stores int(n); the frame carries floats, because counts under the publication
+    threshold are recovered by differencing. Walking the floats here while the page walks
+    the integers made fc disagree with the page's own cutoffAt() in a handful of cells.
+    """
     if A<=0: return None
-    s=pg[pg.Score>=FLOOR].sort_values("Score",ascending=False); c=0
-    for _,r in s.iterrows():
-        c+=r.n
-        if c>=A: return int(r.Score)
+    c=0
+    for k in sorted((k for k in dist if k>=FLOOR),reverse=True):
+        c+=dist[k]
+        if c>=A: return int(k)
     return FLOOR
 
 groups={}
@@ -41,9 +53,12 @@ for g in alloc.index:
     pg=latest[latest.G==g].groupby("Score",as_index=False).n.sum()
     if pg.n.sum()==0: continue
     dist={int(r.Score):int(r.n) for _,r in pg.iterrows() if r.n>0}
+    SH=round(float(share.get(g,0)),10)   # the one share: stored AND used for fc
     groups[g]=dict(name=str(gname.get(g,g)),alloc=[int(alloc.loc[g,r]) for r in ROUNDS],
-        share=round(float(share.get(g,0)),6),dist=dist,
-        fc=[cutoff(pg,int(round(share.get(g,0)*S*FR))) for S in SIZES])
+        # fc below is computed from the FULL-precision share; storing a rounded one here made
+        # the page's own cutoffAt() disagree with fc at rounding boundaries (5 cells of 410)
+        share=SH,dist=dist,
+        fc=[cutoff(dist,half_up(SH*S*FR)) for S in SIZES])
 
 occ={}
 for o,gg in db.groupby("occupation"):

@@ -153,6 +153,26 @@ for page in PAGES:
     # A deliberate rename of queueTable() slipped straight through it. Undefined-function regressions are
     # caught instead by loading the page and asserting an empty console - see scripts/check_console.md.
 
+# The paper renders its figures from a Python copy of the model. If that copy drifts
+# from the forecast the pages publish, the figures would illustrate a model nobody runs.
+import json as _json
+_B=_json.loads((pathlib.Path("../data")/"bundle.json").read_text())
+import paper_figs as _PF
+_mis=[]
+for _gk,_g in _B["groups"].items():
+    for _i,_S in enumerate(_B["sizes"]):
+        _mine=_PF.cutoff_at(_g,_S,_B["meta"]["fr"])
+        _pub=_g["fc"][_i]
+        if _mine!=_pub: _mis.append((_gk,_S,_mine,_pub))
+chk("paper figures reproduce the published forecast exactly",len(_mis)==0,
+    f"{len(_mis)} mismatches e.g. {_mis[:2]}" if _mis
+    else f"{len(_B['groups'])} groups x {len(_B['sizes'])} sizes agree")
+# the comparison is only meaningful if a wrong factor would break it
+_ctl=any(_PF.cutoff_at(_g,_S,_B["meta"]["fr"]*2)!=_g["fc"][_i]
+         for _gk,_g in _B["groups"].items() for _i,_S in enumerate(_B["sizes"]))
+chk("  (control) a wrong single-leg factor would fail that check",_ctl,
+    "doubling phi changes the cut-offs" if _ctl else "check is insensitive - worthless")
+
 allrefs=set().union(*SITE_REFS.values())
 orphans=sorted(allrefs-SITE_IDS)
 chk("no JS reference is orphaned across all four pages",len(orphans)==0,
