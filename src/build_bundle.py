@@ -21,6 +21,7 @@ pol=json.load(open("policy.json"))
 unc=json.load(open("uncertainty.json"))
 rs=json.load(open("roundsize.json"))
 mv=json.load(open("movement.json"))
+zr=json.load(open("zero_risk.json"))
 
 def cutoff(pg,A):
     if A<=0: return None
@@ -93,7 +94,7 @@ comp=dict(eng=share_of("atoms_eng.csv","Eng",["20"]),
           partner=share_of("atoms_partner.csv","Partner",["10"]),
           study=share_of("atoms_study.csv","AusStudy",["Y"]))
 
-bundle=dict(doe_months=MONTHS,doe_cdf=cdf,comp=comp,rounds=ROUNDS,sizes=SIZES,floor=FLOOR,groups=groups,occ=occ,policy=pol,unc=unc,rs=rs,mv=mv,
+bundle=dict(doe_months=MONTHS,doe_cdf=cdf,comp=comp,rounds=ROUNDS,sizes=SIZES,floor=FLOOR,groups=groups,occ=occ,policy=pol,unc=unc,rs=rs,mv=mv,zr=zr,
   meta=dict(fr=round(FR,6),round_min=6450,round_max=14724,oos_mae=val["oos"]["mae"],oos_within5=val["oos"]["within5"],oos_bias=val["oos"]["bias"],
             mech_exact=val["mech"]["exact"],cal_exact=round(cal["exact"]/cal["n"],3),cal_n=cal["n"],
             official_total=cal["official_total"],mobility=mob["pct_changed"],alloc_r=gate["pooled_r"],

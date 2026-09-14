@@ -46,6 +46,41 @@ places and people. A policy announcement matters only once it changes one of tho
 later snapshot. The one exception already modelled is published planning levels, which set the annual
 invitation budget ([POLICY.md](POLICY.md)).
 
+## Can the cut-off fall to 80 and still not invite you?
+
+**Yes — and it was not priced until now.** Two separate failures can leave you uninvited even when the score
+looks fine:
+
+1. **No round is held.** Exogenous, unpredictable, and every figure on the page is explicitly conditional on it.
+2. **A round is held but your occupation group gets nothing.** This turns out to be common.
+
+Across the current-regime rounds, **31% of unit groups that had people waiting received zero invitations.**
+
+And it is not random. Of 86 groups with a pool in all three recent rounds:
+
+| Missed out in | Groups | Expected if independent |
+|---|---|---|
+| 0 of 3 rounds | **49** | 28 |
+| 1 of 3 | 13 | 38 |
+| 2 of 3 | 6 | 17 |
+| 3 of 3 | **18** | 3 |
+
+χ² = 130.8 on 3 df, p < 0.0001 — **strongly clustered**. The same groups keep getting nothing.
+
+The dominant predictor is simply last round:
+
+| | P(zero next round) |
+|---|---|
+| Got nothing last round | **76%** |
+| Got something last round | **8%** |
+
+Counter-intuitively, **bigger pools are more likely to be skipped** (42% vs 14% below median) — the large
+oversupplied groups such as ICT and accounting are the ones left out.
+
+The headline probability is now multiplied by `(1 − P(skipped))`. For ANZSCO 2349, which received invitations
+in all three recent rounds, that is an 8% discount: **84% → 77%**. For a group like 2613 Software and
+Applications Programmers, which got nothing last round, the risk is **76%** and no forecast is offered at all.
+
 ## Where this shows on the page
 
 As a single stacked strip above the probability curve: how often the cut-off falls, holds, or rises, with the

@@ -448,7 +448,7 @@ function bandTable(o,g,pts){
   keys.forEach(k=>{
     const above=Object.keys(g.dist).map(Number).filter(x=>x>k).reduce((a,x)=>a+g.dist[x],0);
     const saveP=S.pts; S.pts=k;
-    const P=pMarginal(g,k); S.pts=saveP;
+    const P=pMarginal(g,k,o.g); S.pts=saveP;
     const reaches = fc===null?null:(k>fc?"yes":k===fc?"on the boundary":"no");
     const tr=document.createElement("tr"); if(k===my)tr.className="hl";
     const cells=[k+(k===my?" (you)":""),fmt(o.dist[k]||0),fmt(g.dist[k]||0),fmt(above),reaches||"—",""];
@@ -525,12 +525,24 @@ function cutoffAt(g,S){
   for(const k of keys){c+=g.dist[k]; if(c>=A) return k;}
   return B.floor;
 }
-function pMarginal(g,pts){
+/* P(this group gets NOTHING next round). Strongly clustered: whether it got something
+   last round is the dominant predictor (8% vs 76%), so use that branch. */
+function pZero(gk){
+  if(!B.zr) return 0;
+  const rec=B.zr.per_group&&B.zr.per_group[gk];
+  if(!rec) return B.zr.base_rate;
+  return rec.last_alloc>0 ? B.zr.p_zero_given_prev_nonzero : B.zr.p_zero_given_prev_zero;
+}
+/* Marginal over round size, THEN discounted by the chance the group is skipped entirely. */
+function pMarginal(g,pts,gk){
   if(!g||g.share<=0||!B.rs) return null;
   let acc=0,wsum=0;
   B.rs.grid.forEach((sz,i)=>{const p=pClear(cutoffAt(g,sz),pts);
     if(p!==null){acc+=B.rs.dens[i]*p;wsum+=B.rs.dens[i];}});
-  return wsum>0?acc/wsum:null;
+  if(wsum<=0) return null;
+  const conditional=acc/wsum;
+  const skip=pZero(gk||(typeof CURG!=="undefined"?CURG:null));
+  return conditional*(1-skip);
 }
 function chartProb(g,pts){
   const s=$("c8");clear(s);
@@ -691,7 +703,7 @@ function render(){
   const last=o.rounds[o.rounds.length-1];
   const fc=g?g.fc[S.szi]:null;
   const v=fcVerdict(fc,pts);
-  const P=pMarginal(g,pts), Pc=pClear(fc,pts), bb=pBand(fc);
+  const P=pMarginal(g,pts,o.g), Pc=pClear(fc,pts), bb=pBand(fc);
   chartProb(g,pts);probTakeaway(g,pts);moveStrip();
   const band = P===null?null:(P>=.8?"good":P>=.5?"warn":"crit");
   $("flag").className="vflag "+(band||"crit");
@@ -701,7 +713,8 @@ function render(){
   $("vsub").innerHTML = P===null
     ? "This occupation received no invitations in the most recent round, so there is no allocation share to forecast from. The round-by-round record below still applies."
     : "chance of an invitation at <b>"+pts+" points</b> in <b>"+o.g+"</b>, averaged over how big the next round is "+
-      "likely to be. <b>If</b> a round is held &mdash; that part cannot be predicted.";
+      "likely to be and discounted by a <b>"+Math.round(pZero(o.g)*100)+"%</b> chance this occupation group is "+
+      "skipped entirely. <b>If</b> a round is held &mdash; that part cannot be predicted.";
   const ge=g?Object.keys(g.dist).map(Number).filter(k=>k>=pts).reduce((a,k)=>a+g.dist[k],0):0;
   const al=g?g.alloc[g.alloc.length-1]:0;
   const ratio=ge>0?al/ge:0;
@@ -712,7 +725,8 @@ function render(){
   const rows=[["At the likely round size",Pc===null?"—":Math.round(Pc*100)+"%"],
     ["Forecast cut-off",fc===null?"—":fc+" pts (80% "+bb[0]+"–"+bb[1]+")"],
     ["Likely next round",fmt(B.rs.q50)+" ("+fmt(B.rs.q10)+"–"+fmt(B.rs.q90)+")"],
-    ["Ahead of you in "+o.g,fmt(ge)]];
+    ["Ahead of you in "+o.g,fmt(ge)],
+    ["Risk this group gets nothing",Math.round(pZero(o.g)*100)+"%"]];
   rows.forEach(([k,val])=>{const dl=document.createElement("dl");dl.className="kv";
     const dt=document.createElement("dt");dt.textContent=k;const dd=document.createElement("dd");dd.textContent=val;
     dl.appendChild(dt);dl.appendChild(dd);$("vside").appendChild(dl);});

@@ -44,6 +44,22 @@ P(invited) = Σ P(size) × P(cut-off reaches your score | size)
 For a physicist on 85 points this gives **92%**, against 94% at the central case — slightly lower, because the
 distribution carries real weight on small rounds. Both are **still conditional on a round being held.**
 
+## How far back the evidence goes
+
+**The EOI pool panel cannot be extended before September 2024.** The dashboard publishes 24 monthly snapshots
+and no earlier ones, so every pool, queue and date-of-effect figure here is bounded by that. This is a hard
+limit of the source, not a choice.
+
+**The round calendar could in principle go back further.** Published round results run from 2020. One secondary
+source states there have been **20 rounds between 2020 and 2026** — about **3.3 per year**, which independently
+supports the rounds-per-year prior centred on 3 used above. The underlying figures sit in a PDF that was not
+retrieved, and homeaffairs.gov.au returns 403 to automated fetching and has moved the invitation-rounds page, so
+this corroboration is **one secondary statement, not a verified series**. Treat it as weak support for the prior
+rather than as data.
+
+Extending the round-size and cadence model with a verified 2020–2026 series remains the single most valuable
+open improvement.
+
 ## What this model is not
 
 It is built on **one complete program year**. The rounds-per-year prior is a judgement informed by two years of
