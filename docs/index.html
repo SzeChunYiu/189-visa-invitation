@@ -509,8 +509,9 @@ function hover(node,html){
   node.setAttribute("aria-hidden","true");}
 
 function axisTitle(s,W,H,MB,xt,yt){
-  const x=el("text",{x:W/2,y:H-MB+33,class:"tick","text-anchor":"middle","font-weight":"600"});
-  x.textContent=xt;s.appendChild(x);
+  if(xt){
+    const x=el("text",{x:W/2,y:H-MB+33,class:"tick","text-anchor":"middle","font-weight":"600"});
+    x.textContent=xt;s.appendChild(x);}
   if(yt){const y=el("text",{x:13,y:H/2,class:"tick","text-anchor":"middle","font-weight":"600",
     transform:"rotate(-90 13 "+(H/2)+")"});y.textContent=yt;s.appendChild(y);}}
 
@@ -785,7 +786,7 @@ function chartTierRate(g,gk){
 /* ---------- chart 11: how big the next round is ---------- */
 function chartRoundSize(){
   const s=$("c11"); if(!s) return; clear(s);
-  const W=560,H=214,ML=20,MR=20,MT=44,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=188,ML=20,MR=20,MT=18,MB=52,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   if(!B.rs) return;
   const grid=B.rs.grid, dens=B.rs.dens, mx=Math.max(...dens);
@@ -809,19 +810,22 @@ function chartRoundSize(){
     t.textContent=fmt(N);s.appendChild(t);
     const t2=el("text",{x:X(N),y:H-MB+31,class:"tick","text-anchor":"middle"});
     t2.textContent=lab;s.appendChild(t2);});
-  const hd=el("text",{x:ML,y:MT-26,class:"tick","text-anchor":"start","font-weight":"700",fill:"var(--ink)"});
-  hd.textContent="Nobody knows how large the next round will be";s.appendChild(hd);
-  const hd2=el("text",{x:ML,y:MT-13,class:"tick","text-anchor":"start"});
-  hd2.textContent=fmt(B.policy.places["2026-27"])+" places × "+B.policy.ratio+
-    " invitations per place, spread over the rounds still expected";
-  s.appendChild(hd2);
   const h=$("h11n"); if(h) h.textContent="all occupations together";
-  axisTitle(s,W,H,MB,"","");
+  /* the derivation goes behind the (?), with the numbers it actually used */
+  const nb=$("n11");
+  if(nb) nb.innerHTML='<ul class="ptlist">'+
+    "<li><b>"+fmt(B.policy.places["2026-27"])+" places</b> in the 189 programme for 2026&ndash;27</li>"+
+    "<li><b>&times; "+B.policy.ratio+"</b> invitations issued per place, measured on the one "+
+      "programme year where both numbers are published</li>"+
+    "<li><b>= "+fmt(B.policy.projected_invitations)+" invitations</b> to issue, spread over the "+
+      "rounds still expected &mdash; two, three or four</li>"+
+    "<li><b>The bumps are real</b>: each is a different number of rounds remaining</li>"+
+    "<li>Everything downstream is averaged over this curve rather than assuming one size</li></ul>";
 }
 /* ---------- chart 12: what your group gets out of it ---------- */
 function chartGroupShare(g,gk){
   const s=$("c12"); if(!s) return; clear(s);
-  const W=560,H=214,ML=52,MR=64,MT=44,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=188,ML=52,MR=64,MT=18,MB=52,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   if(!g) return;
   const grid=B.rs.grid;
@@ -849,13 +853,17 @@ function chartGroupShare(g,gk){
   [grid[0],grid[grid.length-1]].forEach((N,i)=>{
     const q=el("text",{x:X(N),y:H-MB+18,class:"tick","text-anchor":i?"end":"start"});
     q.textContent=fmt(N);s.appendChild(q);});
-  const hd=el("text",{x:ML,y:MT-26,class:"tick","text-anchor":"start","font-weight":"700",fill:"var(--ink)"});
-  hd.textContent=g.name;s.appendChild(hd);
-  const hd2=el("text",{x:ML,y:MT-13,class:"tick","text-anchor":"start"});
-  hd2.textContent="took "+fmt(g.alloc[g.alloc.length-1])+" last round — a "+
-    (g.share*100).toFixed(2)+"% share of everything issued";
-  s.appendChild(hd2);
-  const h=$("h12n"); if(h) h.textContent="places, by round size";
+  const h=$("h12n"); if(h) h.textContent=g.name;
+  const nb=$("n12");
+  if(nb) nb.innerHTML='<ul class="ptlist">'+
+    "<li><b>"+fmt(g.alloc[g.alloc.length-1])+" places</b> went to this group last round</li>"+
+    "<li><b>= "+(g.share*100).toFixed(2)+"%</b> of everything issued that round &mdash; the share "+
+      "carried forward</li>"+
+    "<li><b>&times; "+B.meta.fr.toFixed(4)+"</b>, the single-leg part of a round, because the "+
+      "share is measured on single-leg invitations</li>"+
+    "<li><b>Line</b> &mdash; places at each round size; <b>shaded</b> &mdash; the sizes most likely to happen</li>"+
+    "<li>Invitations are rationed at the four-digit unit group, so this is what your occupation "+
+      "actually competes for</li></ul>";
   axisTitle(s,W,H,MB,"invitations in the round","places to your group");
 }
 /* ---------- chart 1: cut-off by round ---------- */
