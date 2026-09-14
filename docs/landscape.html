@@ -105,6 +105,10 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .tlab{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.35}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 17px 12px;box-shadow:var(--shadow)}
+.stepbadge{display:inline-flex;flex-direction:column;gap:0;line-height:1.1;margin-right:10px;
+  padding:3px 9px 4px;border-radius:7px;background:var(--brand-soft);flex:0 0 auto}
+.stepbadge>i{font-style:normal;font-size:9.5px;color:var(--muted);letter-spacing:.02em}
+.stepbadge{font-size:10.5px;font-weight:700;color:var(--brand);letter-spacing:.04em}
 .chead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
 .lev{margin:0 0 12px}
 .lrow{display:grid;grid-template-columns:150px 1fr 38px 1fr 38px;gap:8px;align-items:center;margin-bottom:5px}
@@ -385,6 +389,23 @@ function pZero(gk){
 /* The chance of an invitation AT ONE ROUND SIZE - the same quantity as the headline,
    just not yet averaged over sizes. Anything the page labels "your chance" must use
    this: pClear alone omits the skip risk and reads well over ten points too high. */
+/* The single round size to use wherever one is needed: the median of the distribution,
+   not an arbitrary entry of the published grid. The page used B.sizes[2] = 10,000 in
+   eight places while the headline averaged over everything. */
+function SZ(){ return B.rs.q50; }
+function fcAt(g){ return cutoffAt(g,SZ()); }
+
+/* Density-weighted mean and standard deviation of q(N) across the round-size
+   distribution - the 1-sigma spread the round size alone puts on a quantity. */
+function spread(fn){
+  let m=0,w=0;
+  B.rs.grid.forEach((sz,i)=>{const q=fn(sz); if(q!==null){m+=B.rs.dens[i]*q;w+=B.rs.dens[i];}});
+  if(w<=0) return null;
+  m/=w;
+  let v=0;
+  B.rs.grid.forEach((sz,i)=>{const q=fn(sz); if(q!==null)v+=B.rs.dens[i]*(q-m)*(q-m);});
+  return {mean:m, sd:Math.sqrt(v/w)};
+}
 function pAt(g,pts,gk,size){
   const q=pClear(cutoffAt(g,size),pts);
   return q===null?null:q*(1-pZero(gk||CURG));
@@ -478,16 +499,6 @@ function chartForecast(g,pts){
     s.appendChild(cc);
     hover(cc,"<b>"+c+" points</b><span>if the round is "+fmt(N)+"</span><span>80% interval "+
       (c-B.unc.hi80)+"&ndash;"+(c-B.unc.lo80)+"</span><span>At "+pts+" pts: "+fcVerdict(c,pts).t+"</span>");});
-  /* how likely each round size is, drawn on the same x-axis as the forecast, so the
-     reader can see which part of the curve actually carries weight */
-  const dmax=Math.max(...B.rs.dens), hb=ph*0.2;
-  let dd="M"+X(grid[0]).toFixed(1)+","+(MT+ph).toFixed(1);
-  grid.forEach((sz,i)=>{dd+=" L"+X(sz).toFixed(1)+","+(MT+ph-hb*B.rs.dens[i]/dmax).toFixed(1);});
-  dd+=" L"+X(grid[grid.length-1]).toFixed(1)+","+(MT+ph).toFixed(1)+" Z";
-  s.appendChild(el("path",{d:dd,fill:"var(--gold)","fill-opacity":".22",stroke:"var(--gold)",
-    "stroke-width":1,"stroke-opacity":".6"}));
-  const dl=el("text",{x:ML+4,y:MT+ph-2,class:"tick","text-anchor":"start",fill:"var(--gold)"});
-  dl.textContent="how likely each size is";s.appendChild(dl);
   for(const N of [grid[0],B.rs.q50,grid[grid.length-1]]){
     const q=el("text",{x:X(N),y:H-MB+18,class:"tick","text-anchor":"middle"});
     q.textContent=fmt(N);s.appendChild(q);}
@@ -607,59 +618,183 @@ function chartDoe(gk,pts){
 /* ---------- chart 9: the deductions between the cut-off and the answer ---------- */
 function chartWaterfall(g,gk,pts){
   const s=$("c9"); if(!s) return; clear(s);
-  /* A true waterfall: the deductions float between the start and the end, so the
-     three drops are the subject. Four full-height bars all near 90% showed the
-     levels and hid the differences, which are the whole point of the panel. */
-  const W=560,H=232,ML=20,MR=20,MT=46,MB=64,pw=W-ML-MR,ph=H-MT-MB;
+  /* No assumed round size. Each level is the density-weighted mean across the whole
+     round-size distribution, with a 1-sigma whisker for the spread the round size
+     alone puts on it. That also removes the separate "averaging" step: the averaging
+     is now inside every bar. */
+  const W=560,H=236,ML=20,MR=20,MT=54,MB=64,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   if(!g||g.share<=0) return;
-  const fc=g.fc[S.szi]; if(fc===null||fc===undefined) return;
-  const le=pLE(fc,pts), lt=pLE(fc,pts-5);
+  const res=B.unc.residuals;
   const sh=aheadShare(gk,pts), reach=(sh===null?0:Math.max(0,1-sh));
-  const atSize=lt+Math.max(0,le-lt)*reach;
-  let acc=0,w=0;
-  B.rs.grid.forEach((sz,i)=>{const q=pClear(cutoffAt(g,sz),pts);
-    if(q!==null){acc+=B.rs.dens[i]*q;w+=B.rs.dens[i];}});
-  const cond=w>0?acc/w:0, z=pZero(gk), fin=cond*(1-z);
+  const reaches=spread(sz=>{const c=cutoffAt(g,sz); return c===null?null:pLE(c,pts);});
+  const cleared=spread(sz=>pClear(cutoffAt(g,sz),pts));
+  if(!reaches||!cleared) return;
+  const z=pZero(gk), fin=cleared.mean*(1-z);
   const cols=[
-    {kind:"total", v:le,  lab:"cut-off reaches "+pts, sub:"at this round size"},
-    {kind:"drop", from:le,   to:atSize, lab:"boundary band", sub:sh===null?"no date given":"date of effect"},
-    {kind:"drop", from:atSize, to:cond, lab:"round size",    sub:"small rounds cut deeper"},
-    {kind:"drop", from:cond, to:fin,    lab:"group skipped", sub:Math.round(z*100)+"% of the time"},
-    {kind:"total", v:fin, lab:"your chance", sub:"if a round is held"}];
-  const bw=pw/cols.length, Y=v=>MT+ph*(1-v);
-  for(let q=0;q<=1.0001;q+=0.25){
-    s.appendChild(el("line",{x1:ML,y1:Y(q),x2:ML+pw,y2:Y(q),class:"gl"}));}
+    {kind:"total", v:reaches.mean, sd:reaches.sd, lab:"cut-off reaches "+pts, sub:"averaged over round size"},
+    {kind:"drop", from:reaches.mean, to:cleared.mean, lab:"boundary band",
+     sub:sh===null?"no date given":"date of effect"},
+    {kind:"drop", from:cleared.mean, to:fin, lab:"group skipped", sub:Math.round(z*100)+"% of the time"},
+    {kind:"total", v:fin, sd:cleared.sd*(1-z), lab:"your chance", sub:"if a round is held"}];
+  const bw=pw/cols.length, Y=v=>MT+ph*(1-Math.max(0,Math.min(1,v)));
+  for(let q=0;q<=1.0001;q+=0.25) s.appendChild(el("line",{x1:ML,y1:Y(q),x2:ML+pw,y2:Y(q),class:"gl"}));
   let prevX=null, prevY=null;
   cols.forEach((c,i)=>{
-    const x=ML+i*bw+bw*0.17, bwid=bw*0.66;
+    const x=ML+i*bw+bw*0.19, bwid=bw*0.62;
     let top,hgt,fill,op;
     if(c.kind==="total"){top=Y(c.v);hgt=MT+ph-top;fill=i===0?"var(--series)":"var(--brand)";op=i===0?0.38:1;}
     else{top=Y(c.from);hgt=Math.max(2,Y(c.to)-Y(c.from));fill="var(--crit)";op=0.7;}
     s.appendChild(el("rect",{x:x,y:top,width:bwid,height:hgt,rx:6,fill:fill,"fill-opacity":op}));
-    const val = c.kind==="total" ? Math.round(c.v*100)+"%"
-                                 : "−"+Math.round((c.from-c.to)*100)+"pp";
-    const t=el("text",{x:x+bwid/2,y:top-7,class:"vlab","text-anchor":"middle",
-      fill:c.kind==="total"?"var(--ink)":"var(--crit)"});
+    /* 1 sigma across round sizes, on the levels where the round size still matters */
+    if(c.kind==="total"&&c.sd>0.002){
+      const cx=x+bwid/2, hi=Y(c.v+c.sd), lo=Y(c.v-c.sd);
+      s.appendChild(el("line",{x1:cx,y1:hi,x2:cx,y2:lo,stroke:"var(--ink)","stroke-width":1.5}));
+      [hi,lo].forEach(yy=>s.appendChild(el("line",{x1:cx-5,y1:yy,x2:cx+5,y2:yy,
+        stroke:"var(--ink)","stroke-width":1.5})));
+      const right=cx+bwid/2+14<W-MR;
+      const sdl=el("text",{x:right?cx+bwid/2+6:cx-bwid/2-6,y:(hi+lo)/2+3.5,
+        class:"tick","text-anchor":right?"start":"end"});
+      sdl.textContent="±"+Math.round(c.sd*100)+"pp";s.appendChild(sdl);
+    }
+    const val=c.kind==="total"?Math.round(c.v*100)+"%":"−"+Math.round((c.from-c.to)*100)+"pp";
+    const t=el("text",{x:x+bwid/2,y:(c.kind==="total"?Y(c.v+(c.sd||0)):top)-8,class:"vlab",
+      "text-anchor":"middle",fill:c.kind==="total"?"var(--ink)":"var(--crit)"});
     t.textContent=val;s.appendChild(t);
-    hover(s.lastChild,"");
-    const l1=el("text",{x:x+bwid/2,y:H-MB+18,class:"tick","text-anchor":"middle","font-weight":"700",
-      fill:"var(--ink)"});l1.textContent=c.lab;s.appendChild(l1);
+    const l1=el("text",{x:x+bwid/2,y:H-MB+18,class:"tick","text-anchor":"middle",
+      "font-weight":"700",fill:"var(--ink)"});l1.textContent=c.lab;s.appendChild(l1);
     const l2=el("text",{x:x+bwid/2,y:H-MB+31,class:"tick","text-anchor":"middle"});
     l2.textContent=c.sub;s.appendChild(l2);
-    /* the connector carries the eye from one step to the next */
     const endY=Y(c.kind==="total"?c.v:c.to);
     if(prevX!==null) s.appendChild(el("line",{x1:prevX,y1:prevY,x2:x,y2:prevY,
       stroke:"var(--muted)","stroke-width":1,"stroke-dasharray":"3 3"}));
     prevX=x+bwid; prevY=endY;
   });
-  const yl=el("text",{x:ML,y:MT-26,class:"tick","text-anchor":"start","font-weight":"700",
+  const yl=el("text",{x:ML,y:MT-30,class:"tick","text-anchor":"start","font-weight":"700",
     fill:"var(--ink)"});
-  yl.textContent="Three deductions separate the cut-off reaching you from being invited";
+  yl.textContent="Two deductions separate the cut-off reaching you from being invited";
   s.appendChild(yl);
-  const h=$("h9n"); if(h) h.textContent="at a round of "+fmt(B.sizes[S.szi]);
+  const y2=el("text",{x:ML,y:MT-16,class:"tick","text-anchor":"start"});
+  y2.textContent="whiskers are ±1 s.d. across the round sizes that could happen";
+  s.appendChild(y2);
+  const h=$("h9n"); if(h) h.textContent="across all plausible round sizes";
 }
 
+
+/* ---------- chart 10: whether the group gets a round at all ---------- */
+function chartTierRate(g,gk){
+  const s=$("c10"); if(!s) return; clear(s);
+  const W=560,H=200,ML=16,MR=16,MT=40,MB=60,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
+  if(!B.tiers||!B.tiers.by_tier) return;
+  const bt=B.tiers.by_tier, keys=Object.keys(bt).sort();
+  const mine=B.tiers.tier_of?String(B.tiers.tier_of[gk]||""):"";
+  const mx=Math.max(...keys.map(k=>bt[k].per_1000));
+  const bw=pw/keys.length;
+  keys.forEach((k,i)=>{
+    const r=bt[k], x=ML+i*bw+bw*0.2, wd=bw*0.6;
+    const h=Math.max(2,ph*r.per_1000/mx), is=k===mine;
+    const rect=el("rect",{x:x,y:MT+ph-h,width:wd,height:h,rx:6,
+      fill:is?"var(--brand)":"var(--deemph)","fill-opacity":is?1:0.45});
+    s.appendChild(rect);
+    hover(rect,"<b>Tier "+k+"</b><span>"+r.per_1000.toFixed(1)+" invitations per 1,000 waiting</span>"+
+      "<span>"+r.groups+" groups &middot; "+fmt(r.pool)+" people</span>"+
+      "<span>received nothing in "+Math.round(r.zero_share*100)+"% of rounds</span>");
+    const v=el("text",{x:x+wd/2,y:MT+ph-h-7,class:"vlab","text-anchor":"middle",
+      fill:is?"var(--brand)":"var(--muted)"});
+    v.textContent=r.per_1000.toFixed(0);s.appendChild(v);
+    const l=el("text",{x:x+wd/2,y:H-MB+18,class:"tick","text-anchor":"middle",
+      "font-weight":is?"700":"600",fill:is?"var(--ink)":"var(--muted)"});
+    l.textContent="Tier "+k+(is?" — yours":"");s.appendChild(l);
+    const l2=el("text",{x:x+wd/2,y:H-MB+31,class:"tick","text-anchor":"middle"});
+    l2.textContent=Math.round(r.zero_share*100)+"% of rounds skipped";s.appendChild(l2);
+  });
+  const al=g?g.alloc[g.alloc.length-1]:0;
+  const t=el("text",{x:ML,y:MT-22,class:"tick","text-anchor":"start","font-weight":"700",
+    fill:"var(--ink)"});
+  t.textContent=(al>0?"Your group was invited last round, so the model uses "
+                     :"Your group received nothing last round, so the model uses ")+
+    Math.round(pZero(gk)*100)+"% as its chance of being skipped";
+  s.appendChild(t);
+  const h=$("h10n"); if(h) h.textContent="invitations per 1,000 waiting";
+  axisTitle(s,W,H,MB,"","");
+}
+/* ---------- chart 11: how big the next round is ---------- */
+function chartRoundSize(){
+  const s=$("c11"); if(!s) return; clear(s);
+  const W=560,H=214,ML=20,MR=20,MT=44,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
+  if(!B.rs) return;
+  const grid=B.rs.grid, dens=B.rs.dens, mx=Math.max(...dens);
+  const X=N=>ML+pw*(N-grid[0])/(grid[grid.length-1]-grid[0]), Y=d=>MT+ph*(1-d/mx);
+  const inner=grid.map((N,i)=>[N,dens[i]]).filter(([N])=>N>=B.rs.q10&&N<=B.rs.q90);
+  if(inner.length){
+    let bd="M"+X(inner[0][0]).toFixed(1)+","+(MT+ph).toFixed(1);
+    inner.forEach(([N,d])=>{bd+=" L"+X(N).toFixed(1)+","+Y(d).toFixed(1);});
+    bd+=" L"+X(inner[inner.length-1][0]).toFixed(1)+","+(MT+ph).toFixed(1)+" Z";
+    s.appendChild(el("path",{d:bd,fill:"var(--brand)","fill-opacity":".16",stroke:"none"}));}
+  let d="";
+  grid.forEach((N,i)=>{d+=(i?" L":"M")+X(N).toFixed(1)+","+Y(dens[i]).toFixed(1);});
+  s.appendChild(el("path",{d:d,fill:"none",stroke:"var(--brand)","stroke-width":2.5}));
+  [["q10",B.rs.q10,"10% chance smaller"],["q50",B.rs.q50,"most likely"],["q90",B.rs.q90,"10% chance larger"]]
+   .forEach(([k,N,lab])=>{
+    const main=k==="q50";
+    s.appendChild(el("line",{x1:X(N),y1:MT-4,x2:X(N),y2:MT+ph,
+      stroke:main?"var(--ink)":"var(--muted)","stroke-width":main?1.5:1,"stroke-dasharray":"4 3"}));
+    const t=el("text",{x:X(N),y:H-MB+18,class:"tick","text-anchor":"middle",
+      "font-weight":main?"700":"600",fill:main?"var(--ink)":"var(--muted)"});
+    t.textContent=fmt(N);s.appendChild(t);
+    const t2=el("text",{x:X(N),y:H-MB+31,class:"tick","text-anchor":"middle"});
+    t2.textContent=lab;s.appendChild(t2);});
+  const hd=el("text",{x:ML,y:MT-26,class:"tick","text-anchor":"start","font-weight":"700",fill:"var(--ink)"});
+  hd.textContent="Nobody knows how large the next round will be";s.appendChild(hd);
+  const hd2=el("text",{x:ML,y:MT-13,class:"tick","text-anchor":"start"});
+  hd2.textContent=fmt(B.policy.places["2026-27"])+" places × "+B.policy.ratio+
+    " invitations per place, spread over the rounds still expected";
+  s.appendChild(hd2);
+  const h=$("h11n"); if(h) h.textContent="all occupations together";
+  axisTitle(s,W,H,MB,"","");
+}
+/* ---------- chart 12: what your group gets out of it ---------- */
+function chartGroupShare(g,gk){
+  const s=$("c12"); if(!s) return; clear(s);
+  const W=560,H=214,ML=52,MR=64,MT=44,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
+  if(!g) return;
+  const grid=B.rs.grid;
+  const alloc=N=>Math.round(g.share*N*B.meta.fr);
+  const mx=Math.max(1,alloc(grid[grid.length-1]))*1.1;
+  const X=N=>ML+pw*(N-grid[0])/(grid[grid.length-1]-grid[0]), Y=v=>MT+ph*(1-v/mx);
+  for(const t of [0,mx*0.25,mx*0.5,mx*0.75,mx]){
+    s.appendChild(el("line",{x1:ML,y1:Y(t),x2:ML+pw,y2:Y(t),class:"gl"}));
+    const q=el("text",{x:ML-7,y:Y(t)+3.5,class:"tick","text-anchor":"end"});
+    q.textContent=fmt(Math.round(t));s.appendChild(q);}
+  s.appendChild(el("rect",{x:X(B.rs.q10),y:MT,width:Math.max(1,X(B.rs.q90)-X(B.rs.q10)),
+    height:ph,fill:"var(--brand)","fill-opacity":".08"}));
+  let d="";
+  grid.forEach((N,i)=>{d+=(i?" L":"M")+X(N).toFixed(1)+","+Y(alloc(N)).toFixed(1);});
+  s.appendChild(el("path",{d:d,fill:"none",stroke:"var(--brand)","stroke-width":2.5}));
+  const am=alloc(B.rs.q50);
+  s.appendChild(el("line",{x1:X(B.rs.q50),y1:MT,x2:X(B.rs.q50),y2:MT+ph,
+    stroke:"var(--ink)","stroke-width":1.5,"stroke-dasharray":"4 3"}));
+  const dot=el("circle",{cx:X(B.rs.q50),cy:Y(am),r:5,fill:"var(--brand)",
+    stroke:"var(--card)","stroke-width":2});
+  s.appendChild(dot);
+  hover(dot,"<b>"+fmt(am)+" places</b><span>at the most likely round of "+fmt(B.rs.q50)+"</span>");
+  const t=el("text",{x:X(B.rs.q50)+9,y:Y(am)-9,class:"vlab","text-anchor":"start",fill:"var(--brand)"});
+  t.textContent=fmt(am)+" places";s.appendChild(t);
+  [grid[0],grid[grid.length-1]].forEach((N,i)=>{
+    const q=el("text",{x:X(N),y:H-MB+18,class:"tick","text-anchor":i?"end":"start"});
+    q.textContent=fmt(N);s.appendChild(q);});
+  const hd=el("text",{x:ML,y:MT-26,class:"tick","text-anchor":"start","font-weight":"700",fill:"var(--ink)"});
+  hd.textContent=g.name;s.appendChild(hd);
+  const hd2=el("text",{x:ML,y:MT-13,class:"tick","text-anchor":"start"});
+  hd2.textContent="took "+fmt(g.alloc[g.alloc.length-1])+" last round — a "+
+    (g.share*100).toFixed(2)+"% share of everything issued";
+  s.appendChild(hd2);
+  const h=$("h12n"); if(h) h.textContent="places, by round size";
+  axisTitle(s,W,H,MB,"invitations in the round","places to your group");
+}
 /* ---------- chart 1: cut-off by round ---------- */
 function chartRounds(o,pts){
   const s=$("c1"); if(!s) return; clear(s);
@@ -709,7 +844,7 @@ function chartRounds(o,pts){
     const nl=el("text",{x:X(i)+1,y:H-MB+34,class:"tick","text-anchor":"start",fill:"var(--ink)"});
     nl.textContent=r.n?"("+fmt(r.n)+")":"";s.appendChild(nl);});
   /* ---- the round that has not happened yet ---- */
-  const pj=X(rs.length), fcN=(typeof CURG!=="undefined"&&B.groups[CURG])?B.groups[CURG].fc[S.szi]:null;
+  const pj=X(rs.length), fcN=(typeof CURG!=="undefined"&&B.groups[CURG])?fcAt(B.groups[CURG]):null;
   s.appendChild(el("line",{x1:pj-0.5,y1:MT-6,x2:pj-0.5,y2:H-MB+6,stroke:"var(--line)",
     "stroke-width":1,"stroke-dasharray":"2 3"}));
   /* the fan: from the last cut-off actually observed, widening to the 80% interval
@@ -765,7 +900,7 @@ function chartQueue(g,pts){
     t.textContent="No EOIs at or above the 65-point floor.";s.appendChild(t);return;}
   let cum=0; const step=keys.map(k=>{cum+=g.dist[k];return {sc:k,cum:cum};});
   const alloc=g.alloc[g.alloc.length-1];
-  const fc=g.fc[S.szi];
+  const fc=fcAt(g);
   const yMax=Math.max(cum,alloc)*1.08;
   const X=i=>ML+pw*i/Math.max(1,keys.length-1), Y=v=>MT+ph*(1-v/yMax);
   for(let i=0;i<=4;i++){const v=yMax*i/4,y=MT+ph*(1-i/4);
@@ -1040,31 +1175,19 @@ function chartProb(g,pts){
   for(let i=0;i<=4;i++){const y=MT+ph*(1-i/4);
     s.appendChild(el("line",{x1:ML,y1:y,x2:W-MR,y2:y,class:"gl"}));
     const q=el("text",{x:ML-7,y:y+3.5,class:"tick","text-anchor":"end"});q.textContent=(i*25)+"%";s.appendChild(q);}
-  /* the range of round sizes actually observed - context for what is plausible */
-  const bx0=X(B.meta.round_min), bx1=X(B.meta.round_max);
-  s.appendChild(el("rect",{x:bx0,y:MT,width:bx1-bx0,height:ph,fill:"var(--series)","fill-opacity":".07"}));
-  const bl=el("text",{x:(bx0+bx1)/2,y:MT-22,class:"tick","text-anchor":"middle"});
-  bl.textContent="round sizes seen so far";s.appendChild(bl);
-  /* context: the same curve 5 points below and above, so the value of more points is visible */
   const curve=sc=>{const a=[];for(let v=S0;v<=S1;v+=200){const p=pAt(g,sc,CURG,v);
     if(p!==null)a.push([v,p]);}return a;};
   const path=a=>{let d="";a.forEach((q,i)=>{d+=(i?" L":"M")+X(q[0]).toFixed(1)+","+Y(q[1]).toFixed(1);});return d;};
-  const ends=[];
-  [[pts+5,(pts+5)+" pts","var(--deemph)"],[pts,"YOU \u2192 "+pts,"var(--series)"],[pts-5,(pts-5)+" pts","var(--deemph)"]]
-   .forEach(([sc,lab,col])=>{
-    const a=curve(sc); if(a.length<2) return;
-    const main=(sc===pts);
-    s.appendChild(el("path",{d:path(a),fill:"none",stroke:main?"var(--series)":"var(--deemph)",
-      "stroke-width":main?2:1.5,"stroke-linejoin":"round","stroke-linecap":"round"}));
-    ends.push({y:Y(a[a.length-1][1]),lab,col,main});});
-  /* push labels apart so none overlaps another */
-  ends.sort((a,b)=>a.y-b.y);
-  for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<13) ends[i].y=ends[i-1].y+13;
-  const shift=Math.max(0,ends[ends.length-1].y-(MT+ph));
-  ends.forEach(e=>{
-    const q=el("text",{x:W-MR+5,y:e.y-shift+3.5,fill:e.col,"font-size":"9.5",
-      "font-weight":e.main?"700":"600","text-anchor":"start"});
-    q.textContent=e.lab;s.appendChild(q);});
+  /* one curve: yours. The band table lists every other score, in full. */
+  {
+    const a=curve(pts);
+    if(a.length>1) s.appendChild(el("path",{d:path(a),fill:"none",stroke:"var(--series)",
+      "stroke-width":2.5,"stroke-linejoin":"round","stroke-linecap":"round"}));
+    if(a.length){
+      const t=el("text",{x:W-MR+5,y:Y(a[a.length-1][1])+3.5,fill:"var(--series)",
+        "font-size":"9.5","font-weight":"700","text-anchor":"start"});
+      t.textContent="you at "+pts;s.appendChild(t);}
+  }
   /* how likely each round size is, as a ribbon under the curve - same panel, no extra chart */
   if(B.rs){
     const dmax=Math.max(...B.rs.dens), hband=ph*0.22;
@@ -1107,19 +1230,6 @@ function chartProb(g,pts){
       t.textContent="below "+fmt(cross)+" you are more likely out than in";
       s.appendChild(t);}
   }
-  /* the policy-implied central case */
-  const cen=B.policy?B.policy.per_round["3"]:10000;
-  const cp=pAt(g,pts,CURG,cen);
-  s.appendChild(el("line",{x1:X(cen),y1:MT,x2:X(cen),y2:MT+ph,stroke:"var(--brand)","stroke-width":1.5,"stroke-dasharray":"5 4"}));
-  if(cp!==null){
-    s.appendChild(el("circle",{cx:X(cen),cy:Y(cp),r:6,fill:"var(--brand)",stroke:"var(--card)","stroke-width":2}));
-    const hi=Y(cp)<MT+34;            /* near the top? drop the label below the dot instead */
-    const lab=el("text",{x:X(cen)+13,y:Y(cp)+(hi?19:-13),fill:"var(--brand)",
-      "font-size":"10","font-weight":"700","text-anchor":"start"});
-    lab.textContent=Math.round(cp*100)+"%";s.appendChild(lab);}
-  const cl=el("text",{x:X(cen),y:MT-8,fill:"var(--brand)","font-size":"9.5","font-weight":"650",
-    "text-anchor":"middle"});
-  cl.textContent="planning levels";s.appendChild(cl);
   [2000,5000,8000,11000,14000,17000,20000].forEach(v=>{
     const q=el("text",{x:X(v),y:H-MB+15,class:"tick","text-anchor":"middle"});
     q.textContent=(v/1000)+"k";s.appendChild(q);});
@@ -1223,14 +1333,15 @@ function levers(){
 function render(){
   const o=B.occ[S.occ]; if(!o) return;
   CURG=o.g;
-  const g=B.groups[o.g]; const pts=S.pts; const size=B.sizes[S.szi];
+  const g=B.groups[o.g]; const pts=S.pts; const size=SZ();
   const last=o.rounds[o.rounds.length-1];
-  const fc=g?g.fc[S.szi]:null;
+  const fc=g?fcAt(g):null;
   const v=fcVerdict(fc,pts);
   const P=pMarginal(g,pts,o.g), bb=pBand(fc);
   chartProb(g,pts);
   chartForecast(g,pts);fcTable(g,pts);chartWaterfall(g,o.g,pts);
-  chartComp(g,o.g,pts);chartDoe(o.g,pts);
+  chartComp(g,o.g,pts);chartDoe(o.g,pts);chartTierRate(g,o.g);
+  chartRoundSize();chartGroupShare(g,o.g);
   const band = P===null?null:(P>=.8?"good":P>=.6?"good":P>=.4?"warn":"crit");
   if($("flag")){$("flag").className="vflag "+(band||"crit");}
   if($("flag"))$("flag").textContent = P===null ? "✕ No forecast"
@@ -1288,9 +1399,9 @@ function renderAll(pts){
     o.rounds.forEach(r=>{const v=verdictFor(r,pts);const td=document.createElement("td");
       const sp=document.createElement("span");sp.className="pill "+v.k;
       sp.textContent=r.b===null?"—":r.b;td.appendChild(sp);tr.appendChild(td);});
-    const fv=fcVerdict(g?g.fc[S.szi]:null,pts);const td=document.createElement("td");
+    const fv=fcVerdict(g?fcAt(g):null,pts);const td=document.createElement("td");
     const sp=document.createElement("span");sp.className="pill "+fv.k;
-    sp.textContent=(g&&g.fc[S.szi]!==null)?g.fc[S.szi]:"—";td.appendChild(sp);tr.appendChild(td);
+    sp.textContent=(g&&fcAt(g)!==null)?fcAt(g):"—";td.appendChild(sp);tr.appendChild(td);
     tr.addEventListener("click",()=>{S.occ=k;put("occ","value",k);render();window.scrollTo({top:0,behavior:"smooth"});});
     tr.style.cursor="pointer";tb.appendChild(tr);});
 }
@@ -1393,17 +1504,17 @@ on("dl","click",()=>{
     ...B.sizes.map(s=>"forecast_"+s),"assumed_round_size","p_reaches_your_score"]];
   const my=Math.round(S.pts/5)*5;
   OCCS.forEach(k=>{const o=B.occ[k],g=B.groups[o.g];
-    const fc=g?g.fc[S.szi]:null, p=pAt(g,S.pts,CURG,B.sizes[S.szi]);
+    const fc=g?fcAt(g):null, p=pAt(g,S.pts,CURG,SZ());
     rows.push([k,o.g,o.pool,o.dist[my]||0,S.pts,
       ...o.rounds.map(r=>r.b===null?"":r.b),
       ...o.rounds.map(r=>r.b===null?"":(r.s==="C"?"cleared":"partial")),
       ...(g?g.fc.map(v=>v===null?"":v):B.sizes.map(()=>"")),
-      B.sizes[S.szi], p===null?"":p.toFixed(3)]);});
+      SZ(), p===null?"":p.toFixed(3)]);});
   const csv=rows.map(r=>r.map(c=>{const s=String(c);
     return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(",")).join("\n");
   const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
   const a=document.createElement("a");a.href=url;
-  a.download="skillselect189_"+S.pts+"pts_"+B.sizes[S.szi]+".csv";
+  a.download="skillselect189_"+S.pts+"pts_"+SZ()+".csv";
   document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);});
 /* (?) opens a small popover beside the button, not an inline expansion */
 let POPFOR=null;

@@ -59,10 +59,19 @@ PAGES={
                       # It also introduces every term the later charts assume - cut-off,
                       # boundary band, round size, skip risk - in one screen.
                       parts=[filters,verdict]+pick(
+                       # one forward chain, no gaps: the round, the group's share of it,
+                       # the cut-off that produces, where you sit, and what it leaves you
+                       # the summary first, so the answer is readable without the derivation
                        "From the cut-off to your chance",
-                       "Your chance vs round size","Forecast cut-off by round size",
-                       "Past rounds","Who is ahead",
-                       "Your place in the queue","What the people at each score hold",
+                       "Invitations in the next round",            # 1 how big is the round
+                       "Your unit group&rsquo;s share",            # 2 how many go to your group
+                       "Forecast cut-off by round size",           # 3 what cut-off that produces
+                       "Who is ahead","Past rounds",
+                       "Your place in the queue",                  # 4 where you sit in that band
+                       "Whether your group gets a round",          # 5 is the group invited at all
+                       "Your chance vs round size",                # 6 your chance at each size
+                       # everything else, once the chain is told
+                       "What the people at each score hold",
                        "Every score band",
                        "This occupation, round by round")),
  "landscape.html":dict(title="All occupations · SkillSelect 189",

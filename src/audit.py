@@ -231,6 +231,73 @@ _ctl=sorted(({"pAt","chartProb"} | set()) - _ALLOWED)
 chk("  (control) that check would flag a chart calling pClear directly",
     _ctl==["chartProb"], f"control saw {_ctl}")
 
+# Splicing between two markers deletes whatever sits between them. That has now
+# removed a live function three times in this project - queueTable, policyTable, and
+# chartTierRate, each time leaving the CALL behind. An earlier version of this check
+# derived the names to verify from the definitions themselves, so a deleted definition
+# also vanished from the list and it passed. This one reads CALL SITES and asks whether
+# each resolves, which is the direction that can actually fail.
+def _strip_js(js):
+    """Remove comments and string/template literals. Without this the scan matches words
+    inside prose - English, Regional, priority, alloc - and reports them as missing
+    functions, which is the cry-wolf failure that gets a checker switched off."""
+    out, i, n = [], 0, len(js)
+    while i < n:
+        c = js[i]
+        if c in "\"'`":
+            q = c; i += 1
+            while i < n and js[i] != q:
+                i += 2 if js[i] == "\\" else 1
+            i += 1
+            out.append(' "" ')
+            continue
+        if c == "/" and i + 1 < n and js[i+1] == "/":
+            while i < n and js[i] != "\n": i += 1
+            continue
+        if c == "/" and i + 1 < n and js[i+1] == "*":
+            i = js.find("*/", i); i = n if i < 0 else i + 2
+            continue
+        out.append(c); i += 1
+    return "".join(out)
+
+
+_GLOBALS = {
+    # language and browser globals the page legitimately calls
+    "if","for","while","switch","catch","return","typeof","function","new","delete","void",
+    "Math","Number","String","Object","Array","JSON","Date","Set","Map","Blob","RegExp",
+    "parseInt","parseFloat","isNaN","encodeURIComponent","decodeURIComponent",
+    "document","window","console","setTimeout","setInterval","requestAnimationFrame",
+    "addEventListener","removeEventListener","getComputedStyle","URLSearchParams",
+    "URL","Event","PointerEvent","CustomEvent","localStorage","alert","fetch",
+    # declared on window by another block on the same page
+    "__saveState","renderMathInElement","renderMath","katex",
+}
+for _pg in PAGES:
+    _js=_strip_js(_code((pathlib.Path("../docs")/_pg).read_text()))
+    _defs=set(_re.findall(r"function\s+([A-Za-z_$][\w$]*)\s*\(", _js))
+    _defs |= set(_re.findall(r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:function\b|\([^)]*\)\s*=>)", _js))
+    _defs |= set(_re.findall(r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*[A-Za-z_$][\w$]*\s*=>", _js))
+    # object-literal shorthand methods - {add(){}, remove(){}} - are definitions, not calls
+    _defs |= {m.group(1) for m in _re.finditer(r"(?<![.\w$])([A-Za-z_$][\w$]*)\s*\([^()]*\)\s*\{", _js)}
+    # a parameter called as a function is defined by its signature
+    for _sig in _re.findall(r"function\s*[A-Za-z_$\w$]*\s*\(([^)]*)\)", _js) + \
+                _re.findall(r"\(([^()]*)\)\s*=>", _js):
+        _defs |= {x.strip().lstrip("...").split("=")[0].strip()
+                  for x in _sig.split(",") if _re.fullmatch(r"[\s.]*[A-Za-z_$][\w$]*\s*(=.*)?", x or "")}
+    _defs |= set(_re.findall(r"([A-Za-z_$][\w$]*)\s*=>", _js))   # single-arg arrow
+    _calls={m.group(1) for m in _re.finditer(r"(?<![.\w$])([A-Za-z_$][\w$]*)\s*\(", _js)}
+    _missing=sorted(_calls - _defs - _GLOBALS)
+    chk(f"{_pg}: every function called is defined",len(_missing)==0,
+        f"undefined: {_missing}" if _missing else f"{len(_calls & _defs)} calls resolve")
+# the control the earlier attempt failed: rename a definition, keep its call
+_js0=_strip_js(_code((pathlib.Path("../docs")/"index.html").read_text()))
+_broken=_js0.replace("function chartWaterfall(","function __renamed__(",1)
+_d=set(_re.findall(r"function\s+([A-Za-z_$][\w$]*)\s*\(", _broken))
+_c={m.group(1) for m in _re.finditer(r"(?<![.\w$])([A-Za-z_$][\w$]*)\s*\(", _broken)}
+chk("  (control) a renamed definition is caught while its call remains",
+    "chartWaterfall" in (_c - _d - _GLOBALS),
+    "renaming chartWaterfall leaves its call unresolved")
+
 allrefs=set().union(*SITE_REFS.values())
 orphans=sorted(allrefs-SITE_IDS)
 chk(f"no JS reference is orphaned across all {len(PAGES)} pages",len(orphans)==0,

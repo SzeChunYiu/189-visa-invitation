@@ -61,6 +61,23 @@ function pZero(gk){
 /* The chance of an invitation AT ONE ROUND SIZE - the same quantity as the headline,
    just not yet averaged over sizes. Anything the page labels "your chance" must use
    this: pClear alone omits the skip risk and reads well over ten points too high. */
+/* The single round size to use wherever one is needed: the median of the distribution,
+   not an arbitrary entry of the published grid. The page used B.sizes[2] = 10,000 in
+   eight places while the headline averaged over everything. */
+function SZ(){ return B.rs.q50; }
+function fcAt(g){ return cutoffAt(g,SZ()); }
+
+/* Density-weighted mean and standard deviation of q(N) across the round-size
+   distribution - the 1-sigma spread the round size alone puts on a quantity. */
+function spread(fn){
+  let m=0,w=0;
+  B.rs.grid.forEach((sz,i)=>{const q=fn(sz); if(q!==null){m+=B.rs.dens[i]*q;w+=B.rs.dens[i];}});
+  if(w<=0) return null;
+  m/=w;
+  let v=0;
+  B.rs.grid.forEach((sz,i)=>{const q=fn(sz); if(q!==null)v+=B.rs.dens[i]*(q-m)*(q-m);});
+  return {mean:m, sd:Math.sqrt(v/w)};
+}
 function pAt(g,pts,gk,size){
   const q=pClear(cutoffAt(g,size),pts);
   return q===null?null:q*(1-pZero(gk||CURG));

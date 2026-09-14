@@ -101,6 +101,10 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .tlab{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.35}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 17px 12px;box-shadow:var(--shadow)}
+.stepbadge{display:inline-flex;flex-direction:column;gap:0;line-height:1.1;margin-right:10px;
+  padding:3px 9px 4px;border-radius:7px;background:var(--brand-soft);flex:0 0 auto}
+.stepbadge>i{font-style:normal;font-size:9.5px;color:var(--muted);letter-spacing:.02em}
+.stepbadge{font-size:10.5px;font-weight:700;color:var(--brand);letter-spacing:.04em}
 .chead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
 .lev{margin:0 0 12px}
 .lrow{display:grid;grid-template-columns:150px 1fr 38px 1fr 38px;gap:8px;align-items:center;margin-bottom:5px}
