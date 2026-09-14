@@ -1,0 +1,62 @@
+{
+ "share_hist": [
+  0.0007,
+  0.00134,
+  0.0042,
+  0.00461,
+  0.00673
+ ],
+ "alloc_all": [
+  5,
+  21,
+  29,
+  43,
+  87
+ ],
+ "alloc_single": [
+  3,
+  11,
+  15,
+  24,
+  35
+ ],
+ "stock85_single": 22,
+ "stock85_all": 31,
+ "scenarios": [
+  {
+   "label": "Sep 2024",
+   "size": 7735,
+   "alloc": 27,
+   "cutoff": 80,
+   "clears": true
+  },
+  {
+   "label": "Nov 2024",
+   "size": 14724,
+   "alloc": 52,
+   "cutoff": 70,
+   "clears": true
+  },
+  {
+   "label": "Aug 2025",
+   "size": 6450,
+   "alloc": 23,
+   "cutoff": 80,
+   "clears": true
+  },
+  {
+   "label": "Nov 2025",
+   "size": 9826,
+   "alloc": 34,
+   "cutoff": 75,
+   "clears": true
+  },
+  {
+   "label": "Jun 2026",
+   "size": 9748,
+   "alloc": 34,
+   "cutoff": 75,
+   "clears": true
+  }
+ ]
+}

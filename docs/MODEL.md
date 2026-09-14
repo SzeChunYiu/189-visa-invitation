@@ -30,36 +30,34 @@ Recency-weighted over the five observed rounds (weight 2^−age):
 |---|---|---|
 | 0.516 | 0.258 | 0.226 |
 
-## The threshold form
+## The threshold form — and why it was retired as the headline
 
-Both routes above reduce to the same binary, because a round invites strictly down the points order within a
-unit group. The applicant is at **rank 32** in 2349. They are invited **iff the round allocates ≥32 invitations
-to 2349**:
+The threshold reading asked how many of the five historical allocations would have covered the applicant's queue
+rank, giving 40–77%. **That is not a like-for-like probability.** Three of the five draws come from a regime when
+2349's share of the round was 0.07–0.13%, against 0.67% today — a 5–10× difference. Share autocorrelation on the
+recent transitions is 0.92–0.96, so the recent share is the forecastable quantity and the 2024 values are a
+different regime, not plausible draws.
 
-| Round | Sep 2024 | Nov 2024 | Aug 2025 | Nov 2025 | Jun 2026 |
-|---|---|---|---|---|---|
-| Allocation to 2349 (all-leg) | 5 | 21 | 29 | **43** | **87** |
-| Covers rank 32 | no | no | no | yes | yes |
+The governing model is the forecast form: where does the allocation land in the group's score distribution.
 
-- **Unweighted: 40%.** Ignores the trend entirely — treat as a floor.
-- **Recency-weighted (2^−age): 77%.** The weighting kernel is arbitrary over n=5 and is stated so the reader can
-  discount it; it halves each older round's weight.
-- **Trend: above 77%.** Allocation is monotone increasing, 17.4× over five rounds, and 2349's share of the round
-  grew 0.12% → 1.67%.
+| Allocation to 2349 (single-leg) | Outcome at 85 points |
+|---|---|
+| < 9 | cut-off above 85 — not reached |
+| 9 – 21 | boundary lands on 85, rationed by date (applicant is last) |
+| **≥ 22** | **cut-off below 85 — clears regardless of date** |
 
-The downside risk is **not the applicant's score**. It is a policy cut returning this stratum's allocation below 32.
+Last round's allocation was **35**, i.e. **1.59×** the clearing threshold. Re-run at all five historical round
+sizes using today's share, the cut-off lands at 80, 70, 80, 75, 75 — clearing 85 in every case. The round size
+needed to clear at today's share is ~6,289; the smallest round in the record is 6,450.
 
-## Out-of-sample validation
 
-The mechanism — rank the stratum's pool by points, allocate top-down, read the cut-off where invitations run out —
-was tested against Jun-2026 for every occupation receiving ≥5 invitations:
+## Validation — see CONSISTENCY.md
 
-| Occupations | Within ±5 pts | Exact | r | MAE | Mean signed error |
-|---|---|---|---|---|---|
-| 49 | 49 (100%) | 21 (43%) | 0.941 | 2.86 pts | **+2.86 pts** |
+The figures once quoted here ("49/49 within ±5, r = 0.941, bias +2.9") are **superseded**. They compared
+single-leg invitations against an all-leg pool. The corrected, consistent-basis results across all 82 unit groups
+and all five rounds are in [CONSISTENCY.md](CONSISTENCY.md): **83% exact, MAE 0.95** on the rounds with complete
+panel coverage, and **91% within ±5, MAE 3.84** out of sample on the latest fold.
 
-The bias is positive: real rounds go *deeper* than the rule predicts, so applying it to the applicant understates
-their odds. A conservation check confirms per-occupation invitations sum exactly to each round total (residual 0).
 
 ## What the model cannot do
 

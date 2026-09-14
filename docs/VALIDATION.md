@@ -22,11 +22,15 @@ of the single-leg filter — where the marginal invitee was a multi-leg EOI, the
 DiD-attributed round size for Jun-2026: **9,761**. Official: **10,000**. Error **2.4%**.
 This validates the difference-in-differences correction described in [METHODOLOGY.md](METHODOLOGY.md).
 
-## 3. Internal — out-of-sample mechanism backtest
+## 3. Internal — cross-occupation, cross-time
 
-Rank each occupation's pool by points, allocate top-down, read the cut-off where invitations run out.
-Tested on Jun-2026 for every occupation with ≥5 invitations: **49/49 within ±5 points**, 43% exact, r = 0.941.
-Conservation check: per-occupation invitations sum exactly to each round total (residual 0).
+**Superseded figures removed.** An earlier version reported 49/49 within ±5 (r = 0.941) for Jun-2026; that used a
+mixed basis. The full consistent-basis results — 315 group-rounds across all five rounds and all 82 unit groups,
+plus the out-of-sample folds and the forecastability gate — are in [CONSISTENCY.md](CONSISTENCY.md).
+
+Headline: **83% exact, MAE 0.95 points** where the panel is complete; the two 2024 rounds fail, and the correlation
+between panel coverage and error is **−0.962**.
+
 
 ## Questions the data settled
 

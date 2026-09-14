@@ -20,6 +20,8 @@ gm=json.load(open(D/"global_model.json")); fw=json.load(open(D/"forward_model.js
 cal=json.load(open(D/"calibration_official.json"))
 val=json.load(open(D/"validation_singleleg.json"))
 gate=json.load(open(D/"alloc_gate.json"))
+rec=json.load(open(D/"reconcile.json"))
+hr=json.load(open(D/"headroom.json"))
 mob=json.load(open(D/"mobility.json"))
 calrows=pd.read_csv(D/"calibration_official.csv")
 SEP=fw["rank_by_date"]["by 30 Sep 2026"]; DEC=fw["rank_by_date"]["by 31 Dec 2026"]
@@ -160,26 +162,46 @@ HTML=f"""<title>189 Invitation Odds</title>
 <div class="verdict">
  <div class="vtop">
   <div class="vmain">
-    <div class="eyebrow">Probability of invitation &middot; conditional on a round being held</div>
-    <div class="big">40&ndash;77%</div>
-    <p class="sub" style="margin-top:8px">for a round held by <b>30 Sep 2026</b> &mdash; rising to
-    <b>60&ndash;90%</b> if it slips past December. The lower bound of each band weights all five observed rounds
-    equally and so ignores the trend; the upper bound halves the weight of each older round.</p>
+    <div class="eyebrow">Verdict &middot; conditional on a round being held</div>
+    <div class="big">1.6&times;</div>
+    <p class="sub" style="margin-top:8px">headroom over the threshold that clears 85 points. The last round gave
+    ANZSCO 2349 <b>{rec['alloc_single'][-1]} invitations</b> against an 85-and-above stock of <b>{hr['ge']}</b> &mdash; so the
+    cut-off had to fall below 85, and it did (actual 80). Re-run at <b>every one of the five historical round sizes</b>
+    using today's allocation share, an 85-point physicist <b>clears outright in all five</b>.</p>
   </div>
   <div class="vside">
-    <dl class="kv" style="margin:0"><dt>Rank in ANZSCO 2349, Sep 2026</dt><dd>{SEP['rank']}</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Rank after Dec 2026 lapses</dt><dd>{DEC['rank']}</dd></dl>
-    <dl class="kv" style="margin:0"><dt>189 pool that has re-scored</dt><dd>{mob['pct_changed']}%</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Invitations to 2349, last round</dt><dd>{ALLOC[-1]}</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Official cut-off for Physicist, Jun 2026</dt><dd>80</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Model vs official, 124 occupations</dt><dd>{100*cal['exact']/cal['n']:.0f}% exact</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Allocation that clears 85</dt><dd>&ge; {hr['ge']}</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Last round's allocation</dt><dd>{rec['alloc_single'][-1]}</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Round size needed, today's share</dt><dd>~{hr['round_needed']:,}</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Smallest round in the record</dt><dd>6,450</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Share could fall by</dt><dd>37%</dd></dl>
   </div>
  </div>
- <div class="caveat"><b>Waiting helps you.</b> Your rank can only fall: anyone reaching 85 points after 10 Sep 2026 takes a
- later date of effect and queues behind you, while those ahead of you lapse at the two-year mark or are invited away.
- <b>What this model still cannot tell you</b> is whether a round is held, or how large it is &mdash; both are set by migration
- planning levels, not by the pool.</div>
+ <div class="caveat"><b>The one way this fails.</b> 2349's share of the round would have to revert to roughly its 2024
+ level &mdash; it was 0.07% and 0.13% then, is 0.67% now, and would need to drop 37% to put 85 back on the boundary.
+ That is a policy decision, not a queue-position problem: not your score, not competitor growth, not your date of
+ effect. The other open question remains whether a round is held at all.</div>
 </div>
+
+<section>
+  <h2>An earlier figure on this page said 40&ndash;77%. Here is why it was wrong</h2>
+  <p class="sub">That number came from asking how many of the five historical allocations would have covered your
+  queue rank. Three of those five are not plausible draws for the next round &mdash; they come from a regime when
+  this occupation group received a far smaller slice.</p>
+  <div class="panel scroll"><table>
+    <thead><tr><th>Round</th><th>2349 allocation</th><th>Share of the round</th><th>Comparable to today?</th></tr></thead>
+    <tbody>
+      <tr><td class="rd">Sep 2024</td><td class="n">{rec['alloc_single'][0]}</td><td class="n">{100*rec['share_hist'][0]:.2f}%</td><td class="n"><span class="pill no">stale regime</span></td></tr>
+      <tr><td class="rd">Nov 2024</td><td class="n">{rec['alloc_single'][1]}</td><td class="n">{100*rec['share_hist'][1]:.2f}%</td><td class="n"><span class="pill no">stale regime</span></td></tr>
+      <tr><td class="rd">Aug 2025</td><td class="n">{rec['alloc_single'][2]}</td><td class="n">{100*rec['share_hist'][2]:.2f}%</td><td class="n"><span class="pill mid">transitional</span></td></tr>
+      <tr><td class="rd">Nov 2025</td><td class="n">{rec['alloc_single'][3]}</td><td class="n">{100*rec['share_hist'][3]:.2f}%</td><td class="n"><span class="pill ok">yes</span></td></tr>
+      <tr><td class="rd">Jun 2026</td><td class="n">{rec['alloc_single'][4]}</td><td class="n">{100*rec['share_hist'][4]:.2f}%</td><td class="n"><span class="pill ok">yes</span></td></tr>
+    </tbody></table></div>
+  <p class="note">Treating a 0.07% share from September 2024 as an equally likely outcome for the next round is what
+  produced the pessimistic figure. Share autocorrelation on the recent transitions is <b>0.92&ndash;0.96</b>, so the
+  recent share is the forecastable quantity and the 2024 values are a different regime. The corrected reading is the
+  verdict above. This page previously showed the old number; it is retired rather than quietly amended.</p>
+</section>
 
 <section>
   <h2>Points change, and that is what sets your place in the queue</h2>

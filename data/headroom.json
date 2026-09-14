@@ -1,0 +1,9 @@
+{
+ "gt": 9,
+ "eq": 13,
+ "ge": 22,
+ "clearing_alloc": 22,
+ "round_needed": 6289,
+ "share_needed": 0.00423,
+ "share_now": 0.00673
+}
