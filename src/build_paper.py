@@ -49,9 +49,22 @@ def pct(path, dp=0):
     return f"{cur*100:.{dp}f}%"
 
 
-def fig(n, svg, caption):
+FIG_ORDER = ["mechanism", "cutoff_curves", "residuals", "roundsize", "surface",
+             "tiers", "calibration", "folds", "official"]
+FIGN = {k: i + 1 for i, k in enumerate(FIG_ORDER)}
+_drawn = []
+
+
+def fig(key, svg, caption):
+    n = FIGN[key]
+    _drawn.append(n)
     return (f'<figure id="fig{n}"><div class="figbox">{svg}</div>'
             f'<figcaption><b>Figure {n}.</b> {caption}</figcaption></figure>')
+
+
+def figref(key):
+    """Reference a figure by name, so renumbering cannot strand a cross-reference."""
+    return f'<a href="#fig{FIGN[key]}">Figure {FIGN[key]}</a>' 
 
 
 def eq(tex, n):
@@ -138,14 +151,14 @@ total for all occupations except that one. Both totals are above the threshold, 
 are published exactly.</p>
 
 <h3>Scope</h3>
-<table class="pt">
+<div class="tablewrap"><table class="pt">
 <tr><th>Quantity</th><th>Value</th></tr>
 <tr><td>Occupation groups modelled</td><td class="n">{NGROUPS}</td></tr>
 <tr><td>Rounds in the record</td><td class="n">{len(B['rounds'])}</td></tr>
 <tr><td>Held-out group-rounds used for validation</td><td class="n">{OOS['n']}</td></tr>
 <tr><td>Residuals behind the uncertainty model</td><td class="n">{num('unc.n')}</td></tr>
 <tr><td>Legislative points floor</td><td class="n">{num('floor')}</td></tr>
-</table>
+</table></div>
 """)
 
 # ------------------------------------------------------------------ 3
@@ -181,7 +194,7 @@ from the top score until the places run out.</p>
 below it, so if the allocation exhausts the eligible pool the cut-off stops at the floor
 rather than continuing downward.</p>
 
-{fig(1, F.fig_mechanism(B, GK),
+{fig("mechanism", F.fig_mechanism(B, GK),
      f"The pool of {html.escape(GNAME)} at a round of the median size "
      f"({B['rs']['q50']:,}). Shaded bars are covered by "
      "the allocation; the dashed line is where it stops. The cut-off is a property of the "
@@ -205,7 +218,7 @@ typically {pct('mech.median_lowest_frac')} of it goes.</li>
 being at the cut-off score is not the same as being invited, and chapter 6 deals with what
 separates the people inside that band.</p>
 
-{fig(2, F.fig_cutoff_curves(B, GK),
+{fig("cutoff_curves", F.fig_cutoff_curves(B, GK),
      "Cut-off against round size for every group. Each line is a step function — the "
      "cut-off holds steady, then drops five points when the allocation reaches into the "
      "next band down. The lines are not parallel: a round size that clears one occupation "
@@ -217,16 +230,24 @@ chapter("uncertainty", "Quantification of forecast uncertainty", "Chapter 5", f"
 <p class="lede">Equation 2 returns a single number. A single number cannot answer a question
 about chance, so the model's error is measured and carried through.</p>
 
-<p>Each round is held out in turn, the cut-off is predicted for every group from the
-remaining rounds, and the error is recorded. That gives {num('unc.n')} residuals, defined as
-prediction minus outcome. Their distribution <em>is</em> the uncertainty model — no normal
-approximation is fitted, because the residuals are multiples of five points and visibly not
-bell-shaped.</p>
+<p>The forecast is run forward on rounds it has not seen (chapter 10) and the error is
+recorded each time, as prediction minus outcome. The residual distribution <em>is</em> the
+uncertainty model — no normal approximation is fitted, because the residuals are multiples of
+five points and visibly not bell-shaped.</p>
+
+<p><b>Only the {len(B['val']['unc_folds'])} most recent folds are used</b> —
+{' and '.join(B['val']['unc_folds'])} — giving {num('unc.n')} residuals out of the
+{num('val.oos.n')} available. This is a deliberate restriction, not a shortage of data.
+{figref('folds')} shows why: the oldest fold carries a bias of
+{B['val']['folds'][0]['bias']:+.2f} points and roughly twice the error of the newest, because
+it spans the allocation change described in chapter 8. Pooling all four folds would widen the
+intervals with error the current regime no longer produces.</p>
 
 {eq(r"P(c \le s) \;=\; \frac{1}{|R|}\Bigl|\bigl\{ e \in R \;:\; e \ge \hat{c} - s \bigr\}\Bigr|", 3)}
 
-{fig(3, F.fig_residuals(B),
-     f"The {num('unc.n')} leave-one-round-out residuals. The central 80% runs from "
+{fig("residuals", F.fig_residuals(B),
+     f"The {num('unc.n')} walk-forward residuals from the two current-regime folds "
+     f"({' and '.join(B['val']['unc_folds'])}). The central 80% runs from "
      f"{num('unc.lo80', '{:+.0f}')} to {num('unc.hi80', '{:+.0f}')} points; the mean error is "
      f"{num('unc.mean', '{:+.2f}')}, so the model is close to unbiased but far from precise.")}
 
@@ -271,7 +292,7 @@ how unevenly past rounds have been sized. Combining them gives a median of
 {num('rs.q50', '{:,}')} with an 80% range of {num('rs.q10', '{:,}')} to
 {num('rs.q90', '{:,}')} — wide, because it genuinely is.</p>
 
-{fig(5, F.fig_roundsize(B),
+{fig("roundsize", F.fig_roundsize(B),
      f"The round-size distribution. The bumps are real: they come from the discrete "
      f"question of how many rounds remain in the programme year, each implying a different "
      f"typical size. Shaded is the central 80%.")}
@@ -281,11 +302,11 @@ the chance the group is skipped entirely (chapter 8), gives the final estimate:<
 
 {eq(r"P(\text{invited}) \;=\; \Bigl[\sum_N f(N)\, P_{\text{clear}}(g,s,d \mid N)\Bigr] \cdot \bigl(1 - z_g\bigr)", 5)}
 
-{fig(4, F.fig_surface(B, GK),
+{fig("surface", F.fig_surface(B, GK),
      f"The conditional probability across both unknowns, for {html.escape(GNAME)}. Reading "
      "across a row shows how much the round size matters at a fixed score; reading down a "
      "column shows how steeply the odds fall with points. Equation 5 collapses this grid to "
-     "one number by weighting each column by Figure 5.")}
+     f"one number by weighting each column by {figref('roundsize')}.")}
 """)
 
 # ------------------------------------------------------------------ 8
@@ -301,7 +322,7 @@ their scores did not fall. The allocation simply stopped.</p>
 <p>This matches a four-tier prioritisation model released under freedom of information. Tested
 against the invitation record, the tiers separate sharply:</p>
 
-{fig(7, F.fig_tiers(B),
+{fig("tiers", F.fig_tiers(B),
      f"Invitations per 1,000 people waiting, by tier. The gap between the top and bottom "
      f"tier is more than two orders of magnitude (&#967;&#178; = {num('tiers.chi2')}, "
      f"p = {B['tiers']['p']:.2g}).")}
@@ -346,37 +367,91 @@ relevant reading rather than chapters 3 to 7.</p>
 
 # ------------------------------------------------------------------ 10
 chapter("validation", "Out-of-sample validation", "Chapter 10", f"""
-<p class="lede">The model is tested by holding out a whole round, fitting on the rest, and
-predicting the cut-off for every group in the round it never saw.</p>
+<p class="lede">Three separate things can be wrong: the rule that turns places into a cut-off,
+the forecast of how many places a group gets, and the reading of the data itself. Each is
+tested on its own.</p>
 
-{fig(6, F.fig_calibration(VROWS, OOS),
-     f"Out-of-sample predictions against outcomes, {OOS['n']} held-out group-rounds. "
-     f"Exact {OOS['exact']*100:.0f}%, within one band {OOS['within5']*100:.0f}%, "
-     f"MAE {OOS['mae']:.2f} points, bias {OOS['bias']:+.2f}, r = {OOS['r']:.3f}.")}
+<h3>A. Does the walk-the-pool rule hold?</h3>
 
-<table class="pt">
-<tr><th>Measure</th><th>Out of sample</th><th>Reading</th></tr>
-<tr><td>Exact hit</td><td class="n">{OOS['exact']*100:.1f}%</td>
-    <td>the exact five-point band</td></tr>
-<tr><td>Within one band</td><td class="n">{OOS['within5']*100:.1f}%</td>
-    <td>within 5 points</td></tr>
-<tr><td>Mean absolute error</td><td class="n">{OOS['mae']:.2f} pts</td>
-    <td>about one band</td></tr>
-<tr><td>Bias</td><td class="n">{OOS['bias']:+.2f} pts</td>
-    <td>slightly optimistic</td></tr>
-<tr><td>Correlation</td><td class="n">{OOS['r']:.3f}</td><td>across all groups</td></tr>
-<tr><td>Agreement with the official table</td><td class="n">{pct('meta.cal_exact', 1)}</td>
-    <td>{num('meta.cal_n')} occupations reproduced exactly</td></tr>
-</table>
+<p>Give the rule the pool and the allocation that <em>actually</em> happened, and ask whether
+it lands on the cut-off that actually happened. This isolates equation 2 from any forecasting
+error. Across {num('val.mech.n')} group-rounds it reproduces the exact five-point band
+{pct('val.mech.exact')} of the time, within one band {pct('val.mech.within5')}, with a mean
+absolute error of {num('val.mech.mae')} points.</p>
+
+<p>The bias of {num('val.mech.bias', '{:+.2f}')} points runs in one direction and is worth
+stating plainly: the rule lands <em>deeper</em> into the pool than the round actually reached,
+by close to a full band on average. It is therefore conservative for a reader — it tends to
+predict a cut-off below the one that occurs. The same sign shows up in the forecast folds
+below. What produces it is not established here; the pool snapshot predating the round
+(chapter 11) and partial clearance of the boundary band (chapter 6) are both candidates, and
+this test cannot separate them.</p>
+
+<h3>B. Does the forecast hold on rounds it has not seen?</h3>
+
+<p>This is the test that matters for a reader. The procedure is <b>walk-forward</b>, not a
+random split: each round is forecast using only the round immediately before it, which is
+exactly the information available in practice. The allocation share is carried forward from
+that previous round; the round size is taken as given, so this measures the model's own error
+and not the unknowable size.</p>
+
+<div class="tablewrap"><table class="pt">
+<tr><th>Round forecast</th><th>Using</th><th>n</th><th>Exact</th><th>Within 5</th><th>MAE</th><th>Bias</th></tr>
+{"".join(f'<tr><td>{f["round"]}</td><td>{f["trained_on"]}</td><td class="n">{f["n"]}</td>'
+         f'<td class="n">{f["exact"]*100:.0f}%</td><td class="n">{f["within5"]*100:.0f}%</td>'
+         f'<td class="n">{f["mae"]:.2f}</td><td class="n">{f["bias"]:+.2f}</td></tr>'
+         for f in B["val"]["folds"])}
+<tr><td><b>All folds</b></td><td>—</td><td class="n"><b>{B['val']['oos']['n']}</b></td>
+    <td class="n"><b>{B['val']['oos']['exact']*100:.0f}%</b></td>
+    <td class="n"><b>{B['val']['oos']['within5']*100:.0f}%</b></td>
+    <td class="n"><b>{B['val']['oos']['mae']:.2f}</b></td>
+    <td class="n"><b>{B['val']['oos']['bias']:+.2f}</b></td></tr>
+</table></div>
+
+{fig("calibration", F.fig_calibration(VROWS, OOS),
+     f"Every held-out prediction against its outcome, {OOS['n']} group-rounds pooled across "
+     "the folds above. Green is exact, amber within one five-point band, red further. The "
+     "axis spans the full range of the data, including the handful of predictions well "
+     "outside the plausible score range.")}
+
+<p>The pooled figures — {pct('val.oos.exact')} exact, {pct('val.oos.within5')} within one
+band, MAE {num('val.oos.mae')} points — understate current performance, because they average
+a settled regime with an unsettled one.</p>
+
+{fig("folds", F.fig_folds(B),
+     f"Accuracy improves monotonically across folds, from MAE "
+     f"{B['val']['folds'][0]['mae']:.2f} on the oldest to {B['val']['folds'][-1]['mae']:.2f} "
+     f"on the newest. The shaded folds are the ones the uncertainty model in chapter 5 keeps.")}
+
+<p>Reporting the aggregate alone would have hidden this. It would also have been the more
+flattering choice in the other direction — the newest fold, the one closest to the round being
+forecast, is the best of the four at {pct('val.folds.3.exact')} exact and
+{pct('val.folds.3.within5')} within a band.</p>
+
+<h3>C. Does the reading of the data match what was published?</h3>
+
+<p>The first two tests both assume the cut-offs read out of the dashboard are the real ones.
+That assumption is testable, because the Department published an official cut-off table for
+one round. Deriving the cut-off for each occupation from the dashboard and comparing:</p>
+
+{fig("official", F.fig_official(B),
+     f"{num('val.official.n')} occupations, derived against published. "
+     f"Exact {pct('val.official.exact', 1)}, within one band {pct('val.official.within5', 1)}, "
+     f"MAE {num('val.official.mae')} points, r = {num('val.official.r')}.")}
+
+<p>This is the check that settled the single-leg question in chapter 2. On an all-leg basis
+the reconstruction does not reproduce the published table; on a single-leg basis it matches
+{pct('val.official.exact', 1)} of {num('val.official.n')} occupations exactly. That is the
+evidence for the basis every other number in this paper uses.</p>
 
 <h3>A correction worth recording</h3>
 
-<p>An earlier version of this page reported a far better result — 49 of 49 occupations within
-five points, r&nbsp;=&nbsp;0.941. That comparison was invalid: it scored single-leg
-predictions against an all-leg pool. On a consistent single-leg basis the model performed as
-the table above shows, and the earlier claim was withdrawn. The all-leg cut-off sits materially
-lower because 190 and 491 invitations drag it down, which is precisely why the two bases
-cannot be mixed.</p>
+<p>An earlier version of this page reported a far better forecast result — 49 of 49
+occupations within five points, r&nbsp;=&nbsp;0.941. That comparison was invalid: it scored
+single-leg predictions against an all-leg pool, mixing the two bases that test C exists to
+keep apart. On a consistent single-leg basis the model performs as the table above shows, and
+the earlier claim was withdrawn. The all-leg cut-off sits materially lower because 190 and 491
+invitations drag it down.</p>
 """)
 
 # ------------------------------------------------------------------ 11
@@ -413,7 +488,7 @@ absences, not as features.</li>
 </ul>
 
 <p>A probability from this model is a statement about how often an outcome like yours occurred
-in a comparable position historically. It is not a promise, and the width of Figure 3 is the
+in a comparable position historically. It is not a promise, and the width of {figref('residuals')} is the
 best single reminder of that.</p>
 """)
 
@@ -536,6 +611,8 @@ const S={{occ:null,pts:85,doe:null,szi:2}};
 </body></html>
 """
 
+assert _drawn == sorted(_drawn) == list(range(1, len(_drawn) + 1)), \
+    f"figures emitted out of order: {_drawn}"
 (R / "docs" / "findings.html").write_text(page)
 print(f"wrote docs/findings.html  ({len(page)/1024:.0f} KB, {len(CH)} chapters, "
       f"{page.count('<figure')} figures, {page.count('class=\"eq\"')} equations)")

@@ -70,7 +70,8 @@ figcaption b{color:var(--ink);font-weight:700}
   display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .wkout b{font-size:30px;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
 
-table.pt{width:100%;border-collapse:collapse;font-size:13px;margin:16px 0}
+.tablewrap{overflow-x:auto;margin:16px 0;-webkit-overflow-scrolling:touch}
+table.pt{width:100%;border-collapse:collapse;font-size:13px;margin:0;min-width:430px}
 table.pt th,table.pt td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
 table.pt th{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
 table.pt td.n{text-align:right;font-variant-numeric:tabular-nums}

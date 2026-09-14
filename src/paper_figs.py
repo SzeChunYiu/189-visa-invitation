@@ -183,7 +183,7 @@ def fig_residuals(B):
            10, SERIES, "middle", "700")
     f.ylab("rounds (count)")
     f.xlab("prediction minus outcome (points)")
-    return f.svg("Leave-one-round-out residuals of the cut-off model",
+    return f.svg("Walk-forward residuals of the cut-off model",
                  f"{u['n']} held-out group-rounds. The spread of this histogram, not a "
                  "normal approximation, is what the probability is read from.")
 
@@ -329,3 +329,89 @@ def fig_tiers(B):
     return f.svg("Invitation rate by priority tier",
                  "Tiers are those of the four-tier model released under FOI. The rate spans "
                  "more than two orders of magnitude across them.")
+
+
+# ---------------------------------------------------------------- Figure 8
+def fig_folds(B):
+    """Accuracy fold by fold. The aggregate hides that the oldest fold is the worst."""
+    folds = B["val"]["folds"]
+    keep = set(B["val"]["unc_folds"])
+    f = Fig(560, 236, ml=52, mr=64, mt=26, mb=62)
+    n = len(folds)
+    bw = f.pw / n
+    mx = max(x["mae"] for x in folds) * 1.18
+    for v in nice_ticks(0, mx, 4):
+        y = f.mt + f.ph * (1 - v / mx)
+        f.line(f.ml, y, f.ml + f.pw, y, GRID)
+        f.text(f.ml - 8, y + 3.5, f"{v:.0f}", 10, MUTED, "end")
+    # MAE as bars; the folds the residual model keeps are the emphasised ones
+    for i, x in enumerate(folds):
+        bx = f.ml + i * bw + bw * 0.18
+        w = bw * 0.4
+        h = f.ph * x["mae"] / mx
+        used = x["round"] in keep
+        f.rect(bx, f.mt + f.ph - h, w, h, BRAND if used else DEEMPH, rx=4)
+        f.text(bx + w / 2, f.mt + f.ph - h - 7, f"{x['mae']:.2f}", 10.5, INK, "middle", "700")
+        f.text(f.ml + i * bw + bw / 2, f.h - f.mb + 16, x["round"], 10.5, INK, "middle", "700")
+        f.text(f.ml + i * bw + bw / 2, f.h - f.mb + 29, f"from {x['trained_on']}", 9, MUTED)
+        f.text(f.ml + i * bw + bw / 2, f.h - f.mb + 41, f"n = {x['n']}", 9, MUTED)
+    # exact-hit rate on the same panel as a line, scaled to the same box
+    X = lambda i: f.ml + i * bw + bw * 0.62
+    Y2 = lambda p: f.mt + f.ph * (1 - p)
+    d = "".join(f"{'M' if i==0 else 'L'}{X(i):.1f},{Y2(x['exact']):.1f} "
+                for i, x in enumerate(folds))
+    f.path(d, GOLD, 2)
+    for i, x in enumerate(folds):
+        f.circle(X(i), Y2(x["exact"]), 4.5, GOLD, stroke=CARD, sw=2)
+        f.text(X(i) + 9, Y2(x["exact"]) + 3.5, f"{x['exact']*100:.0f}%", 10, GOLD, "start", "700")
+    lx = f.ml + f.pw + 10
+    f.rect(lx, f.mt + 2, 9, 9, BRAND, rx=2)
+    f.text(lx + 13, f.mt + 10, "MAE", 9.5, MUTED, "start")
+    f.rect(lx, f.mt + 18, 9, 9, DEEMPH, rx=2)
+    f.text(lx + 13, f.mt + 26, "older", 9.5, MUTED, "start")
+    f.circle(lx + 4.5, f.mt + 38, 4.5, GOLD)
+    f.text(lx + 13, f.mt + 42, "exact", 9.5, MUTED, "start")
+    f.ylab("mean absolute error (points)")
+    return f.svg("Forecast accuracy fold by fold",
+                 "Each fold forecasts one round from the one before it. Error falls steadily "
+                 "as the allocation regime settles, which is why the uncertainty model keeps "
+                 "only the two most recent folds (shaded).")
+
+
+# ---------------------------------------------------------------- Figure 9
+def fig_official(B):
+    """Measurement check: the cut-off reconstructed from the dashboard vs the published one."""
+    pairs = B["val"]["official_pairs"]
+    st = B["val"]["official"]
+    f = Fig(560, 300, ml=52, mr=18, mt=22, mb=52)
+    vs = [v for p in pairs for v in p]
+    lo, hi = (min(vs) // 5) * 5 - 5, -(-max(vs) // 5) * 5 + 5
+    X = lambda v: f.ml + f.pw * (v - lo) / (hi - lo)
+    Y = lambda v: f.mt + f.ph * (1 - (v - lo) / (hi - lo))
+    for t in range(int(lo) + 10 - int(lo) % 10, int(hi) + 1, 10):
+        f.line(f.ml, Y(t), f.ml + f.pw, Y(t), GRID)
+        f.line(X(t), f.mt, X(t), f.mt + f.ph, GRID)
+        f.text(f.ml - 8, Y(t) + 3.5, t, 10, MUTED, "end")
+        f.text(X(t), f.h - f.mb + 16, t, 10, MUTED)
+    f.line(X(lo), Y(lo), X(hi), Y(hi), INK, 1.5, dash="4 3")
+    f.text(X(hi) - 4, Y(hi) + 14, "exact", 9.5, MUTED, "end", "700")
+    seen = {}
+    for pr, ac in pairs:
+        k = seen.get((pr, ac), 0)
+        seen[(pr, ac)] = k + 1
+        ang, rad = k * 2.399, (0 if k == 0 else 2.0 * math.sqrt(k))
+        col = GOOD if pr == ac else (WARN if abs(pr - ac) <= 5 else CRIT)
+        f.circle(X(pr) + rad * math.cos(ang), Y(ac) + rad * math.sin(ang), 3.2, col,
+                 stroke=CARD, sw=0.9, op=0.85)
+    bx, by = f.ml + 10, f.mt + 12
+    f.rect(bx - 6, by - 10, 186, 48, CARD, rx=8, stroke=GRID, sw=1)
+    f.text(bx, by + 2, f"n = {st['n']} occupations", 9.5, MUTED, "start")
+    f.text(bx, by + 17, f"exact {st['exact']*100:.1f}%   within 5 pts {st['within5']*100:.1f}%",
+           9.5, MUTED, "start")
+    f.text(bx, by + 31, f"MAE {st['mae']} pts   r = {st['r']:.4f}", 9.5, MUTED, "start")
+    f.ylab("cut-off the Department published")
+    f.xlab("cut-off derived from the dashboard")
+    return f.svg("Reconstruction against the published table",
+                 "Each point is one occupation in the tie-break round. This checks the "
+                 "measurement, not the forecast: that reading cut-offs out of the dashboard "
+                 "reproduces what was actually published.")
