@@ -1,0 +1,125 @@
+occ,official,derived,n,err
+334112 Airconditioning and Mechanical Services Plumber,65,65,10,0
+331111 Bricklayer,65,65,59,0
+331212 Carpenter,65,65,350,0
+331211 Carpenter and Joiner,65,65,31,0
+334113 Drainer,65,65,2,0
+341111 Electrician (General),65,65,50,0
+333211 Fibrous Plasterer,65,70,3,5
+333111 Glazier,65,65,3,0
+331213 Joiner,65,65,3,0
+334111 Plumber (General),65,65,18,0
+334115 Roof Plumber,65,65,3,0
+333212 Solid Plasterer,65,65,8,0
+331112 Stonemason,65,65,3,0
+333411 Wall and Floor Tiler,65,65,45,0
+334114 Gasfitter,70,70,1,0
+252711 Audiologist,75,75,19,0
+272311 Clinical Psychologist,75,80,4,5
+253912 Emergency Medicine Specialist,75,80,10,5
+253111 General Practitioner,75,75,182,0
+253999 Medical Practitioners nec,75,75,133,0
+254111 Midwife,75,80,14,5
+252411 Occupational Therapist,75,75,56,0
+253321 Paediatrician,75,80,2,5
+252511 Physiotherapist,75,75,99,0
+252611 Podiatrist,75,75,6,0
+272399 Psychologists nec,75,75,46,0
+254412 Registered Nurse (Aged Care),75,75,162,0
+254414 Registered Nurse (Community Health),75,75,7,0
+254415 Registered Nurse (Critical Care and Emergency),75,75,78,0
+254421 Registered Nurse (Medical Practice),75,75,11,0
+254418 Registered Nurse (Medical),75,75,92,0
+254422 Registered Nurse (Mental Health),75,75,41,0
+254423 Registered Nurse (Perioperative),75,75,31,0
+254424 Registered Nurse (Surgical),75,75,33,0
+254499 Registered Nurses nec,75,75,912,0
+241411 Secondary School Teacher,75,75,308,0
+272511 Social Worker,75,75,277,0
+241511 Special Needs Teacher,75,75,3,0
+252712 Speech Pathologist,75,80,57,5
+234111 Agricultural Consultant,80,80,69,0
+234112 Agricultural Scientist,80,80,58,0
+342111 Airconditioning and Refrigeration Mechanic,80,80,1,0
+139911 Arts Administrator or Manager,80,80,11,0
+321111 Automotive Electrician,80,80,5,0
+271111 Barrister,80,80,2,0
+399111 Boat Builder and Repairer,80,80,3,0
+394111 Cabinetmaker,80,80,4,0
+253312 Cardiologist,80,80,1,0
+134111 Child Care Centre Manager,80,80,2,0
+252111 Chiropractor,80,80,12,0
+133111 Construction Project Manager,80,80,281,0
+211112 Dancer or Choreographer,80,80,4,0
+224311 Economist,80,80,49,0
+312311 Electrical Engineering Draftsperson,80,80,4,0
+312312 Electrical Engineering Technician,80,80,74,0
+342313 Electronic Equipment Trades Worker,80,80,13,0
+342314 Electronic Instrument Trades Worker (General),80,80,2,0
+342315 Electronic Instrument Trades Worker (Special Class),80,80,3,0
+133211 Engineering Manager,80,80,34,0
+234312 Environmental Consultant,80,80,78,0
+139912 Environmental Manager,80,80,17,0
+234313 Environmental Research Scientist,80,80,27,0
+234399 Environmental Scientists nec,80,80,10,0
+323211 Fitter (General),80,80,8,0
+234113 Forester,80,80,2,0
+234412 Geophysicist,80,80,7,0
+234413 Hydrogeologist,80,80,4,0
+253317 Intensive Care Specialist,80,80,1,0
+224511 Land Economist,80,80,12,0
+341113 Lift Mechanic,80,80,1,0
+224711 Management Consultant,80,80,179,0
+251211 Medical Diagnostic Radiographer,80,80,29,0
+234611 Medical Laboratory Scientist,80,80,72,0
+251212 Medical Radiation Therapist,80,80,2,0
+322311 Metal Fabricator,80,80,7,0
+234912 Metallurgist,80,80,10,0
+233611 Mining Engineer (excluding Petroleum),80,80,49,0
+211213 Musician (Instrumental),80,90,3,10
+234999 Natural and Physical Science Professionals nec,80,85,2,5
+253914 Ophthalmologist,80,80,1,0
+251411 Optometrist,80,80,6,0
+272313 Organisational Psychologist,80,80,1,0
+252112 Osteopath,80,80,3,0
+232214 Other Spatial Scientist,80,80,25,0
+324111 Panelbeater,80,80,3,0
+233612 Petroleum Engineer,80,80,48,0
+234914 Physicist,80,80,23,0
+134213 Primary Health Organisation Manager,80,80,5,0
+253411 Psychiatrist,80,85,2,5
+254413 Registered Nurse (Child and Family Health),80,80,3,0
+254416 Registered Nurse (Developmental Disability),80,80,2,0
+254417 Registered Nurse (Disability and Rehabilitation),80,80,6,0
+254425 Registered Nurse (Paediatrics),80,80,15,0
+271311 Solicitor,80,80,240,0
+253311 Specialist Physician (General Medicine),80,80,2,0
+253399 Specialist Physicians nec,80,80,1,0
+232212 Surveyor,80,80,17,0
+452316 Tennis Coach,80,85,3,5
+224512 Valuer,80,80,23,0
+234711 Veterinarian,80,80,64,0
+322313 Welder (First Class),80,80,50,0
+134214 Welfare Centre Manager,80,85,1,5
+232111 Architect,85,85,62,0
+232213 Cartographer,85,85,1,0
+234211 Chemist,85,85,28,0
+234212 Food Technologist,85,85,46,0
+253316 Gastroenterologist,85,85,1,0
+232112 Landscape Architect,85,85,14,0
+253514 Orthopaedic Surgeon,85,85,1,0
+251214 Sonographer,85,85,1,0
+241599 Special Education Teachers nec,85,85,1,0
+224111 Actuary,90,90,15,0
+224113 Statistician,90,90,94,0
+234514 Biotechnologist,95,95,5,0
+233411 Electronics Engineer,95,95,9,0
+234511 Life Scientist (General),95,95,8,0
+234599 Life Scientists nec,95,95,4,0
+234516 Marine Biologist,95,100,2,5
+234517 Microbiologist,95,95,3,0
+261211 Multimedia Specialist,95,95,20,0
+263311 Telecommunications Engineer,95,95,11,0
+263312 Telecommunications Network Engineer,95,95,2,0
+253324 Thoracic Medicine Specialist,95,95,1,0
+253518 Urologist,100,100,1,0

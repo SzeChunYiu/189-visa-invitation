@@ -1,0 +1,11 @@
+{
+ "n": 124,
+ "exact": 112,
+ "within5": 123,
+ "mae": 0.52,
+ "bias": 0.52,
+ "r": 0.9755,
+ "official_total": 10000,
+ "tie_break": "2026-04",
+ "next_round": "2026-09-30"
+}
