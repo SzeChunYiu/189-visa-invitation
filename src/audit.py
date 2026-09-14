@@ -173,6 +173,33 @@ _ctl=any(_PF.cutoff_at(_g,_S,_B["meta"]["fr"]*2)!=_g["fc"][_i]
 chk("  (control) a wrong single-leg factor would fail that check",_ctl,
     "doubling phi changes the cut-offs" if _ctl else "check is insensitive - worthless")
 
+# A CSS variable used but never defined resolves to nothing and fails silently - this
+# shipped once as var(--accent) on the method nav. Check the BUILT html, so a token any
+# future builder introduces is covered.
+for _pg in PAGES:
+    _h=(pathlib.Path("../docs")/_pg).read_text()
+    _css="\n".join(_re.findall(r"<style>(.*?)</style>",_h,_re.S))
+    _def=set(_re.findall(r"(--[a-z0-9-]+)\s*:",_css))
+    _use=set(_re.findall(r"var\((--[a-z0-9-]+)\)",_h))
+    _undef=sorted(_use-_def)
+    chk(f"{_pg}: every CSS variable used is defined",len(_undef)==0,
+        f"undefined {_undef}" if _undef else f"{len(_use)} tokens, all defined")
+_h=(pathlib.Path("../docs")/"index.html").read_text()+'x{color:var(--never-defined)}'
+_css="\n".join(_re.findall(r"<style>(.*?)</style>",_h,_re.S))
+_ctl=sorted(set(_re.findall(r"var\((--[a-z0-9-]+)\)",_h))-set(_re.findall(r"(--[a-z0-9-]+)\s*:",_css)))
+chk("  (control) the CSS-token check flags a token planted in real page CSS",
+    _ctl==["--never-defined"], f"control saw {_ctl}")
+
+# chapter cross-references in the paper must point at a chapter that exists
+_f=(pathlib.Path("../docs")/"findings.html").read_text()
+_nch=_f.count('<article class="chap"')
+_bad=sorted({int(n) for n in _re.findall(r"[Cc]hapters? (\d+)",_f)} |
+            {int(n) for n in _re.findall(r"[Cc]hapters \d+ to (\d+)",_f)} - {0}
+            ) if _nch else []
+_bad=[n for n in _bad if not (1<=n<=_nch)]
+chk("paper cross-references point at chapters that exist",len(_bad)==0,
+    f"out of range {_bad} (paper has {_nch})" if _bad else f"all within 1-{_nch}")
+
 allrefs=set().union(*SITE_REFS.values())
 orphans=sorted(allrefs-SITE_IDS)
 chk("no JS reference is orphaned across all four pages",len(orphans)==0,

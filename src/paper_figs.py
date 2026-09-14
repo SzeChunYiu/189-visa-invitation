@@ -55,7 +55,7 @@ def fig_mechanism(B, gk):
     g = B["groups"][gk]
     f = Fig(560, 250, ml=54, mr=132, mt=20, mb=48)
     scores = sorted((int(k) for k in g["dist"]), reverse=True)
-    N = 12000
+    N = B["rs"]["q50"]          # the median round, the same one chapter 7 reports
     A = round(g["share"] * N * B["meta"]["fr"])
     cut = cutoff_at(g, N, B["meta"]["fr"])
     mx = max(g["dist"].values())

@@ -7,7 +7,7 @@ PAPER_CSS = r"""
 .toc h3{margin:0 0 10px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .toc ol{list-style:none;margin:0;padding:0;counter-reset:ch}
 .toc li{counter-increment:ch;margin:0 0 1px}
-.toc a{display:grid;grid-template-columns:22px 1fr;gap:7px;align-items:baseline;
+.toc a{display:grid;grid-template-columns:22px minmax(0,1fr);gap:7px;align-items:baseline;
   padding:6px 8px;border-radius:8px;font-size:12.5px;line-height:1.32;
   color:var(--body);text-decoration:none}
 .toc a::before{content:counter(ch);font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -15,7 +15,8 @@ PAPER_CSS = r"""
 .toc a[aria-current="true"]{background:var(--brand);color:#fff;font-weight:600}
 .toc a[aria-current="true"]::before{color:rgba(255,255,255,.75)}
 
-.chap{max-width:70ch}
+.chap{max-width:70ch;min-width:0}
+main{min-width:0}
 .chap[hidden]{display:none}
 .chap .eyebrow{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--brand);
   font-weight:700;margin:0 0 6px}
@@ -55,7 +56,7 @@ figcaption b{color:var(--ink);font-weight:700}
 .wkin label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}
 .wkin input,.wkin select{font:inherit;font-size:13.5px;padding:7px 9px;border:1px solid var(--line);
   border-radius:9px;background:var(--paper);color:var(--ink);min-width:150px}
-.step{display:grid;grid-template-columns:26px 1fr;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.step{display:grid;grid-template-columns:26px minmax(0,1fr);gap:12px;padding:14px 0;border-top:1px solid var(--line)}
 .step:first-of-type{border-top:0}
 .stepn{width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;
   font-size:11.5px;font-weight:700;display:grid;place-items:center}
@@ -75,7 +76,7 @@ table.pt th{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color
 table.pt td.n{text-align:right;font-variant-numeric:tabular-nums}
 
 @media (max-width:900px){
-  .paperwrap{grid-template-columns:1fr;gap:18px}
+  .paperwrap{grid-template-columns:minmax(0,1fr);gap:18px}
   .toc{position:static;max-height:none}
   .toc ol{display:flex;flex-wrap:wrap;gap:4px}
   .toc li{margin:0}

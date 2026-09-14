@@ -119,6 +119,7 @@ bundle=dict(doe_months=MONTHS,doe_cdf=cdf,comp=comp,rounds=ROUNDS,sizes=SIZES,fl
             mech_exact=val["mech"]["exact"],cal_exact=round(cal["exact"]/cal["n"],3),cal_n=cal["n"],
             official_total=cal["official_total"],mobility=mob["pct_changed"],alloc_r=gate["pooled_r"],
             snapshot="08/2026",last_round="2026-06"))
+bundle["gaps"]=json.load(open("gaps.json"))   # season_p etc, quoted by the method paper
 json.dump(bundle,open("bundle.json","w"),separators=(",",":"))
 sz=pathlib.Path("bundle.json").stat().st_size
 print(f"occupations: {len(occ)}   groups: {len(groups)}   bundle: {sz/1024:.0f} KB")

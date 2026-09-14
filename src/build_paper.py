@@ -182,7 +182,8 @@ below it, so if the allocation exhausts the eligible pool the cut-off stops at t
 rather than continuing downward.</p>
 
 {fig(1, F.fig_mechanism(B, GK),
-     f"The pool of {html.escape(GNAME)} at a round of 12,000. Shaded bars are covered by "
+     f"The pool of {html.escape(GNAME)} at a round of the median size "
+     f"({B['rs']['q50']:,}). Shaded bars are covered by "
      "the allocation; the dashed line is where it stops. The cut-off is a property of the "
      "pool's shape, which is why two groups with the same share can have different cut-offs.")}
 
@@ -308,9 +309,9 @@ against the invitation record, the tiers separate sharply:</p>
 <h3>The explanation the document gives is not the one the data supports</h3>
 
 <p>The released model attributes exclusion to programme-wide ceiling consumption. That does
-not survive testing: within a tier, ceiling consumption does not predict which groups are
-excluded (p&nbsp;=&nbsp;0.74). Raw pool size does (r&nbsp;=&nbsp;+0.68). Large groups are
-being held back because they are large, not because their ceiling is full.</p>
+not survive testing: within a tier, ceiling consumption does not separate the excluded groups
+from the rest, while raw pool size clearly does. Large groups are being held back because they
+are large, not because their ceiling is full.</p>
 
 <h3>What the model actually uses</h3>
 
@@ -373,9 +374,9 @@ predicting the cut-off for every group in the round it never saw.</p>
 <p>An earlier version of this page reported a far better result — 49 of 49 occupations within
 five points, r&nbsp;=&nbsp;0.941. That comparison was invalid: it scored single-leg
 predictions against an all-leg pool. On a consistent single-leg basis the model performed as
-the table above shows, and the earlier claim was withdrawn. The all-leg cut-off sits about
-seven points lower because 190 and 491 invitations drag it down, which is precisely why the
-two bases cannot be mixed.</p>
+the table above shows, and the earlier claim was withdrawn. The all-leg cut-off sits materially
+lower because 190 and 491 invitations drag it down, which is precisely why the two bases
+cannot be mixed.</p>
 """)
 
 # ------------------------------------------------------------------ 11
@@ -406,7 +407,8 @@ documentary problems, or anything specific to one application are outside it.</l
 
 <li><b>Some things were tested and found absent.</b> Groups do not measurably compete with each
 other after the share is accounted for, and no seasonal effect survives testing
-(p&nbsp;=&nbsp;0.379, on a record with little power to detect one). These are reported as
+(p&nbsp;=&nbsp;{num('gaps.season_p', '{:.3f}')}, on a record with little power to detect one).
+These are reported as
 absences, not as features.</li>
 </ul>
 
