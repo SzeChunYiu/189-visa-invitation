@@ -296,6 +296,10 @@ figcaption b{color:var(--ink);font-weight:700}
 /* worked example */
 .wk{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px;margin:22px 0}
 .wkin{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px}
+/* a select sizes to its longest option - 443px here - and a flex child with the
+   default min-width:auto cannot shrink below that, so the page scrolled sideways */
+.wkin>div{min-width:0}
+.wkin select{max-width:100%;text-overflow:ellipsis}
 .wkbtns{display:flex;gap:8px;align-items:flex-end;margin-left:auto}
 .wkbtns button{font:inherit;font-size:13px;padding:8px 14px;border-radius:9px;cursor:pointer;
   border:1px solid var(--line);background:var(--card);color:var(--ink)}
@@ -312,7 +316,7 @@ table.cmp th{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;colo
 table.cmp td.n{text-align:right;font-variant-numeric:tabular-nums}
 .wkin label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}
 .wkin input,.wkin select{font:inherit;font-size:13.5px;padding:7px 9px;border:1px solid var(--line);
-  border-radius:9px;background:var(--paper);color:var(--ink);min-width:150px}
+  border-radius:9px;background:var(--paper);color:var(--ink);min-width:0}
 .step{display:grid;grid-template-columns:26px minmax(0,1fr);gap:12px;padding:14px 0;border-top:1px solid var(--line)}
 .step:first-of-type{border-top:0}
 .stepn{width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;
