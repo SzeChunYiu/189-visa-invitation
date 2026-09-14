@@ -87,6 +87,9 @@ def eq(tex, n):
 
 # representative group for the illustrative figures: the largest pool that still
 # receives invitations, so the histogram is smooth and the mechanism is visible
+# widest sampling error of a proportion estimated from the residual count
+SE_MID = (0.25 / B["unc"]["n"]) ** 0.5 * 100
+
 _cands = [(sum(g["dist"].values()), k) for k, g in B["groups"].items()
           if g["share"] > 0 and g["alloc"][-1] > 0]
 GK = max(_cands)[1]
@@ -201,6 +204,24 @@ and older rounds describe a policy that no longer applies.</p>
      "of a round, which is the single biggest reason the same score gives very different odds "
      "in different occupations.")}
 
+<h3>How much does the share move?</h3>
+
+<p>A great deal, and this is the single largest source of uncertainty in the forecast. Across
+the {num('val.share_var.n')} groups with at least three rounds of invitations, the coefficient
+of variation of a group's share between rounds has a median of
+<b>{num('val.share_var.median')}</b>, with quartiles {num('val.share_var.q1')} to
+{num('val.share_var.q3')}. A share of two percent one round is routinely one or four the next.</p>
+
+<p>Equation 1 therefore rests on a quantity that is genuinely unstable, and no interval is put
+on it directly. It does not need one: the walk-forward test in chapter 10 carries the share
+forward exactly as the forecast does, so every error that instability causes is already inside
+the residual distribution that chapter 5 turns into a probability. The interval on the answer
+is honest even though the share itself is quoted as a point.</p>
+
+<p>What this does rule out is reading equation 1 as a statement about how many places a group
+will get. It is the best available estimate of a number that moves, and the result page shades
+the range each group's share has actually taken rather than drawing the line alone.</p>
+
 <p>A group with <em>a<sub>g</sub></em>&nbsp;=&nbsp;0 gets no share and therefore no
 forecast. That is not a bug in the estimate; it is the single most important thing to know
 about such an occupation, and chapter 8 treats it directly.</p>
@@ -300,6 +321,15 @@ intervals with error the current regime no longer produces.</p>
 <p>Reading equation 3 in words: the cut-off ends up at or below your score whenever the
 model's error is at least as large as the gap between its forecast and your score. Counting
 how often that happened historically gives the probability directly.</p>
+
+<h3>The probability has its own error bar</h3>
+
+<p>Equation 3 is a proportion estimated from {num('unc.n')} observations, so it carries the
+sampling error any proportion does: about
+&#177;{v(SE_MID, '{:.0f}')} percentage points at the middle of its range, narrowing towards either end. That is separate
+from, and much smaller than, the spread of the residuals themselves &mdash; the residuals say
+how uncertain the cut-off is, this says how precisely that uncertainty has been measured. The
+chance curve on the result page is shaded with this interval.</p>
 """)
 
 # ------------------------------------------------------------------ 6
@@ -384,6 +414,24 @@ fitted relationship.</p>
 the chance the group is skipped entirely (chapter 8), gives the final estimate:</p>
 
 {eq(r"P(\text{invited}) \;=\; \Bigl[\sum_N f(N)\, P_{\text{clear}}(g,s,d \mid N)\Bigr] \cdot \bigl(1 - z_g\bigr)", 5)}
+
+<h3>Reading the answer as a chain of deductions</h3>
+
+<p>Equation 5 is easier to trust when it is taken apart. Each factor removes something, and
+the size of each removal is worth knowing:</p>
+
+<ul>
+<li><b>The cut-off reaching your score</b> is the starting point &mdash; the probability from
+equation 3, averaged over round size.</li>
+<li><b>Less the boundary band.</b> Part of that probability is the cut-off landing exactly on
+your score, where equation 4 applies and, without a date, you are last.</li>
+<li><b>Less the chance of no round for the group at all</b>, the <em>z<sub>g</sub></em> factor
+from chapter 8.</li>
+</ul>
+
+<p>The result page shows exactly this as a waterfall, because the first number is materially
+larger than the last and a reader who sees only the first will be misled. The deductions are
+not rounding &mdash; each is several percentage points.</p>
 
 {fig("surface", F.fig_surface(B, GK),
      f"The conditional probability across both unknowns, for {html.escape(GNAME)}. Reading "

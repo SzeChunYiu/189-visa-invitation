@@ -18,6 +18,7 @@ STEPS = [
     ("worked",     "build_worked.py"),
     ("paper",      "build_paper.py"),
     ("claims",     "claims.py"),      # every prose number traceable to the bundle
+    ("concepts",   "concepts.py"),   # every symbol and concept the paper uses is defined
     ("audit",      "audit.py"),
 ]
 

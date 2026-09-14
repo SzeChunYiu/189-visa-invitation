@@ -32,6 +32,22 @@ c = pd.read_csv("calibration_official.csv")
 c = c.rename(columns={"official": "actual", "derived": "pred"})
 c["pred"] = c.pred.astype(int); c["actual"] = c.actual.astype(int)
 
+# in equation 1, and until now quantified nowhere
+_B0 = json.load(open("bundle.json"))
+_cv = []
+for _g in _B0["groups"].values():
+    _nz = [x for x in _g.get("share_hist", []) if x > 0]
+    if len(_nz) > 2:
+        _m = sum(_nz) / len(_nz)
+        _sd = (sum((x - _m) ** 2 for x in _nz) / len(_nz)) ** .5
+        if _m > 0:
+            _cv.append(_sd / _m)
+_cv.sort()
+share_var = dict(n=len(_cv),
+                 median=round(_cv[len(_cv) // 2], 3),
+                 q1=round(_cv[len(_cv) // 4], 3),
+                 q3=round(_cv[3 * len(_cv) // 4], 3))
+
 val = dict(
     folds=folds,
     oos=stats(o),
@@ -40,7 +56,10 @@ val = dict(
     unc_folds=UNC_FOLDS,
     unc_n=int(o["round"].isin(UNC_FOLDS).sum()),
     mech=json.load(open("validation_singleleg.json"))["mech"],
+    share_var=share_var,
 )
+
+# how much a group's share actually moves between rounds - the dominant uncertainty
 
 B = json.load(open("bundle.json"))
 B["val"] = val
@@ -59,4 +78,6 @@ print(f"\n  residual distribution uses only {val['unc_n']} of {a['n']} — folds
 ofc = val["official"]
 print(f"\n  official-table calibration: n={ofc['n']}  exact={ofc['exact']:.1%}  "
       f"within5={ofc['within5']:.1%}  MAE={ofc['mae']}  r={ofc['r']}")
+print(f"\n  share coefficient of variation across rounds: median {share_var['median']}"
+      f"  quartiles {share_var['q1']}-{share_var['q3']}  (n={share_var['n']} groups)")
 print("  -> bundle.json['val'] written")
