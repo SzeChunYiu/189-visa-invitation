@@ -55,9 +55,14 @@ H1={"index.html":None,                         # the verdict block carries its o
 
 PAGES={
  "index.html":   dict(title="Will you be invited? · SkillSelect 189",
-                      parts=[filters,verdict]+pick("Your chance vs round size","Forecast cut-off by round size",
-                       "From the cut-off to your chance","Past rounds","Who is ahead",
-                       "What the people at each score hold","Your place in the queue",
+                      # The headline states a number; the first panel should say where it comes from.
+                      # It also introduces every term the later charts assume - cut-off,
+                      # boundary band, round size, skip risk - in one screen.
+                      parts=[filters,verdict]+pick(
+                       "From the cut-off to your chance",
+                       "Your chance vs round size","Forecast cut-off by round size",
+                       "Past rounds","Who is ahead",
+                       "Your place in the queue","What the people at each score hold",
                        "Every score band",
                        "This occupation, round by round")),
  "landscape.html":dict(title="All occupations · SkillSelect 189",
