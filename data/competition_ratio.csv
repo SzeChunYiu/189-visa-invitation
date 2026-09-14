@@ -1,0 +1,63 @@
+g,name,pool,alloc,cut,ratio
+1331,1331 Construction Managers,1363,281,80,4.850533807829182
+1332,1332 Engineering Managers,221,34,80,6.5
+1341,1341 Child Care Centre Managers,9,2,80,4.5
+1342,1342 Health and Welfare Services Managers,45,6,80,7.5
+1399,1399 Other Specialist Managers,99,28,80,3.5357142857142856
+2111,"2111 Actors, Dancers and Other Entertainers",6,4,80,1.5
+2112,2112 Music Professionals,6,3,90,2.0
+2241,"2241 Actuaries, Mathematicians and Statisticians",492,109,90,4.513761467889908
+2243,2243 Economists,90,49,80,1.836734693877551
+2245,2245 Land Economists and Valuers,53,35,80,1.5142857142857142
+2247,2247 Management and Organisation Analysts,300,179,80,1.675977653631285
+2321,2321 Architects and Landscape Architects,730,76,85,9.605263157894736
+2322,2322 Cartographers and Surveyors,145,43,80,3.372093023255814
+2334,2334 Electronics Engineers,1265,9,95,140.55555555555554
+2336,2336 Mining Engineers,296,97,80,3.051546391752577
+2341,2341 Agricultural and Forestry Scientists,513,129,80,3.9767441860465116
+2342,"2342 Chemists, and Food and Wine Scientists",704,74,85,9.513513513513514
+2343,2343 Environmental Scientists,237,115,80,2.0608695652173914
+2344,2344 Geologists Geophysicists and Hydrogeologists,31,11,80,2.8181818181818183
+2345,2345 Life Scientists,694,22,95,31.545454545454547
+2346,2346 Medical Laboratory Scientists,276,72,80,3.8333333333333335
+2347,2347 Veterinarians,83,64,80,1.296875
+2349,2349 Other Natural and Physical Science Professionals,108,35,80,3.085714285714286
+2414,2414 Secondary School Teachers,1179,308,75,3.8279220779220777
+2415,2415 Special Education Teachers,27,4,75,6.75
+2512,2512 Medical Imaging Professionals,92,32,80,2.875
+2514,2514 Optometrists and Orthoptists,19,6,80,3.1666666666666665
+2521,2521 Chiropractors and Osteopaths,97,15,80,6.466666666666667
+2524,2524 Occupational Therapists,216,56,75,3.857142857142857
+2525,2525 Physiotherapists,292,99,75,2.9494949494949494
+2526,2526 Podiatrists,14,6,75,2.3333333333333335
+2527,2527 Speech Professionals and Audiologists,142,76,75,1.868421052631579
+2531,2531 General Practitioners and Resident Medical officers,324,182,75,1.7802197802197801
+2533,2533 Internal Medicine Specialists,34,9,80,3.7777777777777777
+2534,2534 Psychiatrists,5,2,85,2.5
+2535,2535 Surgeons,9,2,85,4.5
+2539,2539 Other Medical Practitioners,283,144,75,1.9652777777777777
+2541,2541 Midwives,44,14,80,3.142857142857143
+2544,2544 Registered Nurses,6412,1393,75,4.603015075376884
+2612,2612 Multimedia Specialists and Web Developers,291,20,95,14.55
+2633,2633 Telecommunications Engineering Professionals,773,13,95,59.46153846153846
+2711,2711 Barristers,8,2,80,4.0
+2713,2713 Solicitors,348,240,80,1.45
+2723,2723 Psychologists,80,51,75,1.5686274509803921
+2725,2725 Social Workers,737,277,75,2.660649819494585
+3123,3123 Electrical Engineering Draftspersons and Technicians,244,78,80,3.128205128205128
+3211,3211 Automotive Electricians,30,5,80,6.0
+3223,3223 Structural Steel and Welding Trades Workers,333,57,80,5.842105263157895
+3232,3232 Metal Fitters and Machinists,115,8,80,14.375
+3241,3241 Panelbeaters,9,3,80,3.0
+3311,3311 Bricklayers and Stonemasons,97,62,65,1.564516129032258
+3312,3312 Carpenters and Joiners,502,384,65,1.3072916666666667
+3331,3331 Glaziers,6,3,65,2.0
+3332,3332 Plasterers,31,11,65,2.8181818181818183
+3334,3334 Wall and Floor Tilers,73,45,65,1.6222222222222222
+3341,3341 Plumbers,48,34,65,1.411764705882353
+3411,3411 Electricians,108,51,65,2.1176470588235294
+3421,3421 Airconditioning and Refrigeration Mechanics,22,1,80,22.0
+3423,3423 Electronics Trades Workers,184,18,80,10.222222222222221
+3941,3941 Cabinetmakers,76,4,80,19.0
+3991,3991 Boat Builders and Shipwrights,4,3,80,1.3333333333333333
+4523,"4523 Sports Coaches, Instructors and Officials",9,3,85,3.0

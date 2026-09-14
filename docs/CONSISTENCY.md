@@ -87,6 +87,23 @@ than as unconditional probabilities.
    significantly smaller pools (Mann-Whitney p < 0.0001; median pool 3 versus 59). 2349's cells are thin, so
    "CLEARED" there is more easily obtained by chance than in a large group.
 
+## What actually drives a group's cut-off
+
+Raw pool size barely predicts it. Competition **per invitation** does:
+
+| x-axis against Jun-2026 cut-off | Pearson r | Spearman |
+|---|---|---|
+| pool size (raw) | +0.041 | +0.050 |
+| pool size (log) | +0.118 | +0.050 |
+| invitations (log) | −0.232 | −0.306 |
+| **people per invitation** | +0.482 | +0.501 |
+| **people per invitation (log)** | **+0.614** | +0.501 |
+
+Fit: `cut-off = 10.6 × log10(people per invitation) + 72.8`, R² = 0.377, residual sd 5.6 points (n = 62 groups).
+
+So a crowded occupation is not automatically harder — a large pool with a large allocation is easier than a small
+pool with a tiny one. ANZSCO 2349 runs at **3.1 people per invitation**, the 47th percentile: mid-pack.
+
 ## Still not modelled
 
 Per-occupation pool inflow dynamics, and what actually *sets* each group's allocation. The published ceilings

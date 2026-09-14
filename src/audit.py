@@ -86,5 +86,25 @@ for f in docs:
                 stale.append((f.name,why,ctx[:110]))
 chk("no unlabelled superseded claims in the docs",len(stale)==0,f"{len(stale)} found")
 for s in stale[:5]: print(f"        {s[0]}: {s[1]} -> …{s[2]}…")
+print("\n"+"="*96); print("F. BUILT PAGE: every reference resolves"); print("="*96)
+import re as _re
+def _code(html):
+    """JS with the embedded data literal removed - occupation names parse as calls otherwise."""
+    js="\n".join(_re.findall(r"<script>(.*?)</script>", html, _re.S))
+    return _re.sub(r"const B=\{.*?\};", "const B={};", js, flags=_re.S)
+for page in ["index.html","findings.html"]:
+    html=(pathlib.Path("../docs")/page).read_text()
+    js=_code(html)
+    ids=set(_re.findall(r'id="([A-Za-z0-9_-]+)"', html))
+    refs=set(_re.findall(r'\$\("([A-Za-z0-9_-]+)"\)', js)) | set(
+        _re.findall(r'getElementById\("([A-Za-z0-9_-]+)"\)', js))
+    missing=sorted(refs-ids)
+    chk(f"{page}: every element id referenced by JS exists",len(missing)==0,
+        f"missing {missing}" if missing else f"{len(refs)} refs checked")
+    # A static "is every called helper defined" check was tried and REMOVED: the known-helper list has to
+    # be derived from the same file whose definition may have been deleted, so it passes when it should fail.
+    # A deliberate rename of queueTable() slipped straight through it. Undefined-function regressions are
+    # caught instead by loading the page and asserting an empty console - see scripts/check_console.md.
+
 print("\n"+"="*96)
 print(f"AUDIT: {len(fails)} failure(s)" + (": "+", ".join(fails) if fails else " - all checks pass"))
