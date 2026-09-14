@@ -34,6 +34,10 @@ Conservation check: per-occupation invitations sum exactly to each round total (
 10 Sep lodgement. It is not: **20.2% of invitations at 90+ points went to EOIs dated after the tie-break**. The date
 binds only at the marginal position within a score.
 
+**The published tie-break describes the national floor.** Of every score invited in Jun-2026, only **65 points**
+stops at April 2026; every other score reaches June. That closes the apparent mismatch between the published
+tie-break and the observed rationing dates.
+
 **EOIs expire on a hard two-year cliff.** Cohort survival: 95.7% (0–6 months), 87.1% (6–12), 82.0% (12–18),
 77.2% (18–24), then **0.8% beyond 24 months**.
 

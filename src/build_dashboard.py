@@ -61,10 +61,7 @@ rows="".join(
  f"<td class='n'><span class='pill {'ok' if CUT2349[i]<=85 else 'no'}'>{CUT2349[i]}</span></td></tr>"
  for i,r in enumerate(ROUNDS))
 
-recs=[]
-for _,x in occ.iterrows():
-    recs.append({"o":x.occupation,"c":[None if pd.isna(x[r]) else int(x[r]) for r in ROUNDS],
-                 "n":[int(x[r+"_n"]) for r in ROUNDS],"p":int(x.pool_total),"p85":int(x.pool_85),"pg":int(x.pool_gt85)})
+recs=json.load(open(D/"occupation_database.json"))
 DATA=json.dumps(recs,separators=(",",":"))
 
 CSS=""":root{--paper:#fbfbfc;--card:#ffffff;--ink:#141a24;--body:#39414f;--muted:#6b7589;--line:#e2e5ec;
@@ -108,7 +105,8 @@ tbody tr:last-child td{border-bottom:0}
 .dim{color:var(--muted)}
 .pill{display:inline-block;min-width:38px;padding:2px 9px;border-radius:999px;font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12.5px}
 .pill.ok{background:var(--accent-soft);color:var(--good)}
-.pill.no{background:var(--amber-soft);color:var(--amber)}
+.pill.mid{background:var(--amber-soft);color:var(--amber)}
+.pill.no{background:var(--line);color:var(--muted)}
 svg{width:100%;height:auto;display:block}
 .g{stroke:var(--line);stroke-width:1}
 .above{fill:var(--amber-soft);opacity:.55}
@@ -123,6 +121,9 @@ svg{width:100%;height:auto;display:block}
 input[type=search]{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);font:inherit;font-size:14px}
 input[type=search]:focus{outline:2px solid var(--accent);outline-offset:1px}
 .note{font-size:13px;color:var(--muted)}
+.theory{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:9px;font-size:14px}
+.theory li{padding-left:4px}
+.theory li::marker{color:var(--accent);font-family:"IBM Plex Mono",monospace;font-weight:700}
 .statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:18px}
 .stat{display:flex;flex-direction:column;gap:2px}
 .sv{font-family:Archivo,sans-serif;font-size:27px;font-weight:800;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
@@ -174,6 +175,30 @@ HTML=f"""<title>189 Invitation Odds</title>
  <b>What this model still cannot tell you</b> is whether a round is held, or how large it is &mdash; both are set by migration
  planning levels, not by the pool.</div>
 </div>
+
+<section>
+  <h2>One mechanism explains every observation</h2>
+  <p class="sub">Five rounds, 181 occupations, cut-offs from 65 to 100 in a single round, a published tie-break that
+  appears to exclude recent applicants, and a ceiling that never binds &mdash; all of it follows from one rule.</p>
+  <div class="panel">
+    <ol class="theory">
+      <li><b>Each round sets an allocation per ANZSCO unit group.</b> Not the published ceiling, which is a
+      non-binding upper bound &mdash; 2349's ceiling is 500 and the largest round used 87.</li>
+      <li><b>Within a group, invitations run strictly by points descending, then date of effect ascending.</b></li>
+      <li><b>So the allocation lands on a boundary score.</b> Everything above it is fully exhausted; the boundary
+      score itself is usually rationed by date (79% of groups); everything below is untouched.</li>
+      <li><b>The published tie-break date is the boundary date at the national floor.</b> Of every score invited in
+      Jun-2026, only 65 points stops at April 2026 &mdash; every other score reaches June. That is why it does not
+      exclude a recent high-scoring applicant.</li>
+    </ol>
+    <p class="note" style="margin-top:12px"><b>Residual.</b> 13 of 58 rationed cells sit above their group's lowest
+    invited score, which strict points-then-date forbids. Cause: submission month is not date of effect. An EOI whose
+    points changed carries an old submission month but a fresh date of effect, so the exhaustion probe misreads it.
+    Confirmed directly &mdash; 2349's 85-point cell fell from 10 to 1 across the Jun-2026 round, then refilled to 13 by
+    August including a 2024-submitted EOI absent in June and July, which can only have re-entered at 85 with a 2026
+    date of effect.</p>
+  </div>
+</section>
 
 <section>
   <h2>Checked against the official round results</h2>
@@ -338,15 +363,21 @@ HTML=f"""<title>189 Invitation Odds</title>
 </footer>
 </div>
 <script>
-const D={DATA};
+const D={DATA},R={json.dumps(ROUNDS)};
 const tb=document.querySelector("#t tbody"),q=document.getElementById("q"),pts=document.getElementById("pts");
 let PTS=85;
-function cell(v,n){{ if(v===null) return "<td class='n dim'>&mdash;</td>";
-  const k=v<=PTS?"ok":"no";
-  return `<td class='n'><span class='pill ${{k}}'>${{v}}</span><span class='dim' style='font-size:11px'> ${{n}}</span></td>`;}}
+function cell(c){{
+  if(!c) return "<td class='n dim'>&mdash;</td>";
+  const [cleared,boundary,state,n]=c;
+  let k,lab;
+  if(cleared!==null && PTS>=cleared){{k="ok";lab="in";}}
+  else if(PTS>=boundary){{k="mid";lab="date";}}
+  else {{k="no";lab="out";}}
+  const shown = (cleared!==null && PTS>=cleared) ? cleared : boundary;
+  return `<td class='n'><span class='pill ${{k}}' title='lowest fully cleared ${{cleared===null?"none":cleared}}, boundary ${{boundary}} (${{state==="C"?"cleared":"rationed"}}), ${{n}} invited'>${{shown}}</span><span class='dim' style='font-size:11px'> ${{lab}}</span></td>`;}}
 function render(f){{
   tb.innerHTML=D.filter(r=>r.o.toLowerCase().includes(f)).map(r=>
-    `<tr><td class='rd'>${{r.o}}</td>${{r.c.map((v,i)=>cell(v,r.n[i])).join("")}}<td class='n'>${{r.p85}}</td><td class='n'>${{r.pg}}</td></tr>`).join("")
+    `<tr><td class='rd'>${{r.o}}</td>${{R.map(k=>cell(r[k])).join("")}}<td class='n'>${{r.p85}}</td><td class='n'>${{r.pg}}</td></tr>`).join("")
     || "<tr><td colspan='8' class='dim' style='padding:18px'>No occupation matches that search.</td></tr>";}}
 q.addEventListener("input",e=>render(e.target.value.toLowerCase().trim()));
 pts.addEventListener("input",e=>{{PTS=+e.target.value||0;render(q.value.toLowerCase().trim());}});
