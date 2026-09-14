@@ -101,6 +101,27 @@ for page in ["index.html","findings.html"]:
     missing=sorted(refs-ids)
     chk(f"{page}: every element id referenced by JS exists",len(missing)==0,
         f"missing {missing}" if missing else f"{len(refs)} refs checked")
+    # Duplicate definitions: JS silently lets the LAST one win, so a stale copy can shadow a
+    # rewritten function and every functional test still passes. This bit three times before it
+    # was caught, once with bandTable defined FOUR times.
+    def _blocks(src):
+        out=[]
+        for m in _re.finditer(r'\bfunction\s+([A-Za-z0-9_]+)\s*\(', src):
+            i=src.index("{", m.end()-1); depth=0; j=i
+            while j < len(src):
+                if src[j]=="{": depth+=1
+                elif src[j]=="}":
+                    depth-=1
+                    if depth==0: break
+                j+=1
+            out.append(m.group(1))
+        return out
+    import collections as _c
+    names=_blocks(js)
+    dup={k:v for k,v in _c.Counter(names).items() if v>1}
+    chk(f"{page}: no function defined more than once",not dup,
+        f"duplicates {dup}" if dup else f"{len(set(names))} helpers, all unique")
+
     # A static "is every called helper defined" check was tried and REMOVED: the known-helper list has to
     # be derived from the same file whose definition may have been deleted, so it passes when it should fail.
     # A deliberate rename of queueTable() slipped straight through it. Undefined-function regressions are

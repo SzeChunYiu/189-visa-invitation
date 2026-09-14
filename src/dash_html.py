@@ -45,6 +45,7 @@ HTML = r"""<meta charset="utf-8">
 <div class="card"><div class="chead"><h2>Your chance, against how many they invite</h2>
   <span class="eyebrow" id="h8n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n1" aria-label="Explain this panel" data-note="n1">?</button></div>
   <p class="takeaway" id="t8"></p>
+  <div class="movestrip" id="mv"></div>
   <div class="chartwrap"><svg id="c8" viewBox="0 0 586 268" role="img" aria-labelledby="c8t">
     <title id="c8t">Chance of an invitation against the size of the next round</title></svg></div>
   <p class="note" id="n1" hidden></p></div>
@@ -411,356 +412,23 @@ function chartScatter(selG,pts){
   nt.textContent="further right = more competition for each place";s.appendChild(nt);
 }
 
-/* ---------- one table: every band, the running head count, and the chance ---------- */
-function bandTable(o,g,pts){
-  const tb=document.querySelector("#bt tbody"); if(!tb||!g) return; tb.innerHTML="";
-  const my=Math.round(pts/5)*5;
-  const keys=[...new Set([...Object.keys(g.dist).map(Number),my])].filter(k=>k>=B.floor).sort((a,b)=>b-a);
-  let run=0;
-  keys.forEach(k=>{
-    const gc=g.dist[k]||0;
-    if(k>=my) run+=gc;
-    const saveP=S.pts; S.pts=k; const P=pMarginal(g,k); S.pts=saveP;
-    const stand = k>my ? ["crit","ahead on points"] : k===my ? ["warn","ahead on date"] : ["n","behind you"];
-    const tr=document.createElement("tr"); if(k===my)tr.className="hl";
-    [k+(k===my?" (you)":""),fmt(o.dist[k]||0),fmt(gc),k>=my?fmt(run):"—","",""].forEach((cell,ci)=>{
-      const td=document.createElement("td");
-      if(ci===4){const sp=document.createElement("span");sp.className="pill "+stand[0];
-        sp.textContent=stand[1];td.appendChild(sp);}
-      else if(ci===5){const sp=document.createElement("span");
-        sp.className="pill "+(P===null?"n":P>=.8?"good":P>=.5?"warn":"crit");
-        sp.textContent=P===null?"—":Math.round(P*100)+"%";td.appendChild(sp);}
-      else td.textContent=cell;
-      tr.appendChild(td);});
-    tb.appendChild(tr);});
-  const al=g.alloc[g.alloc.length-1];
-  const tr=document.createElement("tr");
-  const a=document.createElement("td");a.colSpan=3;a.innerHTML="<b>Ahead of you in "+o.g+"</b>";
-  const b=document.createElement("td");b.innerHTML="<b>"+fmt(run)+"</b>";
-  const c=document.createElement("td");c.colSpan=2;
-  const sp=document.createElement("span");sp.className="pill "+(al>=run?"good":"crit");
-  sp.textContent=(al>=run?"last round reached ":"last round stopped at ")+fmt(al);
-  c.appendChild(sp);
-  tr.appendChild(a);tr.appendChild(b);tr.appendChild(c);tb.appendChild(tr);
-  const hb=$("hbn"); if(hb) hb.textContent="averaged over round size";
-}
-/* ---------- policy table ---------- */
-function policyTable(){
-  const P=B.policy; if(!P) return;
-  const tb=document.querySelector("#pt tbody"); if(!tb) return;
-  const rows=[["Skilled Independent (189)",P.places["2025-26"],P.places["2026-27"]],
-    ["State/Territory Nominated (190)",P.nominated["2025-26"],P.nominated["2026-27"]],
-    ["Regional (491)",P.regional_cut["2025-26"],P.regional_cut["2026-27"]],
-    ["Employer Sponsored",P.employer["2025-26"],P.employer["2026-27"]]];
-  tb.innerHTML="";
-  rows.forEach(([lab,a,b])=>{
-    const pc=(b/a-1)*100, tr=document.createElement("tr");
-    [lab,fmt(a),fmt(b),""].forEach((c,i)=>{const td=document.createElement("td");
-      if(i===3){const sp=document.createElement("span");
-        sp.className="pill "+(pc>1?"good":pc<-1?"crit":"n");
-        sp.textContent=(pc>0?"+":"")+pc.toFixed(0)+"%";td.appendChild(sp);}
-      else td.textContent=c;tr.appendChild(td);});
-    tb.appendChild(tr);});
-  const nt=document.querySelector('[data-role="pnote"]'); if(!nt) return;
-  nt.innerHTML="The 189 program grew <b>"+((P.places["2026-27"]/P.places["2025-26"]-1)*100).toFixed(1)+
-    "%</b>. Across 2025&ndash;26 the Department issued <b>"+P.ratio.toFixed(2)+
-    "</b> invitations per place (not every invitation becomes a visa), so "+fmt(P.places["2026-27"])+
-    " places implies roughly <b>"+fmt(P.projected_invitations)+"</b> invitations in 2026&ndash;27 &mdash; about <b>"+
-    fmt(P.per_round["3"])+"</b> per round at the observed cadence of three rounds a year. That is why 10,000 is the "+
-    "default scenario above. Regional was cut 57%, which this model does not predict but is the clearest route by "+
-    "which the 189 pool could swell faster than it has: it would appear in later snapshots, not in today's forecast.";
-}
 
-/* ---------- chance against round size: the whole function, not five samples ---------- */
-function cutoffAt(g,S){
-  const A=Math.round(g.share*S*B.meta.fr);
-  if(A<=0) return null;
-  const keys=Object.keys(g.dist).map(Number).filter(k=>k>=B.floor).sort((a,b)=>b-a);
-  let c=0;
-  for(const k of keys){c+=g.dist[k]; if(c>=A) return k;}
-  return B.floor;
-}
-function pMarginal(g,pts){
-  if(!g||g.share<=0||!B.rs) return null;
-  let acc=0,wsum=0;
-  B.rs.grid.forEach((sz,i)=>{const p=pClear(cutoffAt(g,sz),pts);
-    if(p!==null){acc+=B.rs.dens[i]*p;wsum+=B.rs.dens[i];}});
-  return wsum>0?acc/wsum:null;
-}
-function chartProb(g,pts){
-  const s=$("c8");clear(s);
-  const W=586,H=268,ML=44,MR=66,MT=30,MB=46,pw=W-ML-MR,ph=H-MT-MB;
-  if(!g||g.share<=0){const q=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
-    q.textContent="No invitations last round, so there is nothing to forecast at any size.";s.appendChild(q);return;}
-  const S0=2000,S1=20000;
-  const X=v=>ML+pw*(v-S0)/(S1-S0), Y=p=>MT+ph*(1-p);
-  for(let i=0;i<=4;i++){const y=MT+ph*(1-i/4);
-    s.appendChild(el("line",{x1:ML,y1:y,x2:W-MR,y2:y,class:"gl"}));
-    const q=el("text",{x:ML-7,y:y+3.5,class:"tick","text-anchor":"end"});q.textContent=(i*25)+"%";s.appendChild(q);}
-  /* the range of round sizes actually observed - context for what is plausible */
-  const bx0=X(B.meta.round_min), bx1=X(B.meta.round_max);
-  s.appendChild(el("rect",{x:bx0,y:MT,width:bx1-bx0,height:ph,fill:"var(--series)","fill-opacity":".07"}));
-  const bl=el("text",{x:(bx0+bx1)/2,y:MT-5,class:"tick","text-anchor":"middle"});
-  bl.textContent="every round on record";s.appendChild(bl);
-  /* context: the same curve 5 points below and above, so the value of more points is visible */
-  const curve=sc=>{const a=[];for(let v=S0;v<=S1;v+=200){const p=pClear(cutoffAt(g,v),sc);
-    if(p!==null)a.push([v,p]);}return a;};
-  const path=a=>{let d="";a.forEach((q,i)=>{d+=(i?" L":"M")+X(q[0]).toFixed(1)+","+Y(q[1]).toFixed(1);});return d;};
-  const ends=[];
-  [[pts+5,(pts+5)+" pts","var(--deemph)"],[pts,"YOU \u2192 "+pts,"var(--series)"],[pts-5,(pts-5)+" pts","var(--deemph)"]]
-   .forEach(([sc,lab,col])=>{
-    const a=curve(sc); if(a.length<2) return;
-    const main=(sc===pts);
-    s.appendChild(el("path",{d:path(a),fill:"none",stroke:main?"var(--series)":"var(--deemph)",
-      "stroke-width":main?2:1.5,"stroke-linejoin":"round","stroke-linecap":"round"}));
-    ends.push({y:Y(a[a.length-1][1]),lab,col,main});});
-  /* push labels apart so none overlaps another */
-  ends.sort((a,b)=>a.y-b.y);
-  for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<13) ends[i].y=ends[i-1].y+13;
-  const shift=Math.max(0,ends[ends.length-1].y-(MT+ph));
-  ends.forEach(e=>{
-    const q=el("text",{x:W-MR+5,y:e.y-shift+3.5,fill:e.col,"font-size":e.main?"11":"10",
-      "font-weight":e.main?"700":"600","text-anchor":"start"});
-    q.textContent=e.lab;s.appendChild(q);});
-  /* how likely each round size is, as a ribbon under the curve - same panel, no extra chart */
-  if(B.rs){
-    const dmax=Math.max(...B.rs.dens), hband=ph*0.22;
-    let dd="M"+X(B.rs.grid[0]).toFixed(1)+","+(MT+ph).toFixed(1);
-    B.rs.grid.forEach((sz,i)=>{if(sz<S0||sz>S1)return;
-      dd+=" L"+X(sz).toFixed(1)+","+(MT+ph-hband*B.rs.dens[i]/dmax).toFixed(1);});
-    dd+=" L"+X(Math.min(S1,B.rs.grid[B.rs.grid.length-1])).toFixed(1)+","+(MT+ph).toFixed(1)+" Z";
-    s.appendChild(el("path",{d:dd,fill:"var(--brand)","fill-opacity":".16",stroke:"var(--brand)",
-      "stroke-width":1,"stroke-opacity":".45"}));
-    const dl=el("text",{x:ML+4,y:MT+ph-hband-6,class:"tick","text-anchor":"start",fill:"var(--brand)"});
-    dl.textContent="how likely each round size is";s.appendChild(dl);}
-  /* the policy-implied central case */
-  const cen=B.policy?B.policy.per_round["3"]:10000;
-  const cp=pClear(cutoffAt(g,cen),pts);
-  s.appendChild(el("line",{x1:X(cen),y1:MT,x2:X(cen),y2:MT+ph,stroke:"var(--brand)","stroke-width":1.5,"stroke-dasharray":"5 4"}));
-  if(cp!==null){
-    s.appendChild(el("circle",{cx:X(cen),cy:Y(cp),r:6,fill:"var(--brand)",stroke:"var(--card)","stroke-width":2}));
-    const lab=el("text",{x:X(cen)+9,y:Y(cp)-9,fill:"var(--brand)","font-size":"12","font-weight":"700"});
-    lab.textContent=Math.round(cp*100)+"%";s.appendChild(lab);}
-  const cl=el("text",{x:X(cen)-7,y:MT+10,fill:"var(--brand)","font-size":"10","font-weight":"650",
-    "text-anchor":"end"});
-  cl.textContent="planning levels imply";s.appendChild(cl);
-  [2000,5000,8000,11000,14000,17000,20000].forEach(v=>{
-    const q=el("text",{x:X(v),y:H-MB+15,class:"tick","text-anchor":"middle"});
-    q.textContent=(v/1000)+"k";s.appendChild(q);});
-  /* hover anywhere along the curve */
-  const hoverPts=curve(pts);
-  for(let i=0;i<hoverPts.length;i+=3){
-    const [v,p]=hoverPts[i], c=cutoffAt(g,v);
-    const hit=el("rect",{x:X(v)-4,y:MT,width:8,height:ph,class:"hit"});
-    hover(hit,"<b>"+Math.round(p*100)+"% chance</b><span>if the round invites "+fmt(v)+
-      "</span><span>cut-off would be about "+c+" points</span>");s.appendChild(hit);}
-  axisTitle(s,W,H,MB,"how many people the next round invites","your chance of an invitation");
-  panel(s,"h");
-}
+
+
+
 /* ---------- every round-size case, side by side ---------- */
 /* The range quoted everywhere: across the 10-90% band of plausible round sizes. */
-function rangeBand(g,pts){
-  if(!g||g.share<=0||!B.rs) return null;
-  const a=pClear(cutoffAt(g,B.rs.q10),pts), b=pClear(cutoffAt(g,B.rs.q90),pts);
-  if(a===null||b===null) return null;
-  return [Math.min(a,b),Math.max(a,b)];
-}
-function rangeText(g,pts){
-  const r=rangeBand(g,pts); if(!r) return "—";
-  const lo=Math.round(r[0]*100), hi=Math.round(r[1]*100);
-  return lo===hi ? lo+"%" : lo+"–"+hi+"%";
-}
-function probTakeaway(g,pts){
-  if(!g||g.share<=0){say("t8","","No invitations last round, so nothing to forecast.");return;}
-  const cen=B.policy?B.policy.per_round["3"]:10000;
-  const cp=pClear(cutoffAt(g,cen),pts);
-  let need=null;
-  for(let v=2000;v<=20000;v+=200){const p=pClear(cutoffAt(g,v),pts); if(p!==null&&p>=.5){need=v;break;}}
-  say("t8", cp===null?"":cp>=.8?"good":cp>=.5?"warn":"crit",
-    "<b>"+rangeText(g,pts)+"</b> across plausible round sizes"+
-    (need?" &middot; even odds from <b>"+fmt(need)+"</b> invitations":" &middot; never reaches even odds")+".");
-}
-/* ---------- every score band ---------- */
-function bandTable(o,g,pts){
-  const tb=document.querySelector("#bt tbody"); if(!tb||!g) return; tb.innerHTML="";
-  const cen=B.policy?B.policy.per_round["3"]:10000, fc=cutoffAt(g,cen);
-  const my=Math.round(pts/5)*5;
-  const keys=[...new Set([...Object.keys(g.dist).map(Number),my])].filter(k=>k>=B.floor).sort((a,b)=>b-a);
-  keys.forEach(k=>{
-    const above=Object.keys(g.dist).map(Number).filter(x=>x>k).reduce((a,x)=>a+g.dist[x],0);
-    const saveP=S.pts; S.pts=k;
-    const P=pMarginal(g,k); S.pts=saveP;
-    const reaches = fc===null?null:(k>fc?"yes":k===fc?"on the boundary":"no");
-    const tr=document.createElement("tr"); if(k===my)tr.className="hl";
-    const cells=[k+(k===my?" (you)":""),fmt(o.dist[k]||0),fmt(g.dist[k]||0),fmt(above),reaches||"—",""];
-    cells.forEach((c,i)=>{const td=document.createElement("td");
-      if(i===5){const sp=document.createElement("span");
-        sp.className="pill "+(P===null?"n":P>=.8?"good":P>=.5?"warn":"crit");
-        sp.textContent=P===null?"—":Math.round(P*100)+"%";td.appendChild(sp);}
-      else td.textContent=c;
-      tr.appendChild(td);});
-    tb.appendChild(tr);});
-  const hb=$("hbn"); if(hb) hb.textContent="averaged over round size";
-}
-/* ---------- one table: every band, the running head count, and the chance ---------- */
-function bandTable(o,g,pts){
-  const tb=document.querySelector("#bt tbody"); if(!tb||!g) return; tb.innerHTML="";
-  const my=Math.round(pts/5)*5;
-  const keys=[...new Set([...Object.keys(g.dist).map(Number),my])].filter(k=>k>=B.floor).sort((a,b)=>b-a);
-  let run=0;
-  keys.forEach(k=>{
-    const gc=g.dist[k]||0;
-    if(k>=my) run+=gc;
-    const saveP=S.pts; S.pts=k; const P=pMarginal(g,k); S.pts=saveP;
-    const stand = k>my ? ["crit","ahead on points"] : k===my ? ["warn","ahead on date"] : ["n","behind you"];
-    const tr=document.createElement("tr"); if(k===my)tr.className="hl";
-    [k+(k===my?" (you)":""),fmt(o.dist[k]||0),fmt(gc),k>=my?fmt(run):"—","",""].forEach((cell,ci)=>{
-      const td=document.createElement("td");
-      if(ci===4){const sp=document.createElement("span");sp.className="pill "+stand[0];
-        sp.textContent=stand[1];td.appendChild(sp);}
-      else if(ci===5){const sp=document.createElement("span");
-        sp.className="pill "+(P===null?"n":P>=.8?"good":P>=.5?"warn":"crit");
-        sp.textContent=P===null?"—":Math.round(P*100)+"%";td.appendChild(sp);}
-      else td.textContent=cell;
-      tr.appendChild(td);});
-    tb.appendChild(tr);});
-  const al=g.alloc[g.alloc.length-1];
-  const tr=document.createElement("tr");
-  const a=document.createElement("td");a.colSpan=3;a.innerHTML="<b>Ahead of you in "+o.g+"</b>";
-  const b=document.createElement("td");b.innerHTML="<b>"+fmt(run)+"</b>";
-  const c=document.createElement("td");c.colSpan=2;
-  const sp=document.createElement("span");sp.className="pill "+(al>=run?"good":"crit");
-  sp.textContent=(al>=run?"last round reached ":"last round stopped at ")+fmt(al);
-  c.appendChild(sp);
-  tr.appendChild(a);tr.appendChild(b);tr.appendChild(c);tb.appendChild(tr);
-  const hb=$("hbn"); if(hb) hb.textContent="averaged over round size";
-}
-/* ---------- policy table ---------- */
-function policyTable(){
-  const P=B.policy; if(!P) return;
-  const tb=document.querySelector("#pt tbody"); if(!tb) return;
-  const rows=[["Skilled Independent (189)",P.places["2025-26"],P.places["2026-27"]],
-    ["State/Territory Nominated (190)",P.nominated["2025-26"],P.nominated["2026-27"]],
-    ["Regional (491)",P.regional_cut["2025-26"],P.regional_cut["2026-27"]],
-    ["Employer Sponsored",P.employer["2025-26"],P.employer["2026-27"]]];
-  tb.innerHTML="";
-  rows.forEach(([lab,a,b])=>{
-    const pc=(b/a-1)*100, tr=document.createElement("tr");
-    [lab,fmt(a),fmt(b),""].forEach((c,i)=>{const td=document.createElement("td");
-      if(i===3){const sp=document.createElement("span");
-        sp.className="pill "+(pc>1?"good":pc<-1?"crit":"n");
-        sp.textContent=(pc>0?"+":"")+pc.toFixed(0)+"%";td.appendChild(sp);}
-      else td.textContent=c;tr.appendChild(td);});
-    tb.appendChild(tr);});
-  const nt=document.querySelector('[data-role="pnote"]'); if(!nt) return;
-  nt.innerHTML="The 189 program grew <b>"+((P.places["2026-27"]/P.places["2025-26"]-1)*100).toFixed(1)+
-    "%</b>. Across 2025&ndash;26 the Department issued <b>"+P.ratio.toFixed(2)+
-    "</b> invitations per place (not every invitation becomes a visa), so "+fmt(P.places["2026-27"])+
-    " places implies roughly <b>"+fmt(P.projected_invitations)+"</b> invitations in 2026&ndash;27 &mdash; about <b>"+
-    fmt(P.per_round["3"])+"</b> per round at the observed cadence of three rounds a year. That is why 10,000 is the "+
-    "default scenario above. Regional was cut 57%, which this model does not predict but is the clearest route by "+
-    "which the 189 pool could swell faster than it has: it would appear in later snapshots, not in today's forecast.";
-}
 
-/* ---------- chance against round size: the whole function, not five samples ---------- */
-function cutoffAt(g,S){
-  const A=Math.round(g.share*S*B.meta.fr);
-  if(A<=0) return null;
-  const keys=Object.keys(g.dist).map(Number).filter(k=>k>=B.floor).sort((a,b)=>b-a);
-  let c=0;
-  for(const k of keys){c+=g.dist[k]; if(c>=A) return k;}
-  return B.floor;
-}
-function pMarginal(g,pts){
-  if(!g||g.share<=0||!B.rs) return null;
-  let acc=0,wsum=0;
-  B.rs.grid.forEach((sz,i)=>{const p=pClear(cutoffAt(g,sz),pts);
-    if(p!==null){acc+=B.rs.dens[i]*p;wsum+=B.rs.dens[i];}});
-  return wsum>0?acc/wsum:null;
-}
-function chartProb(g,pts){
-  const s=$("c8");clear(s);
-  const W=586,H=268,ML=44,MR=66,MT=30,MB=46,pw=W-ML-MR,ph=H-MT-MB;
-  if(!g||g.share<=0){const q=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
-    q.textContent="No invitations last round, so there is nothing to forecast at any size.";s.appendChild(q);return;}
-  const S0=2000,S1=20000;
-  const X=v=>ML+pw*(v-S0)/(S1-S0), Y=p=>MT+ph*(1-p);
-  for(let i=0;i<=4;i++){const y=MT+ph*(1-i/4);
-    s.appendChild(el("line",{x1:ML,y1:y,x2:W-MR,y2:y,class:"gl"}));
-    const q=el("text",{x:ML-7,y:y+3.5,class:"tick","text-anchor":"end"});q.textContent=(i*25)+"%";s.appendChild(q);}
-  /* the range of round sizes actually observed - context for what is plausible */
-  const bx0=X(B.meta.round_min), bx1=X(B.meta.round_max);
-  s.appendChild(el("rect",{x:bx0,y:MT,width:bx1-bx0,height:ph,fill:"var(--series)","fill-opacity":".07"}));
-  const bl=el("text",{x:(bx0+bx1)/2,y:MT-5,class:"tick","text-anchor":"middle"});
-  bl.textContent="every round on record";s.appendChild(bl);
-  /* context: the same curve 5 points below and above, so the value of more points is visible */
-  const curve=sc=>{const a=[];for(let v=S0;v<=S1;v+=200){const p=pClear(cutoffAt(g,v),sc);
-    if(p!==null)a.push([v,p]);}return a;};
-  const path=a=>{let d="";a.forEach((q,i)=>{d+=(i?" L":"M")+X(q[0]).toFixed(1)+","+Y(q[1]).toFixed(1);});return d;};
-  const ends=[];
-  [[pts+5,(pts+5)+" pts","var(--deemph)"],[pts,"YOU \u2192 "+pts,"var(--series)"],[pts-5,(pts-5)+" pts","var(--deemph)"]]
-   .forEach(([sc,lab,col])=>{
-    const a=curve(sc); if(a.length<2) return;
-    const main=(sc===pts);
-    s.appendChild(el("path",{d:path(a),fill:"none",stroke:main?"var(--series)":"var(--deemph)",
-      "stroke-width":main?2:1.5,"stroke-linejoin":"round","stroke-linecap":"round"}));
-    ends.push({y:Y(a[a.length-1][1]),lab,col,main});});
-  /* push labels apart so none overlaps another */
-  ends.sort((a,b)=>a.y-b.y);
-  for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<13) ends[i].y=ends[i-1].y+13;
-  const shift=Math.max(0,ends[ends.length-1].y-(MT+ph));
-  ends.forEach(e=>{
-    const q=el("text",{x:W-MR+5,y:e.y-shift+3.5,fill:e.col,"font-size":e.main?"11":"10",
-      "font-weight":e.main?"700":"600","text-anchor":"start"});
-    q.textContent=e.lab;s.appendChild(q);});
-  /* how likely each round size is, as a ribbon under the curve - same panel, no extra chart */
-  if(B.rs){
-    const dmax=Math.max(...B.rs.dens), hband=ph*0.22;
-    let dd="M"+X(B.rs.grid[0]).toFixed(1)+","+(MT+ph).toFixed(1);
-    B.rs.grid.forEach((sz,i)=>{if(sz<S0||sz>S1)return;
-      dd+=" L"+X(sz).toFixed(1)+","+(MT+ph-hband*B.rs.dens[i]/dmax).toFixed(1);});
-    dd+=" L"+X(Math.min(S1,B.rs.grid[B.rs.grid.length-1])).toFixed(1)+","+(MT+ph).toFixed(1)+" Z";
-    s.appendChild(el("path",{d:dd,fill:"var(--brand)","fill-opacity":".16",stroke:"var(--brand)",
-      "stroke-width":1,"stroke-opacity":".45"}));
-    const dl=el("text",{x:ML+4,y:MT+ph-hband-6,class:"tick","text-anchor":"start",fill:"var(--brand)"});
-    dl.textContent="how likely each round size is";s.appendChild(dl);}
-  /* the policy-implied central case */
-  const cen=B.policy?B.policy.per_round["3"]:10000;
-  const cp=pClear(cutoffAt(g,cen),pts);
-  s.appendChild(el("line",{x1:X(cen),y1:MT,x2:X(cen),y2:MT+ph,stroke:"var(--brand)","stroke-width":1.5,"stroke-dasharray":"5 4"}));
-  if(cp!==null){
-    s.appendChild(el("circle",{cx:X(cen),cy:Y(cp),r:6,fill:"var(--brand)",stroke:"var(--card)","stroke-width":2}));
-    const lab=el("text",{x:X(cen)+9,y:Y(cp)-9,fill:"var(--brand)","font-size":"12","font-weight":"700"});
-    lab.textContent=Math.round(cp*100)+"%";s.appendChild(lab);}
-  const cl=el("text",{x:X(cen)-7,y:MT+10,fill:"var(--brand)","font-size":"10","font-weight":"650",
-    "text-anchor":"end"});
-  cl.textContent="planning levels imply";s.appendChild(cl);
-  [2000,5000,8000,11000,14000,17000,20000].forEach(v=>{
-    const q=el("text",{x:X(v),y:H-MB+15,class:"tick","text-anchor":"middle"});
-    q.textContent=(v/1000)+"k";s.appendChild(q);});
-  /* hover anywhere along the curve */
-  const hoverPts=curve(pts);
-  for(let i=0;i<hoverPts.length;i+=3){
-    const [v,p]=hoverPts[i], c=cutoffAt(g,v);
-    const hit=el("rect",{x:X(v)-4,y:MT,width:8,height:ph,class:"hit"});
-    hover(hit,"<b>"+Math.round(p*100)+"% chance</b><span>if the round invites "+fmt(v)+
-      "</span><span>cut-off would be about "+c+" points</span>");s.appendChild(hit);}
-  axisTitle(s,W,H,MB,"how many people the next round invites","your chance of an invitation");
-  panel(s,"h");
-}
+
+
+
+
+
+
 /* ---------- every round-size case, side by side ---------- */
 /* The range quoted everywhere: across the 10-90% band of plausible round sizes. */
-function rangeBand(g,pts){
-  if(!g||g.share<=0||!B.rs) return null;
-  const a=pClear(cutoffAt(g,B.rs.q10),pts), b=pClear(cutoffAt(g,B.rs.q90),pts);
-  if(a===null||b===null) return null;
-  return [Math.min(a,b),Math.max(a,b)];
-}
-function rangeText(g,pts){
-  const r=rangeBand(g,pts); if(!r) return "—";
-  const lo=Math.round(r[0]*100), hi=Math.round(r[1]*100);
-  return lo===hi ? lo+"%" : lo+"–"+hi+"%";
-}
+
+
 function probTakeaway(g,pts){
   if(!g||g.share<=0){say("t8","","No invitations last round, so nothing to forecast.");return;}
   const cen=B.policy?B.policy.per_round["3"]:10000;
@@ -986,6 +654,35 @@ function takeaways(o,g,pts,size){
   else say("t7","","This occupation group received no invitations in the last round.");
 }
 
+/* ---------- how the cut-off moves between rounds ---------- */
+function moveStrip(){
+  const box=$("mv"); if(!box||!B.mv) return; box.innerHTML="";
+  const M=B.mv, R=M.delta_recent||{};
+  const g=k=>R[k]||0;
+  const segs=[["cut-off falls 10 or more",g("-25")+g("-15")+g("-10"),"var(--good)"],
+              ["cut-off falls 5",g("-5"),"var(--good)"],
+              ["no change",g("0"),"var(--deemph)"],
+              ["rises 5",g("5"),"var(--warn)"],
+              ["rises 10 or more",g("10")+g("15")+g("20")+g("25"),"var(--crit)"]];
+  const tot=segs.reduce((a,x)=>a+x[1],0)||1;
+  const bar=document.createElement("div");bar.className="mbar";
+  segs.forEach(([lab,n,col],i)=>{
+    if(!n) return;
+    const d=document.createElement("div");
+    d.style.cssText="flex:"+n+" 0 0;background:"+col+(i===0||i===1?";color:#fff":"");
+    d.title=lab+" — "+Math.round(100*n/tot)+"% of round-to-round moves";
+    if(n/tot>0.11) d.textContent=Math.round(100*n/tot)+"%";
+    bar.appendChild(d);});
+  box.appendChild(bar);
+  const key=document.createElement("div");key.className="mkey";
+  key.innerHTML='<span><i style="background:var(--good)"></i>falls</span>'+
+    '<span><i style="background:var(--deemph)"></i>unchanged</span>'+
+    '<span><i style="background:var(--warn)"></i>rises 5</span>'+
+    '<span><i style="background:var(--crit)"></i>rises 10+ ('+Math.round(M.p_move10*100)+'%)</span>'+
+    '<span style="margin-left:auto">'+Math.round((1-M.boundary_cleared)*100)+
+    '% of boundary bands leave someone behind</span>';
+  box.appendChild(key);
+}
 /* ---------- render ---------- */
 function render(){
   const o=B.occ[S.occ]; if(!o) return;
@@ -995,7 +692,7 @@ function render(){
   const fc=g?g.fc[S.szi]:null;
   const v=fcVerdict(fc,pts);
   const P=pMarginal(g,pts), Pc=pClear(fc,pts), bb=pBand(fc);
-  chartProb(g,pts);probTakeaway(g,pts);
+  chartProb(g,pts);probTakeaway(g,pts);moveStrip();
   const band = P===null?null:(P>=.8?"good":P>=.5?"warn":"crit");
   $("flag").className="vflag "+(band||"crit");
   $("flag").textContent = P===null ? "✕ No forecast available"

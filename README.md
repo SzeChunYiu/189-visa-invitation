@@ -25,6 +25,7 @@ Deployment notes (incl. Vercel): [DEPLOY.md](DEPLOY.md).
 | [docs/HYPOTHESES.md](docs/HYPOTHESES.md) | Regime change, occupation bias, quota-vs-demand, sector effects |
 | [docs/POLICY.md](docs/POLICY.md) | Published planning levels and what they imply for round size |
 | [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md) | Keyboard, colour independence, and a trap that was removed |
+| [docs/MOVEMENT.md](docs/MOVEMENT.md) | Does the cut-off step or jump, and what moves it |
 | [docs/ROUNDSIZE.md](docs/ROUNDSIZE.md) | A distribution over the next round's size, and marginalising over it |
 | [docs/DATA.md](docs/DATA.md) | Source, field dictionary, extraction inventory |
 

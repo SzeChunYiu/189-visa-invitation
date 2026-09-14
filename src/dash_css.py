@@ -104,6 +104,11 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 17px 12px;box-shadow:var(--shadow)}
 .chead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.movestrip{margin:0 0 12px}
+.mbar{display:flex;height:16px;border-radius:5px;overflow:hidden;gap:2px}
+.mbar>div{display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;color:#fff}
+.mkey{display:flex;gap:13px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);margin-top:6px;align-items:center}
+.mkey i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:-1px}
 .takeaway{margin:0 0 10px;font-size:13px;line-height:1.45;color:var(--ink);
   background:var(--brand-soft);border-left:3px solid var(--brand);padding:8px 11px;border-radius:0 7px 7px 0}
 .takeaway b{font-weight:700}
