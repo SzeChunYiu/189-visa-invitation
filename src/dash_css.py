@@ -123,6 +123,15 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .mkey i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:-1px}
 .takeaway{margin:0 0 10px;font-size:13px;line-height:1.45;color:var(--ink);
   background:var(--brand-soft);border-left:3px solid var(--brand);padding:8px 11px;border-radius:0 7px 7px 0}
+/* a takeaway can be a row of figures instead of a sentence: scannable at a glance */
+.takeaway:has(.stat){display:flex;flex-wrap:wrap;gap:8px 26px;align-items:baseline}
+.stat{display:inline-flex;flex-direction:column;gap:1px;line-height:1.15}
+.stat>b{font-size:19px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+  color:var(--ink)}
+.stat>i{font-style:normal;font-size:10.5px;letter-spacing:.04em;color:var(--muted)}
+.stat.verdict-good>b{color:var(--good)}
+.stat.verdict-crit>b{color:var(--crit)}
+
 .takeaway b{font-weight:700}
 .takeaway.good{background:var(--good-bg);border-left-color:var(--good)}
 .takeaway.warn{background:var(--warn-bg);border-left-color:var(--warn)}

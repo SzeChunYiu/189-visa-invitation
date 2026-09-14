@@ -432,3 +432,217 @@ def fig_official(B):
                  "Each point is one occupation in the tie-break round. This checks the "
                  "measurement, not the forecast: that reading cut-offs out of the dashboard "
                  "reproduces what was actually published.")
+
+
+# ---------------------------------------------------------------- Figure: the pool
+def fig_pool_shape(B):
+    """Every live EOI, by score. The shape of what the model is walking down."""
+    tot = {}
+    for g in B["groups"].values():
+        for k, n in g["dist"].items():
+            tot[int(k)] = tot.get(int(k), 0) + n
+    scores = sorted(tot, reverse=True)
+    f = Fig(560, 236, ml=58, mr=18, mt=22, mb=54)
+    mx = max(tot.values())
+    bw = f.pw / len(scores)
+    for t in nice_ticks(0, mx, 4):
+        y = f.mt + f.ph * (1 - t / mx)
+        f.line(f.ml, y, f.ml + f.pw, y, GRID)
+        f.text(f.ml - 8, y + 3.5, kfmt(t), 10, MUTED, "end")
+    run = 0
+    grand = sum(tot.values())
+    for i, s in enumerate(scores):
+        n = tot[s]
+        run += n
+        h = f.ph * n / mx
+        f.rect(f.ml + i * bw + 1, f.mt + f.ph - h, bw - 2, h,
+               BRAND if s >= 80 else DEEMPH, rx=2,
+               tip=f"{n:,} people at {s} points — {run:,} at or above ({run/grand*100:.0f}% of the pool)")
+        if s % 10 == 0:
+            f.text(f.ml + i * bw + bw / 2, f.h - f.mb + 16, s, 10, MUTED)
+    f.text(f.ml + 4, f.mt + 10, f"{grand:,} live EOIs in {len(B['groups'])} groups",
+           10, MUTED, "start", "700")
+    f.ylab("people waiting")
+    f.xlab("points, highest first")
+    return f.svg("The whole 189 pool by score",
+                 "Every live single-leg EOI across all modelled groups. Shaded from 80 points "
+                 "up, the part of the pool most rounds reach.")
+
+
+# ---------------------------------------------------------------- Figure: concentration
+def fig_shares(B):
+    """How unevenly a round is divided between groups."""
+    gs = sorted(((g["share"], k, g["name"]) for k, g in B["groups"].items() if g["share"] > 0),
+                reverse=True)
+    f = Fig(560, 250, ml=58, mr=18, mt=24, mb=56)
+    top = gs[:20]
+    mx = top[0][0]
+    bw = f.pw / len(top)
+    for t in nice_ticks(0, mx * 100, 4):
+        y = f.mt + f.ph * (1 - (t / 100) / mx)
+        f.line(f.ml, y, f.ml + f.pw, y, GRID)
+        f.text(f.ml - 8, y + 3.5, f"{t:g}%", 10, MUTED, "end")
+    cum = 0
+    for i, (sh, k, name) in enumerate(top):
+        cum += sh
+        h = f.ph * sh / mx
+        f.rect(f.ml + i * bw + 1.5, f.mt + f.ph - h, bw - 3, h, BRAND, rx=2,
+               tip=f"{name}: {sh*100:.2f}% of a round — {cum*100:.0f}% cumulative")
+        f.text(f.ml + i * bw + bw / 2, f.h - f.mb + 15, k, 8.5, MUTED, "middle", rot=-90)
+    share20 = sum(x[0] for x in gs[:20])
+    f.text(f.ml + 4, f.mt + 10,
+           f"top 20 of {len(gs)} groups take {share20*100:.0f}% of a round", 10, MUTED, "start", "700")
+    f.ylab("share of a round")
+    f.xlab("unit group, largest share first")
+    return f.svg("How a round divides between occupation groups",
+                 "Share carried forward from the most recent round. The distribution is "
+                 "steep, which is why the same score gives very different odds by occupation.")
+
+
+# ---------------------------------------------------------------- Figure: date of effect
+def fig_doe_bands(B, gk):
+    """Within a band, the queue is by date. Several bands, one group."""
+    cdf = B["doe_cdf"].get(gk, {})
+    months = B["doe_months"]
+    bands = [s for s in ("70", "75", "80", "85", "90") if cdf.get(s)]
+    f = Fig(560, 250, ml=52, mr=76, mt=22, mb=54)
+    if not bands:
+        return f.text(f.w / 2, f.h / 2, "no date-of-effect record", 11, MUTED).svg("No data")
+    idx = [i for s in bands for i, _ in cdf[s]]
+    i0, i1 = min(idx), max(idx)
+    X = lambda i: f.ml + f.pw * (i - i0) / max(1, i1 - i0)
+    Y = lambda p: f.mt + f.ph * (1 - p)
+    for q in (0, .25, .5, .75, 1):
+        f.line(f.ml, Y(q), f.ml + f.pw, Y(q), GRID)
+        f.text(f.ml - 8, Y(q) + 3.5, f"{q*100:.0f}%", 10, MUTED, "end")
+    ramp = [RAMP[1], RAMP[2], RAMP[3], RAMP[4], RAMP[6]]
+    ends = []
+    for bi, s in enumerate(bands):
+        pts = cdf[s]
+        d, prev = "", None
+        for i, c in pts:
+            d += (f"M{X(i):.1f},{Y(c):.1f} " if prev is None
+                  else f"L{X(i):.1f},{Y(prev):.1f} L{X(i):.1f},{Y(c):.1f} ")
+            prev = c
+        f.path(d, ramp[bi % len(ramp)], 2)
+        ends.append([Y(pts[-1][1]), f"{s} pts", ramp[bi % len(ramp)]])
+    # the curves all converge on 100%, so the labels must be pushed apart
+    ends.sort(key=lambda e: e[0])
+    for i in range(1, len(ends)):
+        if ends[i][0] - ends[i - 1][0] < 12:
+            ends[i][0] = ends[i - 1][0] + 12
+    drop = max(0, ends[-1][0] - (f.mt + f.ph))
+    for y, lab, col in ends:
+        f.text(f.ml + f.pw + 7, y - drop + 3.5, lab, 9.5, col, "start", "700")
+    for i, a in ((i0, "start"), ((i0 + i1) // 2, "middle"), (i1, "end")):
+        f.text(X(i), f.h - f.mb + 16, months[i], 10, MUTED, a)
+    f.ylab("share of the band dated by then")
+    f.xlab("date of effect")
+    return f.svg("Date of effect within each score band",
+                 "For one group, how each score band is spread by date. A band the cut-off "
+                 "lands on is worked through in this order, earliest first.")
+
+
+# ---------------------------------------------------------------- Figure: the programme
+def fig_policy(B):
+    """Where the round-size distribution comes from: published places."""
+    p = B["policy"]
+    f = Fig(560, 288, ml=16, mr=104, mt=30, mb=56)
+    streams = [("Skilled Independent (189)", p["places"]),
+               ("State nominated (190)", p["nominated"]),
+               ("Regional (491)", p["regional_cut"]),
+               ("Employer sponsored", p["employer"])]
+    years = ["2025-26", "2026-27"]
+    mx = max(v for _, d in streams for v in d.values())
+    rh = f.ph / len(streams)
+    for t in nice_ticks(0, mx, 4):
+        x = f.ml + f.pw * t / mx
+        f.line(x, f.mt, x, f.mt + f.ph, GRID)
+        f.text(x, f.h - f.mb + 16, kfmt(t), 10, MUTED)
+    for si, (name, d) in enumerate(streams):
+        y0 = f.mt + si * rh
+        f.text(f.ml, y0 + 10, name, 9.5, MUTED, "start", "700")
+        for yi, yr in enumerate(years):
+            v = d[yr]
+            h = rh * 0.26
+            yy = y0 + 18 + yi * (h + 3)
+            col = BRAND if si == 0 else DEEMPH
+            f.rect(f.ml, yy, f.pw * v / mx, h, col, rx=2,
+                   tip=f"{name}, {yr}: {v:,} places")
+            f.text(f.ml + f.pw * v / mx + 6, yy + h - 1, f"{v:,}", 9, MUTED, "start")
+    f.text(f.ml + f.pw + 14, f.mt + 6, "2025-26", 9, MUTED, "start")
+    f.text(f.ml + f.pw + 14, f.mt + 20, "2026-27", 9, MUTED, "start", "700")
+    f.text(f.ml, f.mt - 10,
+           f"189 places rise {p['ratio']:.2f}x — {p['projected_invitations']:,} invitations projected",
+           10, INK, "start", "700")
+    f.xlab("places in the migration programme")
+    return f.svg("Published places by stream and year",
+                 "The 189 line is what the round-size distribution is built from. The other "
+                 "streams are shown because they compete for the same programme ceiling.")
+
+
+# ---------------------------------------------------------------- Figure: staleness
+def fig_horizon(B):
+    """Error against how old the pool snapshot is."""
+    h = B["horizon_series"]
+    lags = sorted((int(k) for k in h), key=int)
+    f = Fig(560, 236, ml=52, mr=74, mt=26, mb=54)
+    mx = max(h[str(l)]["mae"] for l in lags) * 1.15
+    X = lambda l: f.ml + f.pw * (l - lags[0]) / max(1, lags[-1] - lags[0])
+    Y = lambda v: f.mt + f.ph * (1 - v / mx)
+    for t in nice_ticks(0, mx, 4):
+        f.line(f.ml, Y(t), f.ml + f.pw, Y(t), GRID)
+        f.text(f.ml - 8, Y(t) + 3.5, f"{t:g}", 10, MUTED, "end")
+    usable = [l for l in lags if l >= 1]
+    d = "".join(f"{'M' if i==0 else 'L'}{X(l):.1f},{Y(h[str(l)]['mae']):.1f} "
+                for i, l in enumerate(usable))
+    f.path(d, BRAND, 2.5)
+    for l in lags:
+        r = h[str(l)]
+        excluded = l == 0
+        f.circle(X(l), Y(r["mae"]), 4.6, CRIT if excluded else BRAND,
+                 stroke=CARD, sw=2, op=0.55 if excluded else 1,
+                 tip=(f"lag {l} month{'s' if l != 1 else ''}: MAE {r['mae']:.2f}, "
+                      f"exact {r['exact']*100:.0f}%, n {r['n']}"
+                      + (" — excluded: this snapshot postdates the round" if excluded else "")))
+        f.text(X(l), f.h - f.mb + 16, l, 10, MUTED)
+    f.text(X(0) + 7, Y(h["0"]["mae"]) - 9, "excluded", 9.5, CRIT, "start", "700")
+    f.text(f.ml + f.pw + 8, Y(h[str(usable[-1])]["mae"]) + 3.5, "MAE", 9.5, BRAND, "start", "700")
+    f.ylab("mean absolute error (points)")
+    f.xlab("months between the pool snapshot and the round")
+    return f.svg("Forecast error against the age of the pool snapshot",
+                 "A snapshot taken the month before a round predicts it almost exactly. The "
+                 "further back it was taken, the worse it does. Lag 0 is excluded because "
+                 "that snapshot is published after the round it would be predicting.")
+
+
+# ---------------------------------------------------------------- Figure: the pool moves
+def fig_movement(B):
+    """Scores do not sit still between snapshots."""
+    mv = B["mv"]
+    d = mv["delta_all"]
+    keys = sorted((int(k) for k in d), key=int)
+    f = Fig(560, 244, ml=52, mr=18, mt=42, mb=56)   # mt reserves the summary line
+    mx = max(d.values())
+    bw = f.pw / len(keys)
+    for t in nice_ticks(0, mx, 4):
+        y = f.mt + f.ph * (1 - t / mx)
+        f.line(f.ml, y, f.ml + f.pw, y, GRID)
+        f.text(f.ml - 8, y + 3.5, f"{t:g}", 10, MUTED, "end")
+    tot = sum(d.values())
+    for i, k in enumerate(keys):
+        n = d[str(k)]
+        h = f.ph * n / mx
+        col = DEEMPH if k == 0 else (GOOD if k > 0 else WARN)
+        f.rect(f.ml + i * bw + 2, f.mt + f.ph - h, bw - 4, h, col, rx=3,
+               tip=f"{n} of {tot} groups moved {k:+d} points ({n/tot*100:.0f}%)")
+        f.text(f.ml + i * bw + bw / 2, f.mt + f.ph - h - 5, n, 9.5, MUTED)
+        f.text(f.ml + i * bw + bw / 2, f.h - f.mb + 16, f"{k:+d}", 9.5, MUTED)
+    f.text(f.ml + 4, f.mt - 24,
+           f"unchanged {mv['p_stay']*100:.0f}% · moved one band {mv['p_move5']*100:.0f}% · "
+           f"two or more {mv['p_move10']*100:.0f}%", 10, INK, "start", "700")
+    f.ylab("observations")
+    f.xlab("change in a group's cut-off between consecutive rounds (points)")
+    return f.svg("How far a cut-off moves from one round to the next",
+                 "The cut-off rarely repeats: it usually shifts by one five-point band, and "
+                 "more often down than up.")

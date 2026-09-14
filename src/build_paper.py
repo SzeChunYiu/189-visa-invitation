@@ -49,8 +49,9 @@ def pct(path, dp=0):
     return f"{cur*100:.{dp}f}%"
 
 
-FIG_ORDER = ["mechanism", "cutoff_curves", "residuals", "roundsize", "surface",
-             "tiers", "calibration", "folds", "official"]
+FIG_ORDER = ["pool_shape", "shares", "mechanism", "cutoff_curves", "residuals",
+             "doe_bands", "policy", "roundsize", "surface", "tiers",
+             "calibration", "folds", "official", "horizon", "movement"]
 FIGN = {k: i + 1 for i, k in enumerate(FIG_ORDER)}
 _drawn = []
 
@@ -143,6 +144,11 @@ subclass attached. A single-leg share must then be applied to the single-leg par
 round, not the headline number: the correction factor is
 &#966;&nbsp;=&nbsp;{num('meta.fr')}, measured in the {num('meta.last_round')} round.</p>
 
+{fig("pool_shape", F.fig_pool_shape(B),
+     "Every live single-leg EOI across the modelled groups, by score. This is the object "
+     "equation 2 walks down, and its shape is why a five-point step can matter far more at "
+     "one score than another.")}
+
 <h3>Counts below the publication threshold</h3>
 
 <p>The dashboard suppresses exact counts under 20. Those cells are recovered by
@@ -176,6 +182,12 @@ share is applied to the single-leg equivalent of the round, &#966;<em>N</em>.</p
 round alone rather than an average is deliberate: chapter 8 shows that recent behaviour,
 not long-run behaviour, is what predicts the next round — the allocation regime changed,
 and older rounds describe a policy that no longer applies.</p>
+
+{fig("shares", F.fig_shares(B),
+     f"Share of a round by unit group, largest first. The top 20 of "
+     f"{sum(1 for g in B['groups'].values() if g['share'] > 0)} groups with a share take most "
+     "of a round, which is the single biggest reason the same score gives very different odds "
+     "in different occupations.")}
 
 <p>A group with <em>a<sub>g</sub></em>&nbsp;=&nbsp;0 gets no share and therefore no
 forecast. That is not a bug in the estimate; it is the single most important thing to know
@@ -274,6 +286,16 @@ cumulative date-of-effect distribution for that group and score.</p>
 band — and the second term contributes nothing. That is a deliberate floor, not an estimate:
 a reader who supplies a date can only improve on it.</p>
 
+{fig("doe_bands", F.fig_doe_bands(B, GK),
+     f"Date-of-effect spread within each score band, for {html.escape(GNAME)}. Higher bands "
+     "are dated later on average, because those EOIs are newer — which is why the rationing "
+     "term has to be read per band rather than once for the group.")}
+
+<p>Across the record, a boundary band is worked through completely only
+{pct('mv.boundary_cleared')} of the time in {num('mv.n_boundary')} observed cases. The rest
+of the time someone in that band is left waiting, and equation 4 is what decides whether that
+is you.</p>
+
 <p>The date-of-effect distributions are used as <em>shapes</em> only, normalised within each
 group and score. An earlier attempt to use them as levels was discarded: aggregating them
 across snapshots double-counted, producing dates later than the snapshot that recorded them
@@ -291,6 +313,12 @@ places allocated to the programme for the year, how many rounds are likely to re
 how unevenly past rounds have been sized. Combining them gives a median of
 {num('rs.q50', '{:,}')} with an 80% range of {num('rs.q10', '{:,}')} to
 {num('rs.q90', '{:,}')} — wide, because it genuinely is.</p>
+
+{fig("policy", F.fig_policy(B),
+     f"Published places by stream. The 189 allocation rises "
+     f"{num('policy.ratio')}x between the two years, from {num('policy.places.2025-26', '{:,}')} "
+     f"to {num('policy.places.2026-27', '{:,}')} places, which is what sets the scale of the "
+     "distribution below.")}
 
 {fig("roundsize", F.fig_roundsize(B),
      f"The round-size distribution. The bumps are real: they come from the discrete "
@@ -480,6 +508,20 @@ correction for this, but it is a correction, not a fix.</li>
 {num('drift.share85_trend_pp_per_month', '{:.2f}')} percentage points a month. Both are
 modelled, and both are largely absorbed by the horizon correction above.</li>
 
+</ul>
+
+{fig("horizon", F.fig_horizon(B),
+     f"Error against how old the pool snapshot is. A snapshot from the month before a round "
+     f"predicts it almost exactly (MAE {B['horizon_series']['1']['mae']:.2f}); by six months "
+     f"out it has degraded several-fold. Lag 0 is excluded because that snapshot is published "
+     "after the round it would be predicting.")}
+
+{fig("movement", F.fig_movement(B),
+     f"How far a group's cut-off moves between consecutive rounds. It repeats only "
+     f"{pct('mv.p_stay')} of the time; {pct('mv.p_move5')} of the time it shifts by exactly "
+     "one band, more often down than up.")}
+
+<ul>
 <li><b>It says nothing about your individual case beyond points and date.</b> Nomination,
 documentary problems, or anything specific to one application are outside it.</li>
 
@@ -521,6 +563,31 @@ def chapters_html():
             f'<h2>{html.escape(c["title"])}</h2>{c["body"]}{nav}</article>')
     return "".join(out)
 
+
+TIP = r"""
+/* the figures are static SVG with a tooltip baked onto each mark; one listener shows them */
+(function(){
+  var tip=document.createElement("div");
+  tip.className="figtip"; tip.setAttribute("role","status"); tip.hidden=true;
+  document.body.appendChild(tip);
+  function tipShow(e){
+    var m=e.target.closest?e.target.closest("[data-tip]"):null;
+    if(!m){tipHide();return;}
+    tip.textContent=m.getAttribute("data-tip"); tip.hidden=false;
+    var r=m.getBoundingClientRect(), t=tip.getBoundingClientRect();
+    var x=r.left+r.width/2-t.width/2, y=r.top-t.height-9;
+    if(y<6) y=r.bottom+9;
+    tip.style.left=Math.max(6,Math.min(innerWidth-t.width-6,x))+"px";
+    tip.style.top=y+"px";
+  }
+  function tipHide(){tip.hidden=true;}
+  document.addEventListener("pointerover",tipShow);
+  document.addEventListener("pointerout",function(e){
+    if(!e.relatedTarget||!e.relatedTarget.closest||!e.relatedTarget.closest("[data-tip]")) tipHide();});
+  addEventListener("scroll",tipHide,{passive:true});
+  addEventListener("resize",tipHide);
+})();
+"""
 
 ROUTER = r"""
 (function(){
@@ -601,6 +668,7 @@ const B={(R / "data" / "bundle.json").read_text()};
 const S={{occ:null,pts:85,doe:null,szi:2}};
 {MODEL_JS}
 {ROUTER}
+{TIP}
 {KATEX_JS}
 {THEME}
 </script>

@@ -127,6 +127,15 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .mkey i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:-1px}
 .takeaway{margin:0 0 10px;font-size:13px;line-height:1.45;color:var(--ink);
   background:var(--brand-soft);border-left:3px solid var(--brand);padding:8px 11px;border-radius:0 7px 7px 0}
+/* a takeaway can be a row of figures instead of a sentence: scannable at a glance */
+.takeaway:has(.stat){display:flex;flex-wrap:wrap;gap:8px 26px;align-items:baseline}
+.stat{display:inline-flex;flex-direction:column;gap:1px;line-height:1.15}
+.stat>b{font-size:19px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+  color:var(--ink)}
+.stat>i{font-style:normal;font-size:10.5px;letter-spacing:.04em;color:var(--muted)}
+.stat.verdict-good>b{color:var(--good)}
+.stat.verdict-crit>b{color:var(--crit)}
+
 .takeaway b{font-weight:700}
 .takeaway.good{background:var(--good-bg);border-left-color:var(--good)}
 .takeaway.warn{background:var(--warn-bg);border-left-color:var(--warn)}
@@ -411,8 +420,6 @@ function chartForecast(g,pts){
     const q=el("text",{x:W-MR-3,y:Y(pts)-7,class:"reft","text-anchor":"end"});
     q.textContent="your "+pts;s.appendChild(q);}
   /* the likely-round-size window, so the reader knows which part of the x-axis matters */
-  s.appendChild(el("rect",{x:X(B.rs.q10),y:MT,width:Math.max(1,X(B.rs.q90)-X(B.rs.q10)),
-    height:ph,fill:"var(--gold)",opacity:"0.10"}));
   [["q10",B.rs.q10],["q50",B.rs.q50],["q90",B.rs.q90]].forEach(([k,N])=>{
     s.appendChild(el("line",{x1:X(N),y1:MT,x2:X(N),y2:MT+ph,
       stroke:k==="q50"?"var(--ink)":"var(--muted)","stroke-width":k==="q50"?1.5:1,
@@ -425,6 +432,16 @@ function chartForecast(g,pts){
     s.appendChild(cc);
     hover(cc,"<b>"+c+" points</b><span>if the round is "+fmt(N)+"</span><span>80% interval "+
       (c-B.unc.hi80)+"&ndash;"+(c-B.unc.lo80)+"</span><span>At "+pts+" pts: "+fcVerdict(c,pts).t+"</span>");});
+  /* how likely each round size is, drawn on the same x-axis as the forecast, so the
+     reader can see which part of the curve actually carries weight */
+  const dmax=Math.max(...B.rs.dens), hb=ph*0.2;
+  let dd="M"+X(grid[0]).toFixed(1)+","+(MT+ph).toFixed(1);
+  grid.forEach((sz,i)=>{dd+=" L"+X(sz).toFixed(1)+","+(MT+ph-hb*B.rs.dens[i]/dmax).toFixed(1);});
+  dd+=" L"+X(grid[grid.length-1]).toFixed(1)+","+(MT+ph).toFixed(1)+" Z";
+  s.appendChild(el("path",{d:dd,fill:"var(--gold)","fill-opacity":".22",stroke:"var(--gold)",
+    "stroke-width":1,"stroke-opacity":".6"}));
+  const dl=el("text",{x:ML+4,y:MT+ph-2,class:"tick","text-anchor":"start",fill:"var(--gold)"});
+  dl.textContent="how likely each size is";s.appendChild(dl);
   for(const N of [grid[0],B.rs.q50,grid[grid.length-1]]){
     const q=el("text",{x:X(N),y:H-MB+18,class:"tick","text-anchor":"middle"});
     q.textContent=fmt(N);s.appendChild(q);}
@@ -544,7 +561,9 @@ function chartDoe(gk,pts){
     const idx=M.indexOf(S.doe);
     if(idx>=0){
       s.appendChild(el("line",{x1:X(idx),y1:MT,x2:X(idx),y2:MT+ph,class:"refl"}));
-      const t=el("text",{x:X(idx)+4,y:MT+11,class:"reft"});t.textContent="you";s.appendChild(t);}
+      const near=X(idx)>ML+pw-30;
+      const t=el("text",{x:X(idx)+(near?-4:4),y:MT+11,class:"reft",
+        "text-anchor":near?"end":"start"});t.textContent="you";s.appendChild(t);}
   }
   if(e){
     e.textContent = S.doe===null
@@ -556,11 +575,15 @@ function chartDoe(gk,pts){
 /* ---------- chart 1: cut-off by round ---------- */
 function chartRounds(o,pts){
   const s=$("c1"); if(!s) return; clear(s);
-  const W=560,H=230,ML=36,MR=18,MT=22,MB=54,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=230,ML=36,MR=46,MT=22,MB=54,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   const rs=o.rounds, vals=rs.map(r=>r.b).filter(v=>v!==null);
-  const lo=Math.min(60,pts-5,...vals), hi=Math.max(pts+5,...vals,100);
-  const X=i=>ML+(rs.length===1?pw/2:pw*i/(rs.length-1));
+  const _fcs=(typeof CURG!=="undefined"&&B.groups[CURG])?B.groups[CURG].fc.filter(v=>v!==null):[];
+  const _sp=_fcs.length?[Math.min(..._fcs)-B.unc.hi80,Math.max(..._fcs)-B.unc.lo80]:[];
+  const lo=Math.min(60,pts-5,...vals,..._sp), hi=Math.max(pts+5,...vals,100,..._sp);
+  /* rs.length history slots plus one projection slot */
+  const NS=rs.length+1;
+  const X=i=>ML+(NS===1?pw/2:pw*i/(NS-1));
   const Y=v=>MT+ph*(1-(v-lo)/(hi-lo));
   const maxN=Math.max(1,...rs.map(r=>r.n));
   const COL={good:"var(--good)",warn:"var(--warn)",crit:"var(--crit)",n:"var(--deemph)"};
@@ -594,6 +617,39 @@ function chartRounds(o,pts){
     const c2=el("circle",{cx:X(i),cy:H-MB+32,r:5,fill:COL[v.k]});s.appendChild(c2);
     const nl=el("text",{x:X(i),y:H-MB+47,class:"tick","text-anchor":"middle"});
     nl.textContent=r.n?fmt(r.n):"";s.appendChild(nl);});
+  /* ---- the round that has not happened yet ---- */
+  const pj=X(rs.length), fcN=(typeof CURG!=="undefined"&&B.groups[CURG])?B.groups[CURG].fc[S.szi]:null;
+  s.appendChild(el("line",{x1:pj-0.5,y1:MT-6,x2:pj-0.5,y2:H-MB+6,stroke:"var(--line)",
+    "stroke-width":1,"stroke-dasharray":"2 3"}));
+  if(fcN!==null&&fcN!==undefined){
+    /* the forecast is a distribution, not a point: every held-out error, applied */
+    const R=B.unc.residuals, cnt={};
+    R.forEach(e=>{const v=fcN-e; cnt[v]=(cnt[v]||0)+1;});
+    const vals=Object.keys(cnt).map(Number).sort((a,b)=>a-b);
+    const cmax=Math.max(...vals.map(v=>cnt[v])), halfW=Math.min(26,(pw/NS)*0.42);
+    vals.forEach(v=>{
+      if(v<lo||v>hi) return;
+      const w=halfW*cnt[v]/cmax, y=Y(v), bh=Math.max(3,ph/((hi-lo)/5)-2);
+      const good=v<=pts;
+      const r=el("rect",{x:pj-w,y:y-bh/2,width:w*2,height:bh,rx:2,
+        fill:good?"var(--good)":"var(--crit)","fill-opacity":good?".55":".4"});
+      s.appendChild(r);
+      hover(r,"<b>cut-off "+v+"</b><span>"+Math.round(100*cnt[v]/R.length)+
+        "% of held-out rounds landed here</span><span>at "+pts+" pts: "+
+        (good?"you are in":"not reached")+"</span>");});
+    const pIn=pLE(fcN,pts);
+    if(pIn!==null){
+      const t1=el("text",{x:W-2,y:MT-10,class:"vlab","text-anchor":"end",
+        fill:pIn>=.5?"var(--good)":"var(--crit)"});
+      t1.textContent=Math.round(pIn*100)+"% at or below "+pts;s.appendChild(t1);}
+    const cd=el("circle",{cx:pj,cy:Y(fcN),r:4.5,fill:"var(--ink)",stroke:"var(--card)","stroke-width":2});
+    s.appendChild(cd);
+    hover(cd,"<b>forecast "+fcN+" points</b><span>central estimate for the next round</span>");
+  } else {
+    const q=el("text",{x:pj,y:MT+ph/2,class:"tick","text-anchor":"middle"});
+    q.textContent="no forecast";s.appendChild(q);}
+  const pl=el("text",{x:pj,y:H-MB+16,class:"tick","text-anchor":"middle","font-weight":"700"});
+  pl.textContent="next";s.appendChild(pl);
   const yl=el("text",{x:ML-7,y:MT-8,class:"tick","text-anchor":"end"});yl.textContent="pts";s.appendChild(yl);
   const nl2=el("text",{x:2,y:H-MB+47,class:"tick","text-anchor":"start"});nl2.textContent="invites";s.appendChild(nl2);
   
@@ -622,11 +678,28 @@ function chartQueue(g,pts){
     if(i===0){d+="M"+ML.toFixed(1)+","+Y(0).toFixed(1)+" L"+ML.toFixed(1)+","+y.toFixed(1);}
     else {d+=" L"+x.toFixed(1)+","+Y(step[i-1].cum).toFixed(1)+" L"+x.toFixed(1)+","+y.toFixed(1);}});
   d+=" L"+X(keys.length-1).toFixed(1)+","+Y(step[step.length-1].cum).toFixed(1);
+  /* the people ahead of you: the same step curve, closed to the baseline and filled,
+     so the quantity the card is about is an area rather than a number to look up */
+  const myS=Math.round(pts/5)*5, myI=keys.indexOf(myS);
+  const lastI = myI>=0 ? myI : (myS>keys[0] ? -1 : keys.length-1);
+  if(lastI>=0){
+    let ad="M"+ML.toFixed(1)+","+Y(0).toFixed(1);
+    for(let i=0;i<=lastI;i++){
+      const x=X(i);
+      if(i===0) ad+=" L"+ML.toFixed(1)+","+Y(step[0].cum).toFixed(1);
+      else ad+=" L"+x.toFixed(1)+","+Y(step[i-1].cum).toFixed(1)+" L"+x.toFixed(1)+","+Y(step[i].cum).toFixed(1);
+    }
+    ad+=" L"+X(lastI).toFixed(1)+","+Y(0).toFixed(1)+" Z";
+    const ar=el("path",{d:ad,fill:"var(--crit)","fill-opacity":".13",stroke:"none"});
+    s.appendChild(ar);
+    hover(ar,"<b>"+fmt(step[lastI].cum)+" ahead of you</b><span>everyone scoring "+myS+
+      " or more in this group</span>");
+  }
   s.appendChild(el("path",{d:d,class:"ln"}));
   /* allocation reference: where the last round stopped */
   const ay=Y(alloc);
   s.appendChild(el("line",{x1:ML,y1:ay,x2:W-MR,y2:ay,stroke:"var(--good)","stroke-width":1.5,"stroke-dasharray":"5 4"}));
-  const at=el("text",{x:W-MR+4,y:ay+3.5,fill:"var(--good)","font-size":"10.5","font-weight":"650"});
+  const at=el("text",{x:W-MR+4,y:ay+3.5,fill:"var(--good)","font-size":"9.5","font-weight":"650"});
   at.textContent=fmt(alloc)+" invited";s.appendChild(at);
   /* the reader's position */
   const my=Math.round(pts/5)*5, mi=keys.indexOf(my);
@@ -965,8 +1038,14 @@ function say(id,kind,html){const e=$(id);if(!e)return;e.className="takeaway"+(ki
 function takeaways(o,g,pts,size){
   const inv=o.rounds.filter(r=>verdictFor(r,pts).k==="good").length;
   const dated=o.rounds.filter(r=>verdictFor(r,pts).k==="warn").length;
-  say("t1", inv>=3?"good":inv>0?"warn":"crit",
-    "<b>"+inv+" of 5</b> past rounds would have invited you"+(dated?", <b>"+dated+"</b> on date":"")+".");
+  /* the card is about the NEXT round as much as the past ones, so lead with both */
+  const _fcn=g?g.fc[S.szi]:null, _pn=(_fcn===null||_fcn===undefined)?null:pLE(_fcn,pts);
+  say("t1", _pn===null?(inv>0?"warn":"crit"):(_pn>=.6?"good":_pn>=.35?"warn":"crit"),
+    '<span class="stat"><b>'+inv+' of '+o.rounds.length+'</b><i>past rounds would have invited you</i></span>'+
+    (_pn===null
+      ? '<span class="stat"><b>&mdash;</b><i>no forecast for the next round</i></span>'
+      : '<span class="stat verdict-'+(_pn>=.5?"good":"crit")+'"><b>'+Math.round(_pn*100)+
+        '%</b><i>chance the next cut-off is at or below '+pts+'</i></span>'));
   const fc=g?g.fc[S.szi]:null, P=pClear(fc,pts);
   say("t2", P===null?"":P>=.8?"good":P>=.5?"warn":"crit",
     P===null ? "This occupation got no invitations last round, so there is nothing to forecast from."
@@ -979,9 +1058,13 @@ function takeaways(o,g,pts,size){
     : "<b>"+fmt(same)+"</b> on your score, <b>"+fmt(above)+"</b> above it, in this occupation.");
   const ge=g?Object.keys(g.dist).map(Number).filter(k=>k>=my).reduce((a,k)=>a+g.dist[k],0):0;
   const al=g?g.alloc[g.alloc.length-1]:0;
+  /* the three numbers that decide this card, as figures to scan rather than a sentence */
   say("t4", al>=ge?"good":"crit",
-    "<b>"+fmt(ge)+"</b> ahead &middot; last round invited <b>"+fmt(al)+"</b> &mdash; "+
-    (al>=ge?"<b>reaches you</b>.":"<b>stops short</b>."));
+    '<span class="stat"><b>'+fmt(ge)+'</b><i>ahead of you</i></span>'+
+    '<span class="stat"><b>'+fmt(al)+'</b><i>invited last round</i></span>'+
+    '<span class="stat verdict-'+(al>=ge?"good":"crit")+'"><b>'+
+      (al>=ge?"reaches you":"stops short")+'</b><i>'+
+      (al>=ge?fmt(al-ge)+" to spare":fmt(ge-al)+" short")+'</i></span>');
   const need=g?B.sizes.find((sz,i)=>{const p=pClear(g.fc[i],pts);return p!==null&&p>=.8;}):null;
   say("t5","", need
     ? "Comfortably in above <b>"+fmt(need)+"</b> invitations."

@@ -37,6 +37,11 @@ figure svg{display:block;width:100%;height:auto}
 figcaption{margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--muted)}
 figcaption b{color:var(--ink);font-weight:700}
 
+.figbox [data-tip]{cursor:crosshair}
+.figtip{position:fixed;z-index:60;max-width:280px;pointer-events:none;
+  background:var(--ink);color:var(--paper);font-size:12px;line-height:1.4;
+  padding:7px 10px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.22)}
+.figtip[hidden]{display:none}
 .eq{margin:20px 0;padding:14px 16px;border-left:3px solid var(--brand);
   background:var(--brand-soft);border-radius:0 10px 10px 0;overflow-x:auto}
 .eq .katex{font-size:1.04em}

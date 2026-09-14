@@ -224,4 +224,6 @@ chk("  (control) the orphan check catches a planted missing id",
     _ctl==["__planted_missing_id__"], f"control saw {_ctl}")
 
 print("\n"+"="*96)
+import sys as _sys
 print(f"AUDIT: {len(fails)} failure(s)" + (": "+", ".join(fails) if fails else " - all checks pass"))
+_sys.exit(1 if fails else 0)   # so build_all.py actually stops on a failure

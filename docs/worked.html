@@ -129,6 +129,15 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .mkey i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:-1px}
 .takeaway{margin:0 0 10px;font-size:13px;line-height:1.45;color:var(--ink);
   background:var(--brand-soft);border-left:3px solid var(--brand);padding:8px 11px;border-radius:0 7px 7px 0}
+/* a takeaway can be a row of figures instead of a sentence: scannable at a glance */
+.takeaway:has(.stat){display:flex;flex-wrap:wrap;gap:8px 26px;align-items:baseline}
+.stat{display:inline-flex;flex-direction:column;gap:1px;line-height:1.15}
+.stat>b{font-size:19px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+  color:var(--ink)}
+.stat>i{font-style:normal;font-size:10.5px;letter-spacing:.04em;color:var(--muted)}
+.stat.verdict-good>b{color:var(--good)}
+.stat.verdict-crit>b{color:var(--crit)}
+
 .takeaway b{font-weight:700}
 .takeaway.good{background:var(--good-bg);border-left-color:var(--good)}
 .takeaway.warn{background:var(--warn-bg);border-left-color:var(--warn)}
@@ -263,6 +272,11 @@ figure svg{display:block;width:100%;height:auto}
 figcaption{margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--muted)}
 figcaption b{color:var(--ink);font-weight:700}
 
+.figbox [data-tip]{cursor:crosshair}
+.figtip{position:fixed;z-index:60;max-width:280px;pointer-events:none;
+  background:var(--ink);color:var(--paper);font-size:12px;line-height:1.4;
+  padding:7px 10px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.22)}
+.figtip[hidden]{display:none}
 .eq{margin:20px 0;padding:14px 16px;border-left:3px solid var(--brand);
   background:var(--brand-soft);border-radius:0 10px 10px 0;overflow-x:auto}
 .eq .katex{font-size:1.04em}
