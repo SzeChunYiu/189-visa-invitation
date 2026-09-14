@@ -438,5 +438,10 @@
   }
  },
  "p_zero_given_prev_zero": 0.76,
- "p_zero_given_prev_nonzero": 0.082
+ "p_zero_given_prev_nonzero": 0.082,
+ "n_prev_zero": 25,
+ "k_prev_zero": 19,
+ "n_prev_nonzero": 61,
+ "k_prev_nonzero": 5,
+ "transition": "2025-11 to 2026-06"
 }

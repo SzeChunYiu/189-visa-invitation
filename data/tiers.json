@@ -4,28 +4,28 @@
    "groups": 10,
    "pool": 17536,
    "invites": 5326,
-   "zero_share": 0.0,
+   "groups_zero_year": 0.0,
    "per_1000": 303.72
   },
   "2": {
    "groups": 5,
    "pool": 16982,
    "invites": 1990,
-   "zero_share": 0.0,
+   "groups_zero_year": 0.0,
    "per_1000": 117.18
   },
   "3": {
    "groups": 62,
    "pool": 72077,
    "invites": 6567,
-   "zero_share": 0.177,
+   "groups_zero_year": 0.177,
    "per_1000": 91.11
   },
   "4": {
    "groups": 9,
    "pool": 74056,
    "invites": 96,
-   "zero_share": 0.778,
+   "groups_zero_year": 0.778,
    "per_1000": 1.3
   }
  },

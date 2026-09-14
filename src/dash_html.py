@@ -75,12 +75,14 @@ HTML = r"""<meta charset="utf-8">
 </div>
 <div class="card"><div class="chead"><span class="stepbadge">Step 5<i>whether the group is invited</i></span><h2>Whether your group gets a round</h2>
   <span class="eyebrow" id="h10n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n10" aria-label="Explain" data-note="n10">?</button></div>
-  <div class="chartwrap"><svg id="c10" viewBox="0 0 560 200" role="img" aria-labelledby="c10t">
-    <title id="c10t">Invitation rate by priority tier, with your group marked</title></svg></div>
+  <div class="chartwrap"><svg id="c10" viewBox="0 0 560 210" role="img" aria-labelledby="c10t">
+    <title id="c10t">Chance a group is skipped, by whether it was invited in the last round</title></svg></div>
   <div class="note" id="n10" hidden><ul class="ptlist">
-    <li><b>Bars</b> — invitations per 1,000 people waiting, by priority tier</li>
-    <li><b>Your tier</b> — filled; the others faint</li>
-    <li>Whether a group was invited last round predicts this better than its tier does, so the model uses that; the tier is why</li>
+    <li><b>Two bars, one quantity</b> — the chance a group receives nothing in a round</li>
+    <li><b>The split</b> — being invited last round is the single strongest predictor of being invited again</li>
+    <li><b>Your bar</b> is filled; the branch that does not apply to you is faint</li>
+    <li>Measured across every unit group with people waiting, over the 2025-11 to 2026-06 transition</li>
+    <li>One rate is used for all tiers: a tier holds too few group-rounds to estimate its own</li>
   </ul></div>
 </div>
 <div class="card" id="nofc" hidden><div class="chead"><span class="stepbadge">Why<i>no forecast for this group</i></span><h2>What happened to this occupation</h2>
@@ -526,43 +528,54 @@ function chartWaterfall(g,gk,pts){
 }
 
 
-/* ---------- chart 10: whether the group gets a round at all ---------- */
-function chartTierRate(g,gk){
+/* ---------- chart 10: whether the group gets a round at all ----------
+   This card used to put three different quantities side by side - a tier's
+   invitation rate per 1,000, the share of that tier's groups that received
+   nothing all year, and the model's own per-round skip probability - with the
+   middle one labelled as if it were the third. Reading down the card gave 8%
+   and 18% for what looked like the same thing. It now shows one quantity: the
+   two branches of eq. 5, both of which pZero() actually uses. */
+function chartSkip(g,gk){
   const s=$("c10"); if(!s) return; clear(s);
-  const W=560,H=200,ML=16,MR=16,MT=40,MB=60,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=210,ML=196,MR=64,MT=44,MB=44,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
-  if(!B.tiers||!B.tiers.by_tier) return;
-  const bt=B.tiers.by_tier, keys=Object.keys(bt).sort();
-  const mine=B.tiers.tier_of?String(B.tiers.tier_of[gk]||""):"";
-  const mx=Math.max(...keys.map(k=>bt[k].per_1000));
-  const bw=pw/keys.length;
-  keys.forEach((k,i)=>{
-    const r=bt[k], x=ML+i*bw+bw*0.2, wd=bw*0.6;
-    const h=Math.max(2,ph*r.per_1000/mx), is=k===mine;
-    const rect=el("rect",{x:x,y:MT+ph-h,width:wd,height:h,rx:6,
-      fill:is?"var(--brand)":"var(--deemph)","fill-opacity":is?1:0.45});
+  if(!B.zr) return;
+  const z=B.zr, inv=g?g.alloc[g.alloc.length-1]>0:true;
+  const rows=[
+    {p:z.p_zero_given_prev_nonzero,lab:"Invited last round",
+     k:z.k_prev_nonzero,n:z.n_prev_nonzero,mine:inv},
+    {p:z.p_zero_given_prev_zero,lab:"Received nothing last round",
+     k:z.k_prev_zero,n:z.n_prev_zero,mine:!inv}];
+  const X=v=>ML+pw*v, bh=34, gap=26;
+  /* gridlines first, so every printed percentage sits on a scale the reader can see */
+  [0,0.25,0.5,0.75,1].forEach(v=>{
+    s.appendChild(el("line",{x1:X(v),y1:MT-8,x2:X(v),y2:MT+ph-6,
+      stroke:"var(--grid)","stroke-width":1}));
+    const t=el("text",{x:X(v),y:MT+ph+12,class:"tick","text-anchor":"middle"});
+    t.textContent=Math.round(v*100)+"%";s.appendChild(t);});
+  rows.forEach((r,i)=>{
+    const y=MT+i*(bh+gap), w=Math.max(2,pw*r.p);
+    const rect=el("rect",{x:ML,y:y,width:w,height:bh,rx:5,
+      fill:r.mine?"var(--brand)":"var(--deemph)","fill-opacity":r.mine?1:0.4});
     s.appendChild(rect);
-    hover(rect,"<b>Tier "+k+"</b><span>"+r.per_1000.toFixed(1)+" invitations per 1,000 waiting</span>"+
-      "<span>"+r.groups+" groups &middot; "+fmt(r.pool)+" people</span>"+
-      "<span>received nothing in "+Math.round(r.zero_share*100)+"% of rounds</span>");
-    const v=el("text",{x:x+wd/2,y:MT+ph-h-7,class:"vlab","text-anchor":"middle",
-      fill:is?"var(--brand)":"var(--muted)"});
-    v.textContent=r.per_1000.toFixed(0);s.appendChild(v);
-    const l=el("text",{x:x+wd/2,y:H-MB+18,class:"tick","text-anchor":"middle",
-      "font-weight":is?"700":"600",fill:is?"var(--ink)":"var(--muted)"});
-    l.textContent="Tier "+k+(is?" — yours":"");s.appendChild(l);
-    const l2=el("text",{x:x+wd/2,y:H-MB+31,class:"tick","text-anchor":"middle"});
-    l2.textContent=Math.round(r.zero_share*100)+"% of rounds skipped";s.appendChild(l2);
-  });
-  const al=g?g.alloc[g.alloc.length-1]:0;
-  const t=el("text",{x:ML,y:MT-22,class:"tick","text-anchor":"start","font-weight":"700",
+    if(r.n!=null) hover(rect,"<b>"+r.lab+"</b><span>"+Math.round(r.p*100)+
+      "% chance of being skipped</span><span>"+r.k+" of "+r.n+
+      " unit groups received nothing in the next round</span>");
+    const v=el("text",{x:ML+w+8,y:y+bh/2+5,class:"vlab","text-anchor":"start",
+      fill:r.mine?"var(--brand)":"var(--muted)","font-weight":"700"});
+    v.textContent=Math.round(r.p*100)+"%";s.appendChild(v);
+    const l=el("text",{x:ML-10,y:y+bh/2-1,class:"tick","text-anchor":"end",
+      "font-weight":r.mine?"700":"600",fill:r.mine?"var(--ink)":"var(--muted)"});
+    l.textContent=r.lab;s.appendChild(l);
+    const l2=el("text",{x:ML-10,y:y+bh/2+12,class:"tick","text-anchor":"end"});
+    l2.textContent=(r.n!=null?r.k+" of "+r.n+" groups":"")+(r.mine?"  \u2190 yours":"");
+    s.appendChild(l2);});
+  const t=el("text",{x:16,y:MT-22,class:"tick","text-anchor":"start","font-weight":"700",
     fill:"var(--ink)"});
-  t.textContent=(al>0?"Your group was invited last round, so the model uses "
-                     :"Your group received nothing last round, so the model uses ")+
-    Math.round(pZero(gk)*100)+"% as its chance of being skipped";
+  t.textContent=(inv?"Your group was invited last round":"Your group received nothing last round")+
+    ", so the model uses "+Math.round(pZero(gk)*100)+"%";
   s.appendChild(t);
-  const h=$("h10n"); if(h) h.textContent="invitations per 1,000 waiting";
-  axisTitle(s,W,H,MB,"","");
+  const h=$("h10n"); if(h) h.textContent="chance of receiving nothing in a round";
 }
 /* ---------- chart 11: how big the next round is ---------- */
 function chartRoundSize(){
@@ -1403,7 +1416,7 @@ function render(){
   const P=pMarginal(g,pts,o.g), bb=pBand(fc);
   chartProb(g,pts);
   chartForecast(g,pts);fcTable(g,pts);chartWaterfall(g,o.g,pts);
-  chartComp(g,o.g,pts);chartDoe(o.g,pts);chartTierRate(g,o.g);
+  chartComp(g,o.g,pts);chartDoe(o.g,pts);chartSkip(g,o.g);
   chartRoundSize();chartGroupShare(g,o.g);chartJoint(g,o.g,pts);
   chartNoFc(o,g,o.g,pts);
   const band = P===null?null:(P>=.8?"good":P>=.6?"good":P>=.4?"warn":"crit");

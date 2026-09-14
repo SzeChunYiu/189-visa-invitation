@@ -8,7 +8,29 @@ that order, written down and executable.
 import subprocess, sys, pathlib
 
 SRC = pathlib.Path(__file__).resolve().parent
-STEPS = [
+# The analysis layer. build_bundle.py reads sixteen json files; until now not one of
+# them was rebuilt by this pipeline, so editing a fit left the site serving the old
+# numbers and the build still said OK. Three inputs stay out: uncertainty.json is
+# produced from bundle.json and so cannot precede it, and horizon_corr.json and
+# switch.json have no producing script at all. audit.py now names those three rather
+# than letting the gap go unrecorded.
+REFIT = [
+    ("policy",     "policy.py"),             # policy.json - read by roundsize.py
+    ("roundsize",  "roundsize.py"),
+    ("zero_risk",  "zero_risk.py"),
+    ("tiers",      "tiers.py"),
+    ("mechanism",  "mechanism.py"),
+    ("movement",   "movement.py"),
+    ("horizon",    "horizon.py"),
+    ("mobility",   "mobility_model.py"),
+    ("alloc_gate", "alloc_all.py"),
+    ("drift",      "gap1_drift.py"),
+    ("gaps",       "gap2_rest.py"),
+    ("official",   "calibrate_official.py"),
+    ("singleleg",  "universal_validation.py"),
+]
+
+STEPS = REFIT + [
     ("bundle",     "build_bundle.py"),       # writes data/bundle.json
     ("validation", "validation_detail.py"),  # adds bundle["val"] - must follow the bundle
     ("aggregate",  "aggregate_trend.py"),  # adds bundle["agg"] - after validation

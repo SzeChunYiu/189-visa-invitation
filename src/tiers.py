@@ -52,7 +52,7 @@ tab=pd.crosstab(df.tier,df.zero_now)
 chi2,p,_,_=stats.chi2_contingency(tab)
 print(f"\n  tier x (gets nothing) chi-square = {chi2:.1f}, p = {p:.5f}")
 json.dump(dict(by_tier={int(k):dict(groups=int(v.groups),pool=int(v.pool),invites=int(v.invites_2025_26),
-    zero_share=round(float(v.share_zero),3),per_1000=round(float(v.invites_per_1000_waiting),2))
+    groups_zero_year=round(float(v.share_zero),3),per_1000=round(float(v.invites_per_1000_waiting),2))
     for k,v in t.iterrows()},chi2=round(float(chi2),1),p=float(p),
     tier_of={g:int(tier(g)) for g in gs}),open("tiers.json","w"),indent=1)
 print("\n  -> tiers.json written")

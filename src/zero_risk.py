@@ -63,9 +63,15 @@ for g in groups:
     if not hp: continue
     per[g]=dict(rounds_with_pool=len(hp),zero=int(sum(al.loc[g,r]==0 for r in hp)),
                 last_alloc=int(al.loc[g,"2026-06"]))
+# the counts behind the two branches, so the page can show what each rate rests on
+# rather than a bare percentage the reader has no way to weigh
+_pz=df[df.prev_alloc==0]; _pn=df[df.prev_alloc>0]
 json.dump(dict(base_rate=round(float(base),3),per_group=per,
-  p_zero_given_prev_zero=round(float(df[df.prev_alloc==0].zero.mean()),3),
-  p_zero_given_prev_nonzero=round(float(df[df.prev_alloc>0].zero.mean()),3)),
+  p_zero_given_prev_zero=round(float(_pz.zero.mean()),3),
+  p_zero_given_prev_nonzero=round(float(_pn.zero.mean()),3),
+  n_prev_zero=int(len(_pz)),k_prev_zero=int(_pz.zero.sum()),
+  n_prev_nonzero=int(len(_pn)),k_prev_nonzero=int(_pn.zero.sum()),
+  transition="2025-11 to 2026-06"),
   open("zero_risk.json","w"),indent=1)
 z2349=per.get("2349")
 print(f"\n  ANZSCO 2349: {z2349}")

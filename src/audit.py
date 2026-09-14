@@ -337,6 +337,31 @@ chk("a global focus-visible rule exists",
     ':focus-visible{outline' in _css.replace(" ",""),
     "covers every focusable element")
 
+# Every json build_bundle.py reads must be rebuilt by build_all.py, or an edited fit
+# silently leaves the site serving the previous numbers while the build reports OK.
+# That is exactly what happened to zero_risk.json and tiers.json. Three inputs are
+# knowingly outside the pipeline; they are named so the exception stays visible.
+_OUTSIDE={"bundle.json",            # build_bundle's own output
+          "uncertainty.json",       # derived FROM bundle.json, so it cannot precede it
+          "horizon_corr.json",      # no producing script in src/
+          "switch.json"}            # no producing script in src/
+_bb=pathlib.Path("../src/build_bundle.py").read_text()
+_ba=pathlib.Path("../src/build_all.py").read_text()
+_inputs={m for m in _re.findall(r'open\("([a-z_0-9]+\.json)"', _bb)}
+_produced=set()
+for _m in _re.findall(r'"([a-z_0-9]+\.py)"', _ba):
+    _sp=pathlib.Path("../src")/_m
+    if _sp.exists():
+        _produced |= set(_re.findall(r'open\("([a-z_0-9]+\.json)","w"', _sp.read_text()))
+_stale=sorted(_inputs-_produced-_OUTSIDE)
+chk("every bundle input is rebuilt by the pipeline",len(_stale)==0,
+    f"never rebuilt: {_stale}" if _stale else
+    f"{len(_inputs-_OUTSIDE)} inputs rebuilt, {len(_OUTSIDE)-1} documented exceptions")
+# the control: a fit that no pipeline step produces must be reported, not absorbed
+_ctl=sorted((_inputs|{"__unbuilt_fit__.json"})-_produced-_OUTSIDE)
+chk("  (control) an input with no producing step is caught",
+    _ctl==["__unbuilt_fit__.json"], f"control saw {_ctl}")
+
 allrefs=set().union(*SITE_REFS.values())
 orphans=sorted(allrefs-SITE_IDS)
 chk(f"no JS reference is orphaned across all {len(PAGES)} pages",len(orphans)==0,
