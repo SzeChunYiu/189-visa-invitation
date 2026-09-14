@@ -1,0 +1,45 @@
+{
+ "alloc": [
+  {
+   "round": "2024-09",
+   "alloc": 3,
+   "pool_ge85": 3,
+   "surplus": 0,
+   "cutoff": 95
+  },
+  {
+   "round": "2024-11",
+   "alloc": 11,
+   "pool_ge85": 5,
+   "surplus": 6,
+   "cutoff": 90
+  },
+  {
+   "round": "2025-08",
+   "alloc": 15,
+   "pool_ge85": 28,
+   "surplus": -13,
+   "cutoff": 90
+  },
+  {
+   "round": "2025-11",
+   "alloc": 24,
+   "pool_ge85": 24,
+   "surplus": 0,
+   "cutoff": 85
+  },
+  {
+   "round": "2026-06",
+   "alloc": 35,
+   "pool_ge85": 23,
+   "surplus": 12,
+   "cutoff": 80
+  }
+ ],
+ "rank_only": 23,
+ "rank_all": 32,
+ "p_below": 0.5161290322580645,
+ "p_eq": 0.25806451612903225,
+ "p_above": 0.22580645161290322,
+ "p_inv_round": 0.7741935483870968
+}

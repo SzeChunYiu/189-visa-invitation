@@ -1,0 +1,142 @@
+{
+ "rounds": [
+  "2024-09",
+  "2024-11",
+  "2025-08",
+  "2025-11",
+  "2026-06"
+ ],
+ "cutoffs": [
+  {
+   "round": "2024-09",
+   "size": 4274,
+   "cut_all": 65,
+   "cut_2349": 95,
+   "cut_phys": 95
+  },
+  {
+   "round": "2024-11",
+   "size": 8230,
+   "cut_all": 65,
+   "cut_2349": 90,
+   "cut_phys": 90
+  },
+  {
+   "round": "2025-08",
+   "size": 3574,
+   "cut_all": 65,
+   "cut_2349": 90,
+   "cut_phys": 90
+  },
+  {
+   "round": "2025-11",
+   "size": 5207,
+   "cut_all": 65,
+   "cut_2349": 85,
+   "cut_phys": 85
+  },
+  {
+   "round": "2026-06",
+   "size": 5198,
+   "cut_all": 65,
+   "cut_2349": 80,
+   "cut_phys": 80
+  }
+ ],
+ "clearance": {
+  "Physicist 234914": [
+   {
+    "round": "2024-09",
+    "pool_pre": 1,
+    "pool_at": 1,
+    "inv85": 0,
+    "clear_lo": 0.0,
+    "clear_hi": 0.0,
+    "cleared": false
+   },
+   {
+    "round": "2024-11",
+    "pool_pre": 1,
+    "pool_at": 3,
+    "inv85": 0,
+    "clear_lo": 0.0,
+    "clear_hi": 0.0,
+    "cleared": false
+   },
+   {
+    "round": "2025-08",
+    "pool_pre": 3,
+    "pool_at": 4,
+    "inv85": 0,
+    "clear_lo": 0.0,
+    "clear_hi": 0.0,
+    "cleared": false
+   },
+   {
+    "round": "2025-11",
+    "pool_pre": 5,
+    "pool_at": 3,
+    "inv85": 5,
+    "clear_lo": 0.625,
+    "clear_hi": 1.0,
+    "cleared": true
+   },
+   {
+    "round": "2026-06",
+    "pool_pre": 5,
+    "pool_at": 1,
+    "inv85": 5,
+    "clear_lo": 0.833,
+    "clear_hi": 1.0,
+    "cleared": true
+   }
+  ],
+  "Unit group 2349": [
+   {
+    "round": "2024-09",
+    "pool_pre": 2,
+    "pool_at": 2,
+    "inv85": 0,
+    "clear_lo": 0.0,
+    "clear_hi": 0.0,
+    "cleared": false
+   },
+   {
+    "round": "2024-11",
+    "pool_pre": 4,
+    "pool_at": 5,
+    "inv85": 0,
+    "clear_lo": 0.0,
+    "clear_hi": 0.0,
+    "cleared": false
+   },
+   {
+    "round": "2025-08",
+    "pool_pre": 10,
+    "pool_at": 10,
+    "inv85": 0,
+    "clear_lo": 0.0,
+    "clear_hi": 0.0,
+    "cleared": false
+   },
+   {
+    "round": "2025-11",
+    "pool_pre": 11,
+    "pool_at": 3,
+    "inv85": 11,
+    "clear_lo": 0.786,
+    "clear_hi": 1.0,
+    "cleared": true
+   },
+   {
+    "round": "2026-06",
+    "pool_pre": 10,
+    "pool_at": 1,
+    "inv85": 11,
+    "clear_lo": 0.917,
+    "clear_hi": 1.0,
+    "cleared": true
+   }
+  ]
+ }
+}
