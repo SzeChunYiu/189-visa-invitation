@@ -12,6 +12,7 @@ STEPS = [
     ("bundle",     "build_bundle.py"),       # writes data/bundle.json
     ("validation", "validation_detail.py"),  # adds bundle["val"] - must follow the bundle
     ("aggregate",  "aggregate_trend.py"),  # adds bundle["agg"] - after validation
+    ("curves",     "curve_forms.py"),    # tests the two fitted shapes, writes ["curves"]
     ("explorer",   "build_dash.py"),
     ("pages",      "build_pages.py"),
     ("worked",     "build_worked.py"),

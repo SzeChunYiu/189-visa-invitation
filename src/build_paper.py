@@ -555,13 +555,22 @@ and the model would not see it coming.</li>
 
 <li><b>The pool is a snapshot, and it ages.</b> The published pool is measured at
 {num('meta.snapshot')}. Cut-off error grows by about {num('horizon.mae_slope')} points for each
-month between the snapshot and the round it is used to predict. The forecast carries a
-correction for this, but it is a correction, not a fix.</li>
+month between the snapshot and the round it is used to predict, and here a straight line
+<em>is</em> the right shape: tested against square-root, logarithmic, saturating and quadratic
+alternatives on {num('curves.staleness.n')} lags, the line has the lowest leave-one-out error.
+The quadratic fits better in sample and predicts worse out of it, which is what over-fitting
+looks like at this sample size. The forecast carries a correction for staleness, but it is a
+correction, not a fix.</li>
 
-<li><b>The pool strengthens over time.</b> Mean points in the pool drift up by roughly
-{num('drift.mean_trend_per_month', '{:.3f}')} points a month, and the share at 85 or more by
-{num('drift.share85_trend_pp_per_month', '{:.2f}')} percentage points a month. Both are
-modelled, and both are largely absorbed by the horizon correction above.</li>
+<li><b>The pool strengthens, but not at a constant rate.</b> Over the panel the mean score
+moved from {num('drift.mean_start', '{:.2f}')} to {num('drift.mean_end', '{:.2f}')} points and
+the share at 85 or more from {pct('drift.share85_start', 1)} to {pct('drift.share85_end', 1)}.
+A straight line is the wrong shape for both: on leave-one-out cross-validation a quadratic
+predicts the mean {pct('curves.pool_mean.gain')} better than a line, and a logarithm predicts
+the 85-plus share {pct('curves.pool_share85.gain')} better. Both curves are flattening, so a
+constant monthly rate would overstate what happens next. Neither figure feeds the forecast —
+they are reported here as a limitation, and the staleness correction above absorbs most of
+the effect.</li>
 
 </ul>
 

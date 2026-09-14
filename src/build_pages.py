@@ -70,6 +70,7 @@ PAGES={
                        "Your place in the queue",                  # 4 where you sit in that band
                        "Whether your group gets a round",          # 5 is the group invited at all
                        "Your chance vs round size",                # 6 your chance at each size
+                       "Your chance at every score and round size",  # the joint of 1 and 6
                        # everything else, once the chain is told
                        "What the people at each score hold",
                        "Every score band",

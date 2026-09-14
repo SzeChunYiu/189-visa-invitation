@@ -275,8 +275,10 @@ _GLOBALS = {
 for _pg in PAGES:
     _js=_strip_js(_code((pathlib.Path("../docs")/_pg).read_text()))
     _defs=set(_re.findall(r"function\s+([A-Za-z_$][\w$]*)\s*\(", _js))
-    _defs |= set(_re.findall(r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:function\b|\([^)]*\)\s*=>)", _js))
-    _defs |= set(_re.findall(r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*[A-Za-z_$][\w$]*\s*=>", _js))
+    # const a=..., b=... declares BOTH; anchoring on the keyword alone missed the second
+    _defs |= {m.group(1) for m in _re.finditer(
+        r"(?:(?:const|let|var)\s+|,\s*)([A-Za-z_$][\w$]*)\s*=\s*(?:function\b|\([^)]*\)\s*=>|[A-Za-z_$][\w$]*\s*=>)",
+        _js)}
     # object-literal shorthand methods - {add(){}, remove(){}} - are definitions, not calls
     _defs |= {m.group(1) for m in _re.finditer(r"(?<![.\w$])([A-Za-z_$][\w$]*)\s*\([^()]*\)\s*\{", _js)}
     # a parameter called as a function is defined by its signature

@@ -60,7 +60,19 @@ HTML = r"""<meta charset="utf-8">
 
 
 <div class="grid2">
-  <div class="card"><div class="chead"><span class="stepbadge">Step 5<i>whether the group is invited</i></span><h2>Whether your group gets a round</h2>
+  <div class="card"><div class="chead"><span class="stepbadge">Joint<i>both unknowns together</i></span><h2>Your chance at every score and round size</h2>
+  <span class="eyebrow" id="h13n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n13" aria-label="Explain" data-note="n13">?</button></div>
+  <div class="chartwrap"><svg id="c13" viewBox="0 0 560 330" role="img" aria-labelledby="c13t">
+    <title id="c13t">Chance of an invitation across score and round size, with both margins</title></svg></div>
+  <div class="note" id="n13" hidden><ul class="ptlist">
+    <li><b>Each cell</b> — your chance at that score, if the round is that size</li>
+    <li><b>Top margin</b> — the round-size distribution: how much each column counts</li>
+    <li><b>Right margin</b> — the chance at each score once round size is averaged out, which is the headline read across scores</li>
+    <li><b>Your cell</b> is outlined; the headline is the right margin at your score</li>
+    <li>Everything else on this page is a slice through this surface</li>
+  </ul></div>
+</div>
+<div class="card"><div class="chead"><span class="stepbadge">Step 5<i>whether the group is invited</i></span><h2>Whether your group gets a round</h2>
   <span class="eyebrow" id="h10n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n10" aria-label="Explain" data-note="n10">?</button></div>
   <div class="chartwrap"><svg id="c10" viewBox="0 0 560 200" role="img" aria-labelledby="c10t">
     <title id="c10t">Invitation rate by priority tier, with your group marked</title></svg></div>
@@ -224,6 +236,22 @@ function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAt
 function clear(s){while(s.childNodes.length>1)s.removeChild(s.lastChild);}
 /* the code that draws owns the viewBox: a static one in the markup silently clips */
 function frame(s,W,H){s.setAttribute("viewBox","0 0 "+W+" "+H);}
+/* One legend beats an annotation beside every layer. kind: line | dash | band | dot */
+function legend(s,x,y,items,gap){
+  let cx=x;
+  items.forEach(([kind,col,label])=>{
+    if(kind==="line"||kind==="dash")
+      s.appendChild(el("line",{x1:cx,y1:y,x2:cx+14,y2:y,stroke:col,"stroke-width":2.4,
+        "stroke-dasharray":kind==="dash"?"5 3":"0","stroke-linecap":"round"}));
+    else if(kind==="band")
+      s.appendChild(el("rect",{x:cx,y:y-4.5,width:14,height:9,rx:2,fill:col,"fill-opacity":".3"}));
+    else
+      s.appendChild(el("circle",{cx:cx+7,cy:y,r:4,fill:"var(--card)",stroke:col,"stroke-width":2.2}));
+    const t=el("text",{x:cx+19,y:y+3.5,class:"tick","text-anchor":"start"});
+    t.textContent=label;s.appendChild(t);
+    cx+=19+label.length*4.5+(gap||14);
+  });
+}
 function tipOn(ev,html){const t=$("tip");t.innerHTML=html;t.style.display="block";
   const r=12;t.style.left=Math.min(ev.clientX+r,innerWidth-t.offsetWidth-8)+"px";
   t.style.top=Math.max(8,ev.clientY-t.offsetHeight-r)+"px";}
@@ -559,14 +587,27 @@ function chartGroupShare(g,gk){
   if(!g) return;
   const grid=B.rs.grid;
   const alloc=N=>Math.round(g.share*N*B.meta.fr);
-  const mx=Math.max(1,alloc(grid[grid.length-1]))*1.1;
+  const mx=Math.max(1,alloc(grid[grid.length-1]),
+    Math.round(g.share_hi*grid[grid.length-1]*B.meta.fr))*1.1;
   const X=N=>ML+pw*(N-grid[0])/(grid[grid.length-1]-grid[0]), Y=v=>MT+ph*(1-v/mx);
   for(const t of [0,mx*0.25,mx*0.5,mx*0.75,mx]){
     s.appendChild(el("line",{x1:ML,y1:Y(t),x2:ML+pw,y2:Y(t),class:"gl"}));
     const q=el("text",{x:ML-7,y:Y(t)+3.5,class:"tick","text-anchor":"end"});
     q.textContent=fmt(Math.round(t));s.appendChild(q);}
-  s.appendChild(el("rect",{x:X(B.rs.q10),y:MT,width:Math.max(1,X(B.rs.q90)-X(B.rs.q10)),
-    height:ph,fill:"var(--brand)","fill-opacity":".08"}));
+  [B.rs.q10,B.rs.q90].forEach(N=>s.appendChild(el("line",{x1:X(N),y1:MT,x2:X(N),y2:MT+ph,
+    stroke:"var(--muted)","stroke-width":1,"stroke-dasharray":"2 4"})));
+  /* the share carried forward is ONE round's. Across the rounds this group appeared in
+     it has ranged this far, and that range is the honest uncertainty on this line. */
+  if(g.share_hi>g.share_lo){
+    const aHi=N=>Math.round(g.share_hi*N*B.meta.fr), aLo=N=>Math.round(g.share_lo*N*B.meta.fr);
+    let up="",dn="";
+    grid.forEach(N=>{up+=(up?"L":"M")+X(N).toFixed(1)+","+Y(Math.min(mx,aHi(N))).toFixed(1)+" ";});
+    for(let i=grid.length-1;i>=0;i--) dn+="L"+X(grid[i]).toFixed(1)+","+Y(aLo(grid[i])).toFixed(1)+" ";
+    s.appendChild(el("path",{d:up+dn+"Z",fill:"var(--brand)","fill-opacity":".13",stroke:"none"}));
+    const rl=el("text",{x:ML+pw-4,y:Y(Math.min(mx,aHi(grid[grid.length-1])))+12,class:"tick",
+      "text-anchor":"end"});
+    rl.textContent="range of this group's share across past rounds";s.appendChild(rl);
+  }
   let d="";
   grid.forEach((N,i)=>{d+=(i?" L":"M")+X(N).toFixed(1)+","+Y(alloc(N)).toFixed(1);});
   s.appendChild(el("path",{d:d,fill:"none",stroke:"var(--brand)","stroke-width":2.5}));
@@ -577,8 +618,18 @@ function chartGroupShare(g,gk){
     stroke:"var(--card)","stroke-width":2});
   s.appendChild(dot);
   hover(dot,"<b>"+fmt(am)+" places</b><span>at the most likely round of "+fmt(B.rs.q50)+"</span>");
-  const t=el("text",{x:X(B.rs.q50)+9,y:Y(am)-9,class:"vlab","text-anchor":"start",fill:"var(--brand)"});
+  const aLoM=Math.round(g.share_lo*B.rs.q50*B.meta.fr),
+        aHiM=Math.round(g.share_hi*B.rs.q50*B.meta.fr);
+  const t=el("text",{x:X(B.rs.q50)+9,y:Y(am)-11,class:"vlab","text-anchor":"start",fill:"var(--brand)"});
   t.textContent=fmt(am)+" places";s.appendChild(t);
+  if(aHiM>aLoM){
+    const t2=el("text",{x:X(B.rs.q50)+9,y:Y(am)+2,class:"tick","text-anchor":"start"});
+    t2.textContent=fmt(aLoM)+"–"+fmt(aHiM)+" on past shares";s.appendChild(t2);
+    /* the bounds, marked where they fall */
+    [[aLoM,"lowest share"],[aHiM,"highest share"]].forEach(([v,lab])=>{
+      s.appendChild(el("line",{x1:X(B.rs.q50)-5,y1:Y(v),x2:X(B.rs.q50)+5,y2:Y(v),
+        stroke:"var(--brand)","stroke-width":2}));});
+  }
   [grid[0],grid[grid.length-1]].forEach((N,i)=>{
     const q=el("text",{x:X(N),y:H-MB+18,class:"tick","text-anchor":i?"end":"start"});
     q.textContent=fmt(N);s.appendChild(q);});
@@ -594,6 +645,80 @@ function chartGroupShare(g,gk){
     "<li>Invitations are rationed at the four-digit unit group, so this is what your occupation "+
       "actually competes for</li></ul>";
   axisTitle(s,W,H,MB,"invitations in the round","places to your group");
+}
+
+/* ---------- chart 13: the joint surface, with both margins ---------- */
+function chartJoint(g,gk,pts){
+  const s=$("c13"); if(!s) return; clear(s);
+  const W=560,H=336,ML=44,MR=92,MT=58,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
+  if(!g||g.share<=0) return;
+  const sizes=[], dens=[];
+  for(let k=0;k<B.rs.grid.length;k+=3){sizes.push(B.rs.grid[k]);dens.push(B.rs.dens[k]);}
+  const scores=[]; for(let v=100;v>=B.floor;v-=5) scores.push(v);
+  const cw=pw/sizes.length, chh=ph/scores.length;
+  const P=(sc,N)=>pAt(g,sc,gk,N);
+  /* the joint surface */
+  scores.forEach((sc,r)=>{
+    sizes.forEach((N,c)=>{
+      const q=P(sc,N); if(q===null) return;
+      const k=Math.max(0,Math.min(6,Math.floor(q*6.999)));
+      const cell=el("rect",{x:ML+c*cw,y:MT+r*chh,width:Math.max(1,cw-1),height:Math.max(1,chh-1),
+        rx:2,fill:"var(--r"+(k+1)+")"});
+      s.appendChild(cell);
+      hover(cell,"<b>"+Math.round(q*100)+"% chance</b><span>at "+sc+" points</span>"+
+        "<span>if the round is "+fmt(N)+"</span>");
+      if(sc===Math.round(pts/5)*5)
+        s.appendChild(el("rect",{x:ML+c*cw,y:MT+r*chh,width:Math.max(1,cw-1),height:Math.max(1,chh-1),
+          rx:2,fill:"none",stroke:"var(--ink)","stroke-width":1.2,"stroke-opacity":".5"}));
+    });
+    if(sc%10===0){const t=el("text",{x:ML-7,y:MT+r*chh+chh/2+3.5,class:"tick","text-anchor":"end"});
+      t.textContent=sc;s.appendChild(t);}
+  });
+  /* top margin: how much each column counts */
+  const dmax=Math.max(...dens), mh=28;
+  let dd="M"+ML.toFixed(1)+","+(MT-6).toFixed(1);
+  sizes.forEach((N,c)=>{dd+=" L"+(ML+c*cw+cw/2).toFixed(1)+","+(MT-6-mh*dens[c]/dmax).toFixed(1);});
+  dd+=" L"+(ML+pw).toFixed(1)+","+(MT-6).toFixed(1)+" Z";
+  s.appendChild(el("path",{d:dd,fill:"var(--brand)","fill-opacity":".3",stroke:"var(--brand)",
+    "stroke-width":1.2}));
+  const tl=el("text",{x:ML,y:MT-mh-12,class:"tick","text-anchor":"start",fill:"var(--brand)",
+    "font-weight":"700"});
+  tl.textContent="how likely each size is";s.appendChild(tl);
+  /* right margin: round size averaged out - the headline, read across scores */
+  const marg=scores.map(sc=>pMarginal(g,sc,gk));
+  const mw=58;
+  marg.forEach((q,r)=>{
+    if(q===null) return;
+    const bar=el("rect",{x:ML+pw+6,y:MT+r*chh+1,width:Math.max(1,mw*q),height:Math.max(1,chh-2),
+      rx:2,fill:scores[r]===Math.round(pts/5)*5?"var(--brand)":"var(--deemph)",
+      "fill-opacity":scores[r]===Math.round(pts/5)*5?1:.5});
+    s.appendChild(bar);
+    hover(bar,"<b>"+Math.round(q*100)+"%</b><span>at "+scores[r]+" points, averaged over round size</span>");
+    if(scores[r]===Math.round(pts/5)*5){
+      const t=el("text",{x:ML+pw+6+mw*q+5,y:MT+r*chh+chh/2+3.5,class:"vlab",
+        "text-anchor":"start",fill:"var(--brand)"});
+      t.textContent=Math.round(q*100)+"%";s.appendChild(t);}
+  });
+  const rl=el("text",{x:ML+pw+6,y:MT-20,class:"tick","text-anchor":"start",fill:"var(--muted)",
+    "font-weight":"700"});
+  rl.textContent="round size";s.appendChild(rl);
+  const rl2=el("text",{x:ML+pw+6,y:MT-8,class:"tick","text-anchor":"start",fill:"var(--muted)"});
+  rl2.textContent="averaged out";s.appendChild(rl2);
+  /* the key sits top-right, clear of the axis labels it was landing on */
+  const kw=Math.min(13,pw*0.30/7), kx=ML+pw-kw*7, ky=14;
+  const kl=el("text",{x:kx-8,y:ky+8,class:"tick","text-anchor":"end",fill:"var(--muted)"});
+  kl.textContent="chance";s.appendChild(kl);
+  for(let k=0;k<7;k++)
+    s.appendChild(el("rect",{x:kx+k*kw,y:ky,width:kw-1.5,height:9,rx:2,fill:"var(--r"+(k+1)+")"}));
+  [["0%",kx,"start"],["100%",kx+kw*7,"end"]].forEach(([t,xx,a])=>{
+    const q=el("text",{x:xx,y:ky+20,class:"tick","text-anchor":a});
+    q.textContent=t;s.appendChild(q);});
+  sizes.forEach((N,c)=>{if(c%3===0){
+    const t=el("text",{x:ML+c*cw+cw/2,y:H-MB+16,class:"tick","text-anchor":"middle"});
+    t.textContent=fmt(N);s.appendChild(t);}});
+  const h=$("h13n"); if(h) h.textContent=g.name;
+  axisTitle(s,W,H,MB,"invitations in the round","your points");
 }
 /* ---------- chart 1: cut-off by round ---------- */
 function chartRounds(o,pts){
@@ -966,7 +1091,7 @@ function policyTable(){
 
 function chartProb(g,pts){
   const s=$("c8"); if(!s) return; clear(s);
-  const W=560,H=268,ML=44,MR=66,MT=40,MB=46,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=280,ML=44,MR=66,MT=40,MB=46,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   if(!g||g.share<=0){const q=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
     q.textContent="No invitations last round, so there is nothing to forecast at any size.";s.appendChild(q);return;}
@@ -978,7 +1103,19 @@ function chartProb(g,pts){
   const curve=sc=>{const a=[];for(let v=S0;v<=S1;v+=200){const p=pAt(g,sc,CURG,v);
     if(p!==null)a.push([v,p]);}return a;};
   const path=a=>{let d="";a.forEach((q,i)=>{d+=(i?" L":"M")+X(q[0]).toFixed(1)+","+Y(q[1]).toFixed(1);});return d;};
-  /* one curve: yours. The band table lists every other score, in full. */
+  /* the curve is read off n held-out residuals, so it carries a sampling error of its
+     own: +/- 1 standard error of a proportion estimated from that many observations */
+  {
+    const n=B.unc.residuals.length, a0=curve(pts);
+    if(a0.length>1){
+      const se=q=>Math.sqrt(Math.max(1e-6,q*(1-q))/n);
+      let up="",dn="";
+      a0.forEach(([v,q])=>{up+=(up?"L":"M")+X(v).toFixed(1)+","+Y(Math.min(1,q+se(q))).toFixed(1)+" ";});
+      for(let i=a0.length-1;i>=0;i--){const [v,q]=a0[i];
+        dn+="L"+X(v).toFixed(1)+","+Y(Math.max(0,q-se(q))).toFixed(1)+" ";}
+      s.appendChild(el("path",{d:up+dn+"Z",fill:"var(--series)","fill-opacity":".16",stroke:"none"}));
+    }
+  }
   {
     const a=curve(pts);
     if(a.length>1) s.appendChild(el("path",{d:path(a),fill:"none",stroke:"var(--series)",
@@ -997,8 +1134,7 @@ function chartProb(g,pts){
     dd+=" L"+X(Math.min(S1,B.rs.grid[B.rs.grid.length-1])).toFixed(1)+","+(MT+ph).toFixed(1)+" Z";
     s.appendChild(el("path",{d:dd,fill:"var(--brand)","fill-opacity":".16",stroke:"var(--brand)",
       "stroke-width":1,"stroke-opacity":".45"}));
-    const dl=el("text",{x:W-MR-4,y:MT+ph-4,class:"tick","text-anchor":"end",fill:"var(--brand)"});
-    dl.textContent="how likely each size is";s.appendChild(dl);}
+  }
   /* the headline, on the same axes: it is the curve averaged against the ribbon below,
      which is the only honest way to show why one number is not the other */
   {
@@ -1007,10 +1143,9 @@ function chartProb(g,pts){
       const my=Y(PM);
       s.appendChild(el("line",{x1:ML,y1:my,x2:W-MR,y2:my,stroke:"var(--brand)",
         "stroke-width":2,"stroke-dasharray":"6 4"}));
-      const t=el("text",{x:ML+4,y:my-6,class:"tick",fill:"var(--brand)","font-weight":"700",
-        "text-anchor":"start"});
-      t.textContent=Math.round(PM*100)+"% averaged over every size — the headline";
-      s.appendChild(t);}
+      const t=el("text",{x:W-MR-2,y:my-6,class:"tick",fill:"var(--brand)","font-weight":"700",
+        "text-anchor":"end"});
+      t.textContent=Math.round(PM*100)+"%";s.appendChild(t);}
   }
   /* where the curve crosses even odds - the one number the text box carried */
   {
@@ -1027,8 +1162,7 @@ function chartProb(g,pts){
         stroke:"var(--series)","stroke-width":2.5}));
       const t=el("text",{x:cx+8,y:cy+14,class:"tick",fill:"var(--series)","font-weight":"700",
         "text-anchor":"start"});
-      t.textContent="below "+fmt(cross)+" you are more likely out than in";
-      s.appendChild(t);}
+      t.textContent=fmt(cross);s.appendChild(t);}
   }
   [2000,5000,8000,11000,14000,17000,20000].forEach(v=>{
     const q=el("text",{x:X(v),y:H-MB+15,class:"tick","text-anchor":"middle"});
@@ -1040,6 +1174,13 @@ function chartProb(g,pts){
     const hit=el("rect",{x:X(v)-4,y:MT,width:8,height:ph,class:"hit"});
     hover(hit,"<b>"+Math.round(p*100)+"% chance</b><span>if the round invites "+fmt(v)+
       "</span><span>cut-off would be about "+c+" points</span>");s.appendChild(hit);}
+  legend(s,ML,MT-24,[
+    ["line","var(--series)","your chance"],
+    ["band","var(--series)","±1 s.e. from "+B.unc.residuals.length+" held-out rounds"],
+    ["dash","var(--brand)","headline, averaged over size"]]);
+  legend(s,ML,MT-10,[
+    ["dot","var(--series)","even odds"],
+    ["band","var(--brand)","how likely each round size is"]]);
   axisTitle(s,W,H,MB,"invitations in the round","chance IF the round is this size");
   
 }
@@ -1141,7 +1282,7 @@ function render(){
   chartProb(g,pts);
   chartForecast(g,pts);fcTable(g,pts);chartWaterfall(g,o.g,pts);
   chartComp(g,o.g,pts);chartDoe(o.g,pts);chartTierRate(g,o.g);
-  chartRoundSize();chartGroupShare(g,o.g);
+  chartRoundSize();chartGroupShare(g,o.g);chartJoint(g,o.g,pts);
   const band = P===null?null:(P>=.8?"good":P>=.6?"good":P>=.4?"warn":"crit");
   if($("flag")){$("flag").className="vflag "+(band||"crit");}
   if($("flag"))$("flag").textContent = P===null ? "✕ No forecast"

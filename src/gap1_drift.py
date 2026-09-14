@@ -41,6 +41,8 @@ for lbl,fn,col,top in [("max English (20 pts)","atoms_eng.csv","Eng",["20"]),
     a,b=comp(fn,col,top)
     print(f"  {lbl:<26} at 85+: {100*a:>5.1f}%    at 65-84: {100*b:>5.1f}%    gap {100*(a-b):>+5.1f}pp")
 print("\n  These are the levers that separate an 85+ profile from the rest of the pool.")
+# the monthly series itself, so the choice of a straight line can be tested
+g.reset_index().assign(d=lambda z:z.d.dt.strftime("%Y-%m")).to_csv("drift_series.csv",index=False)
 json.dump(dict(mean_trend_per_month=float(np.polyfit(x,g["mean"],1)[0]),
   share85_trend_pp_per_month=float(np.polyfit(x,g.share85,1)[0]*100),
   mean_start=float(g["mean"].iloc[0]),mean_end=float(g["mean"].iloc[-1]),

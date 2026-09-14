@@ -119,6 +119,15 @@ bundle=dict(doe_months=MONTHS,doe_cdf=cdf,comp=comp,rounds=ROUNDS,sizes=SIZES,fl
             mech_exact=val["mech"]["exact"],cal_exact=round(cal["exact"]/cal["n"],3),cal_n=cal["n"],
             official_total=cal["official_total"],mobility=mob["pct_changed"],alloc_r=gate["pooled_r"],
             snapshot="08/2026",last_round="2026-06"))
+# a group's share of a round is estimated from ONE round; the spread of its share
+# across every round it appeared in is the honest uncertainty on that estimate
+_tot=[sum(g["alloc"][i] for g in groups.values()) for i in range(len(ROUNDS))]
+for _gk,_g in groups.items():
+    _sh=[a/t if t else 0.0 for a,t in zip(_g["alloc"],_tot)]
+    _nz=[x for x in _sh if x>0]
+    _g["share_hist"]=[round(x,6) for x in _sh]
+    _g["share_lo"]=round(min(_nz),6) if _nz else 0.0
+    _g["share_hi"]=round(max(_nz),6) if _nz else 0.0
 bundle["gaps"]=json.load(open("gaps.json"))
 _h=json.load(open("horizon.json"))
 bundle["horizon_series"]={k:v for k,v in _h.items() if k.isdigit()}   # numeric lags only   # season_p etc, quoted by the method paper
