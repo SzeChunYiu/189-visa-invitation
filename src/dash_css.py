@@ -115,6 +115,16 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .takeaway.good{background:var(--good-bg);border-left-color:var(--good)}
 .takeaway.warn{background:var(--warn-bg);border-left-color:var(--warn)}
 .takeaway.crit{background:var(--crit-bg);border-left-color:var(--crit)}
+#pop{position:fixed;z-index:120;max-width:340px;background:var(--card);color:var(--body);
+  border:1px solid var(--line);border-radius:11px;padding:14px 16px;box-shadow:0 8px 40px -8px rgba(0,0,0,.4);
+  font-size:12.5px;line-height:1.5;display:none}
+#pop.on{display:block}
+#pop h4{margin:0 0 7px;font-size:12px;color:var(--ink);letter-spacing:.02em}
+#pop button{position:absolute;top:8px;right:9px;appearance:none;border:0;background:none;color:var(--muted);
+  font-size:16px;line-height:1;cursor:pointer;padding:2px 5px;border-radius:5px}
+#pop button:hover{color:var(--ink);background:var(--line)}
+#popbd{position:fixed;inset:0;z-index:110;display:none}
+#popbd.on{display:block}
 .q{appearance:none;border:1px solid var(--line);background:var(--paper);color:var(--muted);
   width:19px;height:19px;border-radius:50%;font:inherit;font-size:11px;font-weight:700;line-height:1;
   cursor:pointer;padding:0;flex:0 0 auto}

@@ -16,6 +16,7 @@ Deployment notes (incl. Vercel): [DEPLOY.md](DEPLOY.md).
 | File | What it holds |
 |---|---|
 | **README.md** (this file) | Headline results and how to reproduce |
+| [docs/COVERAGE.md](docs/COVERAGE.md) | What is modelled, what is not, and the hard limits |
 | [docs/BEST_THEORY.md](docs/BEST_THEORY.md) | The unified theory, and its out-of-sample worth |
 | [docs/MECHANISM.md](docs/MECHANISM.md) | Band or number? Why groups get zero? Tested, not assumed |
 | [docs/THEORY.md](docs/THEORY.md) | The one mechanism that explains every observation |

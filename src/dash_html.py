@@ -48,7 +48,7 @@ HTML = r"""<meta charset="utf-8">
   <div class="movestrip" id="mv"></div>
   <div class="chartwrap"><svg id="c8" viewBox="0 0 586 268" role="img" aria-labelledby="c8t">
     <title id="c8t">Chance of an invitation against the size of the next round</title></svg></div>
-  <p class="note" id="n1" hidden></p></div>
+  <p class="note" id="n1" hidden>Blue line: your chance at each round size. Faint lines: 5 points above and below. Shaded band: every round size on record. Green ribbon: how likely each size is, from the 2026&ndash;27 planning levels. Dashed line: the size those levels imply. Pool is the Aug-2026 snapshot; each extra month before the round makes this forecast ~0.7 points optimistic, so a December round would sit ~2 points higher than shown.</p></div>
 
 <div class="tiles" id="tiles"></div>
 
@@ -57,16 +57,12 @@ HTML = r"""<meta charset="utf-8">
     <span class="eyebrow" id="h1n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n2" aria-label="Explain" data-note="n2">?</button></div>
     <p class="takeaway" id="t1"></p>
     <div class="chartwrap"><svg id="c1" viewBox="0 0 520 220" role="img" aria-labelledby="c1t"><title id="c1t">Minimum points invited, by round</title></svg></div>
-    <p class="note" id="n2" hidden>Height = lowest score that got in. <span style="color:var(--good)">&#9679;</span> you'd be in &middot;
-    <span style="color:var(--warn)">&#9679;</span> your date decides &middot;
-    <span style="color:var(--crit)">&#9679;</span> not reached. Dot size and the number below = invitations to this
-    occupation that round.</p></div>
+    <p class="note" id="n2" hidden>Height = lowest score invited. <span style='color:var(--good)'>&#9679;</span> in &middot; <span style='color:var(--warn)'>&#9679;</span> date decides &middot; <span style='color:var(--crit)'>&#9679;</span> not reached. Dot size = invitations to this occupation.</p></div>
       <div class="card"><div class="chead"><h2>Who is ahead</h2>
     <span class="eyebrow" id="h4n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n3" aria-label="Explain" data-note="n3">?</button></div>
     <p class="takeaway" id="t4"></p>
     <div class="chartwrap"><svg id="c4" viewBox="0 0 520 220" role="img" aria-labelledby="c4t"><title id="c4t">Queue position within the unit group</title></svg></div>
-    <p class="note" id="n3" hidden>Blue = people counted from the top score down. Green dashed = invitations the last round gave out.
-    <b>Red dot below the green line &rarr; they reach you.</b></p></div>
+    <p class="note" id="n3" hidden>Blue = people counted from the top score down. Green = invitations last round. <b>Red dot below green &rarr; they reach you.</b></p></div>
 </div>
 
 <div class="card"><div class="chead"><h2>Every score band</h2>
@@ -74,8 +70,7 @@ HTML = r"""<meta charset="utf-8">
   <div class="scroll"><table id="bt"><thead><tr><th>Points</th><th>This occupation</th>
     <th>Unit group</th><th>Cumulative ahead</th><th>vs you</th>
     <th>Chance</th></tr></thead><tbody></tbody></table></div>
-  <p class="note" id="n4" hidden>What another 5 or 10 points would buy. Chance uses the same definition as the headline.
-  &ldquo;Reaches it&rdquo; is judged at the likely round size.</p></div>
+  <p class="note" id="n4" hidden>What 5 or 10 more points would buy. Aug-2026 snapshot; order is points, then date of effect. Without a date, your whole band counts as ahead.</p></div>
 
 <div class="card"><div class="chead"><h2>Occupations cut off since 2025</h2>
   <span class="eyebrow" id="hswn"></span></div>
@@ -105,18 +100,13 @@ HTML = r"""<meta charset="utf-8">
     <span class="eyebrow">Jun 2026 round</span><button class="q" type="button" aria-expanded="false" aria-controls="n7" aria-label="Explain" data-note="n7">?</button></div>
     <p class="takeaway" id="t7"></p>
     <div class="chartwrap"><svg id="c7" viewBox="0 0 520 312" role="img" aria-labelledby="c7t"><title id="c7t">Pool size against cut-off</title></svg></div>
-    <p class="note" id="n7" hidden>One dot per occupation group. Left&ndash;right is <b>how many people are queuing for each invitation
-    that group receives</b> &mdash; the real measure of competition. Up&ndash;down is the score you had to beat. Bigger dots
-    are bigger occupations. <b>Yours is the solid ringed dot.</b> The trend is clear: the more people per invitation, the
-    higher the score needed. Raw size barely matters &mdash; a crowded occupation with lots of invitations is easier than a
-    small one with few.</p></div>
+    <p class="note" id="n7" hidden>One dot per group. Right = more people per invitation. Up = higher score needed. Dot size = occupation size. <b>Yours is ringed.</b> Raw size barely matters (r&nbsp;=&nbsp;0.12); people per invitation does (r&nbsp;=&nbsp;0.61).</p></div>
 </div>
 
 <div class="card"><div class="chead"><h2>This occupation, round by round</h2><span class="eyebrow">the record for this occupation</span><button class="q" type="button" aria-expanded="false" aria-controls="n8" aria-label="Explain" data-note="n8">?</button></div>
   <div class="scroll"><table id="rt"><thead><tr><th>Round</th><th>Invited</th><th>Fully cleared to</th>
     <th>Boundary score</th><th>Boundary</th><th>Would you have been invited?</th></tr></thead><tbody></tbody></table></div>
-  <p class="note" id="n8" hidden><b>Fully cleared to</b> is the lowest score at which every single EOI was invited. At or above it
-  you are in regardless of date. On a rationed boundary, your date of effect decides.</p></div>
+  <p class="note" id="n8" hidden><b>Fully cleared to</b> = the lowest score where every EOI was invited. At or above it you are in regardless of date. On a rationed boundary, your date decides.</p></div>
 
 <div class="card"><div class="chead"><h2>All occupations at your score</h2>
   <span style="display:flex;gap:12px;align-items:center">
@@ -127,9 +117,7 @@ HTML = r"""<meta charset="utf-8">
   <div class="scroll" style="max-height:420px;overflow-y:auto"><table id="at"><thead><tr><th>Occupation</th>
     <th>Pool</th><th>At your score</th><th>Sep 24</th><th>Nov 24</th><th>Aug 25</th><th>Nov 25</th><th>Jun 26</th>
     <th>Forecast</th></tr></thead><tbody></tbody></table></div>
-  <p class="note" id="n9" hidden>Sorted by pool size. Click a row to load that occupation above. The CSV carries every figure
-  behind this page for all 199 occupations at your current score and round size &mdash; the same numbers the
-  charts are drawn from.</p></div>
+  <p class="note" id="n9" hidden>Click a row to load it. The CSV holds every figure behind this page, for all 199 occupations at your score.</p></div>
 
 <footer>
   Built from all 24 monthly SkillSelect EOI snapshots read directly from the Qlik engine behind the Department of
@@ -140,6 +128,10 @@ HTML = r"""<meta charset="utf-8">
 </footer>
 </div>
 <div id="tip" role="status"></div>
+<div id="popbd"></div>
+<div id="pop" role="dialog" aria-modal="false" aria-labelledby="poph">
+  <button type="button" id="popx" aria-label="Close">&times;</button>
+  <h4 id="poph"></h4><div id="popb"></div></div>
 <script>
 const B=__BUNDLE__;
 const S={occ:"234914 Physicist",pts:85,szi:2,doe:null};   /* szi 2 = the policy-implied central case, not a user guess */
@@ -885,10 +877,36 @@ $("dl").addEventListener("click",()=>{
   const a=document.createElement("a");a.href=url;
   a.download="skillselect189_"+S.pts+"pts_"+B.sizes[S.szi]+".csv";
   document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);});
-document.querySelectorAll(".q").forEach(b=>b.addEventListener("click",()=>{
-  const p=$(b.dataset.note); if(!p) return;
-  const open=b.getAttribute("aria-expanded")==="true";
-  b.setAttribute("aria-expanded",open?"false":"true"); p.hidden=open;}));
+/* (?) opens a small popover beside the button, not an inline expansion */
+let POPFOR=null;
+function closePop(){
+  $("pop").classList.remove("on"); $("popbd").classList.remove("on");
+  if(POPFOR){POPFOR.setAttribute("aria-expanded","false"); POPFOR.focus(); POPFOR=null;}
+}
+function openPop(btn){
+  const src=$(btn.dataset.note); if(!src) return;
+  const card=btn.closest(".card"), h2=card?card.querySelector("h2"):null;
+  $("poph").textContent=h2?h2.textContent:"About this panel";
+  $("popb").innerHTML=src.innerHTML;
+  const pop=$("pop");
+  pop.classList.add("on"); $("popbd").classList.add("on");
+  const r=btn.getBoundingClientRect(), pr=pop.getBoundingClientRect();
+  let left=Math.min(r.right-pr.width, innerWidth-pr.width-10);
+  left=Math.max(10,left);
+  let top=r.bottom+8;
+  if(top+pr.height>innerHeight-10) top=Math.max(10,r.top-pr.height-8);
+  pop.style.left=left+"px"; pop.style.top=top+"px";
+  btn.setAttribute("aria-expanded","true"); POPFOR=btn;
+  $("popx").focus();
+}
+document.querySelectorAll(".q").forEach(b=>b.addEventListener("click",e=>{
+  e.stopPropagation();
+  if(POPFOR===b){closePop();return;}
+  closePop(); openPop(b);}));
+$("popx").addEventListener("click",closePop);
+$("popbd").addEventListener("click",closePop);
+addEventListener("keydown",e=>{if(e.key==="Escape")closePop();});
+addEventListener("resize",closePop);
 initCombo();render();
 </script>
 """

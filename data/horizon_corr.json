@@ -1,0 +1,5 @@
+{
+ "per_month": 0.665,
+ "mae_slope": 0.741,
+ "note": "lag 0 excluded: that snapshot postdates the round"
+}
