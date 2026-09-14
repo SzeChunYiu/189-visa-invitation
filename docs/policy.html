@@ -339,6 +339,13 @@ function pZero(gk){
   return rec.last_alloc>0 ? B.zr.p_zero_given_prev_nonzero : B.zr.p_zero_given_prev_zero;
 }
 /* Marginal over round size, THEN discounted by the chance the group is skipped entirely. */
+/* The chance of an invitation AT ONE ROUND SIZE - the same quantity as the headline,
+   just not yet averaged over sizes. Anything the page labels "your chance" must use
+   this: pClear alone omits the skip risk and reads well over ten points too high. */
+function pAt(g,pts,gk,size){
+  const q=pClear(cutoffAt(g,size),pts);
+  return q===null?null:q*(1-pZero(gk||CURG));
+}
 function pMarginal(g,pts,gk){
   if(!g||g.share<=0||!B.rs) return null;
   let acc=0,wsum=0;
@@ -673,12 +680,6 @@ function chartRounds(o,pts){
       hover(r,"<b>cut-off "+v+"</b><span>"+Math.round(100*cnt[v]/R.length)+
         "% of held-out rounds landed here</span><span>at "+pts+" pts: "+
         (good?"you are in":"not reached")+"</span>");});
-    const pIn=pLE(fcN,pts);
-    if(pIn!==null){
-      const t1=el("text",{x:W-2,y:MT-10,class:"vlab","text-anchor":"end",
-        fill:pIn>=.5?"var(--good)":"var(--crit)"});
-      t1.textContent="cut-off reaches "+pts+" in "+Math.round(pIn*100)+"% of rounds this size";
-      s.appendChild(t1);}
     const cd=el("circle",{cx:pj,cy:Y(fcN),r:4.5,fill:"var(--ink)",stroke:"var(--card)","stroke-width":2});
     s.appendChild(cd);
     hover(cd,"<b>forecast "+fcN+" points</b><span>central estimate for the next round</span>");
@@ -888,14 +889,6 @@ function chartScatter(selG,pts){
 /* The range quoted everywhere: across the 10-90% band of plausible round sizes. */
 
 
-function probTakeaway(g,pts){
-  if(!g||g.share<=0) return;
-  const cen=B.policy?B.policy.per_round["3"]:10000;
-  const cp=pClear(cutoffAt(g,cen),pts);
-  let need=null;
-  for(let v=2000;v<=20000;v+=200){const p=pClear(cutoffAt(g,v),pts); if(p!==null&&p>=.5){need=v;break;}}
-  const rb=rangeBand(g,pts);
-}
 /* ---------- every score band ---------- */
 function bandTable(o,g,pts){
   if(!document.querySelector("#bt tbody")) return;
@@ -993,7 +986,7 @@ function chartProb(g,pts){
   const bl=el("text",{x:(bx0+bx1)/2,y:MT-22,class:"tick","text-anchor":"middle"});
   bl.textContent="round sizes seen so far";s.appendChild(bl);
   /* context: the same curve 5 points below and above, so the value of more points is visible */
-  const curve=sc=>{const a=[];for(let v=S0;v<=S1;v+=200){const p=pClear(cutoffAt(g,v),sc);
+  const curve=sc=>{const a=[];for(let v=S0;v<=S1;v+=200){const p=pAt(g,sc,CURG,v);
     if(p!==null)a.push([v,p]);}return a;};
   const path=a=>{let d="";a.forEach((q,i)=>{d+=(i?" L":"M")+X(q[0]).toFixed(1)+","+Y(q[1]).toFixed(1);});return d;};
   const ends=[];
@@ -1026,7 +1019,7 @@ function chartProb(g,pts){
   /* where the curve crosses even odds - the one number the text box carried */
   {
     let prev=null, cross=null;
-    for(let v=S0;v<=S1;v+=100){const q=pClear(cutoffAt(g,v),pts);
+    for(let v=S0;v<=S1;v+=100){const q=pAt(g,pts,CURG,v);
       if(q===null){prev=null;continue;}
       if(prev!==null&&prev<0.5&&q>=0.5){cross=v;break;}
       prev=q;}
@@ -1042,7 +1035,7 @@ function chartProb(g,pts){
   }
   /* the policy-implied central case */
   const cen=B.policy?B.policy.per_round["3"]:10000;
-  const cp=pClear(cutoffAt(g,cen),pts);
+  const cp=pAt(g,pts,CURG,cen);
   s.appendChild(el("line",{x1:X(cen),y1:MT,x2:X(cen),y2:MT+ph,stroke:"var(--brand)","stroke-width":1.5,"stroke-dasharray":"5 4"}));
   if(cp!==null){
     s.appendChild(el("circle",{cx:X(cen),cy:Y(cp),r:6,fill:"var(--brand)",stroke:"var(--card)","stroke-width":2}));
@@ -1070,7 +1063,7 @@ function chartProb(g,pts){
 /* The range quoted everywhere: across the 10-90% band of plausible round sizes. */
 function rangeBand(g,pts){
   if(!g||g.share<=0||!B.rs) return null;
-  const a=pClear(cutoffAt(g,B.rs.q10),pts), b=pClear(cutoffAt(g,B.rs.q90),pts);
+  const a=pAt(g,pts,CURG,B.rs.q10), b=pAt(g,pts,CURG,B.rs.q90);
   if(a===null||b===null) return null;
   return [Math.min(a,b),Math.max(a,b)];
 }
@@ -1081,19 +1074,12 @@ function rangeText(g,pts){
 }
 function say(id,kind,html){const e=$(id);if(!e)return;e.className="takeaway"+(kind?" "+kind:"");e.innerHTML=html;}
 function takeaways(o,g,pts,size){
-  const inv=o.rounds.filter(r=>verdictFor(r,pts).k==="good").length;
-  const dated=o.rounds.filter(r=>verdictFor(r,pts).k==="warn").length;
-  /* the card is about the NEXT round as much as the past ones, so lead with both */
-  const _fcn=g?g.fc[S.szi]:null, _pn=(_fcn===null||_fcn===undefined)?null:pLE(_fcn,pts);
-  const fc=g?g.fc[S.szi]:null, P=pClear(fc,pts);
-  const my=Math.round(pts/5)*5, same=o.dist[my]||0, above=Object.keys(o.dist).map(Number).filter(k=>k>my)
-    .reduce((a,k)=>a+o.dist[k],0);
-  const ge=g?Object.keys(g.dist).map(Number).filter(k=>k>=my).reduce((a,k)=>a+g.dist[k],0):0;
+  /* everything else this built was consumed by boxes the charts replaced; the
+     competitiveness line is the one figure no chart on this page carries */
   const al=g?g.alloc[g.alloc.length-1]:0;
-  /* the three numbers that decide this card, as figures to scan rather than a sentence */
-  const need=g?B.sizes.find((sz,i)=>{const p=pClear(g.fc[i],pts);return p!==null&&p>=.8;}):null;
   const gp=g?Object.values(g.dist).reduce((a,b)=>a+b,0):0;
-  if(g&&al>0){const ratio=gp/al;
+  if(g&&al>0){
+    const ratio=gp/al;
     const all=Object.keys(B.groups).map(k=>{const G=B.groups[k],p=Object.values(G.dist).reduce((a,b)=>a+b,0),
       a2=G.alloc[G.alloc.length-1];return (p&&a2)?p/a2:null;}).filter(v=>v!==null).sort((a,b)=>a-b);
     const pct=Math.round(100*all.filter(v=>v<ratio).length/all.length);
@@ -1167,8 +1153,8 @@ function render(){
   const last=o.rounds[o.rounds.length-1];
   const fc=g?g.fc[S.szi]:null;
   const v=fcVerdict(fc,pts);
-  const P=pMarginal(g,pts,o.g), Pc=pClear(fc,pts), bb=pBand(fc);
-  chartProb(g,pts);probTakeaway(g,pts);
+  const P=pMarginal(g,pts,o.g), bb=pBand(fc);
+  chartProb(g,pts);
   chartForecast(g,pts);fcTable(g,pts);chartWaterfall(g,o.g,pts);
   chartComp(g,o.g,pts);chartDoe(o.g,pts);
   const band = P===null?null:(P>=.8?"good":P>=.6?"good":P>=.4?"warn":"crit");
@@ -1333,7 +1319,7 @@ on("dl","click",()=>{
     ...B.sizes.map(s=>"forecast_"+s),"assumed_round_size","p_reaches_your_score"]];
   const my=Math.round(S.pts/5)*5;
   OCCS.forEach(k=>{const o=B.occ[k],g=B.groups[o.g];
-    const fc=g?g.fc[S.szi]:null, p=pClear(fc,S.pts);
+    const fc=g?g.fc[S.szi]:null, p=pAt(g,S.pts,CURG,B.sizes[S.szi]);
     rows.push([k,o.g,o.pool,o.dist[my]||0,S.pts,
       ...o.rounds.map(r=>r.b===null?"":r.b),
       ...o.rounds.map(r=>r.b===null?"":(r.s==="C"?"cleared":"partial")),

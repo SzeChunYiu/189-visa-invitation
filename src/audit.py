@@ -214,6 +214,23 @@ _ctl=sorted((_sels(_a)|{".__planted__"}) & (_sels(_b)|{".__planted__"}))
 chk("  (control) the stylesheet-clash check catches a planted shared class",
     _ctl==[".__planted__"], f"control saw {_ctl}")
 
+# Three different probabilities were all being displayed as "your chance": the
+# marginalised one in the hero (77%), pClear without the skip risk on the chart whose
+# axis says "chance of an invitation" (90%), and pLE, a statement about the cut-off
+# rather than about being invited (94%). Any surface that shows a chance must go
+# through pAt() or pMarginal(), which apply the skip factor.
+_dh=pathlib.Path("../src/dash_html.py").read_text()
+_ALLOWED={"pAt","pMarginal","chartWaterfall"}   # the waterfall deducts it explicitly, by step
+def _owner(src,pos):
+    m=_re.findall(r"function (\w+)\(", src[:pos])
+    return m[-1] if m else "?"
+_bare=sorted({_owner(_dh,m.start()) for m in _re.finditer(r"\bpClear\(", _dh)} - _ALLOWED)
+chk("no surface shows pClear without the skip risk",len(_bare)==0,
+    f"bare pClear in {_bare}" if _bare else f"pClear confined to {sorted(_ALLOWED)}")
+_ctl=sorted(({"pAt","chartProb"} | set()) - _ALLOWED)
+chk("  (control) that check would flag a chart calling pClear directly",
+    _ctl==["chartProb"], f"control saw {_ctl}")
+
 allrefs=set().union(*SITE_REFS.values())
 orphans=sorted(allrefs-SITE_IDS)
 chk(f"no JS reference is orphaned across all {len(PAGES)} pages",len(orphans)==0,

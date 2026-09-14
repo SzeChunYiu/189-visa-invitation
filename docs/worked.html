@@ -450,6 +450,13 @@ function pZero(gk){
   return rec.last_alloc>0 ? B.zr.p_zero_given_prev_nonzero : B.zr.p_zero_given_prev_zero;
 }
 /* Marginal over round size, THEN discounted by the chance the group is skipped entirely. */
+/* The chance of an invitation AT ONE ROUND SIZE - the same quantity as the headline,
+   just not yet averaged over sizes. Anything the page labels "your chance" must use
+   this: pClear alone omits the skip risk and reads well over ten points too high. */
+function pAt(g,pts,gk,size){
+  const q=pClear(cutoffAt(g,size),pts);
+  return q===null?null:q*(1-pZero(gk||CURG));
+}
 function pMarginal(g,pts,gk){
   if(!g||g.share<=0||!B.rs) return null;
   let acc=0,wsum=0;
