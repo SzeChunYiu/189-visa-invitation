@@ -1,3 +1,5 @@
+import pathlib, os
+os.chdir(pathlib.Path(__file__).resolve().parent.parent/'data')
 import pandas as pd, numpy as np, json
 ROUNDS=["2024-09","2024-11","2025-08","2025-11","2026-06"]
 PRIOR={"2024-09":"09/2024","2024-11":"10/2024","2025-08":"07/2025","2025-11":"10/2025","2026-06":"05/2026"}

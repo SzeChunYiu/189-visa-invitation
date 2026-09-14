@@ -1,3 +1,5 @@
+import pathlib, os
+os.chdir(pathlib.Path(__file__).resolve().parent.parent/'data')
 import pandas as pd, numpy as np
 pd.set_option("display.width",250,"display.max_columns",60)
 ROUNDS=["2024-09","2024-11","2025-08","2025-11","2026-06"]

@@ -30,11 +30,41 @@ Recency-weighted over the five observed rounds (weight 2^−age):
 |---|---|---|
 | 0.516 | 0.258 | 0.226 |
 
-Since both rounds reaching exactly 85 cleared the tranche entirely,
-**P(invited | a round occurs) ≈ 0.774**.
+## The threshold form
+
+Both routes above reduce to the same binary, because a round invites strictly down the points order within a
+unit group. The applicant is at **rank 32** in 2349. They are invited **iff the round allocates ≥32 invitations
+to 2349**:
+
+| Round | Sep 2024 | Nov 2024 | Aug 2025 | Nov 2025 | Jun 2026 |
+|---|---|---|---|---|---|
+| Allocation to 2349 (all-leg) | 5 | 21 | 29 | **43** | **87** |
+| Covers rank 32 | no | no | no | yes | yes |
+
+- **Unweighted: 40%.** Ignores the trend entirely — treat as a floor.
+- **Recency-weighted (2^−age): 77%.** The weighting kernel is arbitrary over n=5 and is stated so the reader can
+  discount it; it halves each older round's weight.
+- **Trend: above 77%.** Allocation is monotone increasing, 17.4× over five rounds, and 2349's share of the round
+  grew 0.12% → 1.67%.
+
+The downside risk is **not the applicant's score**. It is a policy cut returning this stratum's allocation below 32.
+
+## Out-of-sample validation
+
+The mechanism — rank the stratum's pool by points, allocate top-down, read the cut-off where invitations run out —
+was tested against Jun-2026 for every occupation receiving ≥5 invitations:
+
+| Occupations | Within ±5 pts | Exact | r | MAE | Mean signed error |
+|---|---|---|---|---|---|
+| 49 | 49 (100%) | 21 (43%) | 0.941 | 2.86 pts | **+2.86 pts** |
+
+The bias is positive: real rounds go *deeper* than the rule predicts, so applying it to the applicant understates
+their odds. A conservation check confirms per-occupation invitations sum exactly to each round total (residual 0).
 
 ## What the model cannot do
 
+- **See exogenous policy.** Annual migration planning levels and ministerial direction on occupation priority set
+  round size and cadence. They are not in this data and no EOI-derived quantity substitutes for them.
 - **Predict whether a round happens, or its size.** Both are set by planning levels, not by the
   pool. Gaps between the five observed rounds were 2, 9, 3 and 7 months — n=4 gaps supports no
   dated forecast.

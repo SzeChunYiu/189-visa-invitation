@@ -11,7 +11,18 @@ SIZE={r["round"]:r["size"] for r in haz["cutoffs"]}
 EST={"2024-09":7814,"2024-11":14507,"2025-08":6705,"2025-11":9821,"2026-06":9761}
 CUT2349=[r["cut_2349"] for r in haz["cutoffs"]]
 ALLOC=[r["alloc"] for r in fin["alloc"]]
-POOL=[r["pool_ge85"] for r in fin["alloc"]]
+PRIOR={"2024-09":"09/2024","2024-11":"10/2024","2025-08":"07/2025","2025-11":"10/2025","2026-06":"05/2026"}
+_pl=pd.read_csv(D/"pool189_occ_score.csv"); _pl=_pl[_pl.Score.astype(str).str.fullmatch(r"\d+")]
+_pl["Score"]=_pl.Score.astype(int); _pl["n"]=_pl.n.fillna(0)
+_pl=_pl[_pl.OccGroup=="2349 Other Natural and Physical Science Professionals"]
+POOL=[int(_pl[(_pl.AsAt==PRIOR[r])&(_pl.Score>=85)].n.sum()) for r in ROUNDS]  # all-leg, matches ALLOC basis
+gm=json.load(open(D/"global_model.json")); fw=json.load(open(D/"forward_model.json"))
+p190=pd.read_csv(D/"phys_190_491.csv").fillna(0)
+p190=p190[p190.Score.astype(str).str.fullmatch(r"\d+")]; p190["Score"]=p190.Score.astype(int)
+def st190(v):
+    x=p190[(p190.Visa.str.startswith(v))&(p190.Status=="SUBMITTED")]
+    return int(x.n.sum()), int(x[x.Score>=90].n.sum())
+n190,g190=st190("190"); n491,g491=st190("491")
 phys=occ[occ.occupation=="234914 Physicist"].iloc[0]
 PHYS_N=[int(phys[r+"_n"]) for r in ROUNDS]
 
@@ -35,6 +46,13 @@ xlab="".join(f'<text x="{X(i):.1f}" y="{H-MB+20}" class="ax" text-anchor="middle
 chart=f'''<svg viewBox="0 0 {W} {H}" role="img" aria-label="Physics-stratum points cut-off by round: 95, 90, 90, 85, 80">
 {band}{grid}{line85}<path d="{path}" class="ln"/>{dots}{xlab}</svg>'''
 
+ALLOC=[fw["alloc_hist"][r] for r in ROUNDS]; RANK=fw["rank"]; COV=fw["covered"]; WTS=fw["weights"]
+thr="".join(
+ f"<tr><td class='rd'>{LBL[r]}</td><td class='n'>{ALLOC[i]}</td>"
+ f"<td class='n dim'>{WTS[i]:.3f}</td>"
+ f"<td class='n'><span class='pill {'ok' if COV[i] else 'no'}'>{'covered' if COV[i] else 'short'}</span></td></tr>"
+ for i,r in enumerate(ROUNDS))
+poolrows="".join(f"<tr><td class='rd'>{sc}</td><td class='n'>{n}</td></tr>" for sc,n in fw["pool"] if sc>=75)
 rows="".join(
  f"<tr><td class='rd'>{LBL[r]}</td><td class='n'>{SIZE[r]:,}</td><td class='n dim'>~{EST[r]:,}</td>"
  f"<td class='n'>{ALLOC[i]}</td><td class='n'>{POOL[i]}</td>"
@@ -103,6 +121,14 @@ svg{width:100%;height:auto;display:block}
 input[type=search]{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);font:inherit;font-size:14px}
 input[type=search]:focus{outline:2px solid var(--accent);outline-offset:1px}
 .note{font-size:13px;color:var(--muted)}
+.statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:18px}
+.stat{display:flex;flex-direction:column;gap:2px}
+.sv{font-family:Archivo,sans-serif;font-size:27px;font-weight:800;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+.sl{font-size:11.5px;color:var(--muted);line-height:1.3}
+.ctl{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ctl label{font-size:13px;color:var(--muted)}
+.ctl input[type=number]{width:78px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:inherit;font-family:"IBM Plex Mono",monospace}
+.ctl input[type=number]:focus{outline:2px solid var(--accent);outline-offset:1px}
 .findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
 .find{border-left:3px solid var(--accent);padding:2px 0 2px 15px}
 .find h3{margin-bottom:4px}
@@ -128,22 +154,50 @@ HTML=f"""<title>189 Invitation Odds</title>
  <div class="vtop">
   <div class="vmain">
     <div class="eyebrow">Probability of invitation</div>
-    <div class="big">77%</div>
-    <p class="sub" style="margin-top:8px"><b>Conditional on a round being held.</b> The physics stratum's cut-off has fallen every
-    round for two years and cleared 85 points in each of the last two. The open question is not your score &mdash; it is whether
-    Home Affairs runs a round at all.</p>
+    <div class="big">40&ndash;77%</div>
+    <p class="sub" style="margin-top:8px"><b>Conditional on a round being held.</b> 40% weights all five
+    observed rounds equally and so ignores the trend &mdash; treat it as a floor. 77% halves the weight of each
+    older round (2<sup>&minus;age</sup>). The allocation trend is monotone increasing and points above 77%.</p>
   </div>
   <div class="vside">
-    <dl class="kv" style="margin:0"><dt>Your rank in unit group 2349</dt><dd>~{fin['rank_all']}</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Invitations to 2349 last round</dt><dd>{ALLOC[-1]} &rarr; ~66</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Your rank in unit group 2349</dt><dd>{RANK}</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Invitations to 2349, last round</dt><dd>{ALLOC[-1]}</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Rounds that would have covered you</dt><dd>2 of 5</dd></dl>
     <dl class="kv" style="margin:0"><dt>Physicists at 85 pts ahead of you</dt><dd>{int(phys.pool_85)}</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Physicists above 85 pts</dt><dd>{int(phys.pool_gt85)}</dd></dl>
-    <dl class="kv" style="margin:0"><dt>P(cut-off &lt; 85) / (= 85) / (&gt; 85)</dt><dd>{fin['p_below']:.0%} / {fin['p_eq']:.0%} / {fin['p_above']:.0%}</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Mechanism backtest accuracy</dt><dd>&plusmn;5 pts on 49/49</dd></dl>
   </div>
  </div>
  <div class="caveat"><b>What this model cannot tell you:</b> whether a round happens, or how big it is. Both are set by
- planning levels, not by the pool. Five rounds in 24 months is the entire evidence base for cadence &mdash; too thin for a dated forecast.</div>
+ migration planning levels, not by the pool. Five rounds in 24 months is the entire evidence base for cadence &mdash; too thin for a dated forecast.</div>
 </div>
+
+<section>
+  <h2>The whole model reduces to one threshold</h2>
+  <p class="sub">Within a unit group, a round invites strictly down the points order. You sit at rank <b>{RANK}</b> in
+  ANZSCO 2349 &mdash; 11 people above 85 points, and 20 at 85 points whose EOIs predate 10 Sep 2026. So you are invited
+  if and only if the next round allocates at least <b>{RANK}</b> invitations to 2349.</p>
+  <div class="panel scroll"><table>
+    <thead><tr><th>Round</th><th>Allocation to 2349</th><th>Recency weight</th><th>Covers rank {RANK}?</th></tr></thead>
+    <tbody>{thr}</tbody></table></div>
+  <p class="note">Allocation history <b>5 &rarr; 21 &rarr; 29 &rarr; 43 &rarr; 87</b> &mdash; monotone increasing, 17.4&times; over
+  five rounds, and 2349's share of the round grew from 0.12% to 1.67%. <b>The downside risk is not your score.</b>
+  It is a policy cut returning this stratum's allocation below {RANK}, as in Sep-2024, Nov-2024 and Aug-2025.</p>
+</section>
+
+<section>
+  <h2>Why trust the mechanism: it predicts other occupations out of sample</h2>
+  <p class="sub">Take each occupation's standing pool and its allocation, walk down the points order, and read off where
+  the invitations run out. Tested against every occupation receiving 5+ invitations in Jun-2026 &mdash; a round the rule
+  was not fitted to.</p>
+  <div class="panel"><div class="statrow">
+    <div class="stat"><span class="sv">49</span><span class="sl">occupations tested</span></div>
+    <div class="stat"><span class="sv">100%</span><span class="sl">within &plusmn;5 points</span></div>
+    <div class="stat"><span class="sv">43%</span><span class="sl">exactly right</span></div>
+    <div class="stat"><span class="sv">0.94</span><span class="sl">correlation r</span></div>
+    <div class="stat"><span class="sv">+2.9</span><span class="sl">bias, pts (conservative)</span></div>
+  </div></div>
+  <p class="note">The bias is positive: real rounds go <i>deeper</i> than the rule predicts, so applying it to your case understates your odds.</p>
+</section>
 
 <section>
   <h2>The mechanism: rounds are stratified by occupation, not by a single national cut-off</h2>
@@ -160,18 +214,57 @@ HTML=f"""<title>189 Invitation Odds</title>
   <p class="sub">Only five months in the whole panel contain genuine 189 invitations. The other 19 months show nothing but
   190/491 state nominations leaking through a shared status field &mdash; see the methodology note below.</p>
   <div class="panel scroll"><table>
-   <thead><tr><th>Round</th><th>189-only invites</th><th>Est. total</th><th>To group 2349</th><th>2349 stock &ge;85</th><th>2349 cut-off</th></tr></thead>
+   <thead><tr><th>Round</th><th>189-only invites</th><th>Est. total</th><th>To 2349</th><th>2349 stock &ge;85</th><th>2349 cut-off</th></tr></thead>
    <tbody>{rows}</tbody></table></div>
-  <p class="note">"189-only" counts EOIs whose <i>only</i> visa leg is 189, so the invitation is unambiguously a 189 invitation.
+  <p class="note">Allocation to 2349 and its &ge;85 stock are both on the all-leg basis, so they are directly comparable;
+  round size is quoted single-leg with a difference-in-differences estimate of the true total.
+  The 2024 rows look self-contradictory &mdash; Nov-2024 allocated 21 against a recorded stock of 14 yet held the cut-off at 90
+  &mdash; because the panel was still filling in late 2024 and understates the true standing pool then. The backtest below is run
+  on Jun-2026 only, where coverage is complete.
+  "189-only" counts EOIs whose <i>only</i> visa leg is 189, so the invitation is unambiguously a 189 invitation.
   "Est. total" adds multi-leg EOIs via a difference-in-differences correction against non-round months.</p>
+</section>
+
+<section>
+  <h2>Macroscopic drivers</h2>
+  <p class="sub">What moves the answer is not any one applicant's attributes but the balance between a pool growing
+  faster than it is cleared, and an allocation to small scientific occupations that has been expanding sharply.</p>
+  <div class="panel"><div class="statrow">
+    <div class="stat"><span class="sv">+{gm['inflow']:,}</span><span class="sl">net EOIs added to the 189 pool each month</span></div>
+    <div class="stat"><span class="sv">180,651</span><span class="sl">standing 189 pool, Aug 2026</span></div>
+    <div class="stat"><span class="sv">{gm['concentration_top10']}%</span><span class="sl">of Jun-2026 went to 10 occupations</span></div>
+    <div class="stat"><span class="sv">17.4&times;</span><span class="sl">growth in 2349's allocation</span></div>
+    <div class="stat"><span class="sv">1.67%</span><span class="sl">2349 share of the round, up from 0.12%</span></div>
+  </div></div>
+  <p class="note">Invitations are highly concentrated: ten unit groups absorb two thirds of a round, thirty absorb 94%.
+  Being in a small, low-competition group is an advantage here &mdash; 2349's cut-off fell while the national floor stayed at 65.
+  <b>Not visible in this data:</b> annual planning levels and ministerial direction on occupation priority. Those set
+  round size and cadence, and no amount of EOI data substitutes for them.</p>
+</section>
+
+<section>
+  <h2>If you also hold 190 or 491 EOIs</h2>
+  <p class="sub">State-nominated subclasses are not points-ranked federally &mdash; a state selects against its own criteria,
+  so a queue model does not transfer. For context only, here is where physicists stand in those pools.</p>
+  <div class="panel scroll"><table>
+   <thead><tr><th>Subclass</th><th>Physicist EOIs</th><th>At 90+ pts (= 85 + nomination)</th></tr></thead>
+   <tbody>
+    <tr><td class="rd">190 State Nominated</td><td class="n">{n190}</td><td class="n">{g190}</td></tr>
+    <tr><td class="rd">491 Regional Nominated</td><td class="n">{n491}</td><td class="n">{g491}</td></tr>
+   </tbody></table></div>
+  <p class="note">A 190 nomination adds 5 points and a 491 adds 15, so an 85-point 189 profile appears at 90 and 100 in those pools.</p>
 </section>
 
 <section>
   <h2>Look up any occupation</h2>
   <p class="sub">The points cut-off each ANZSCO occupation actually reached in each of the five rounds, with its current
-  standing pool. Blank means that occupation received no invitation in that round.</p>
+  standing pool. Green means that round would have reached your score; set your own points below. A dash means
+  the occupation received no invitation in that round. Small number beside each cut-off is that round's invitation count.</p>
   <div class="panel">
-    <input type="search" id="q" placeholder="Search 181 occupations — try 'physicist', '2613', 'nurse'" aria-label="Search occupations">
+    <div class="ctl">
+      <input type="search" id="q" style="flex:1;min-width:220px" placeholder="Search 181 occupations — try 'physicist', '2613', 'nurse'" aria-label="Search occupations">
+      <label for="pts">Your points</label><input type="number" id="pts" value="85" min="0" max="180" step="5" aria-label="Your points score">
+    </div>
     <div class="scroll" style="margin-top:14px;max-height:440px;overflow-y:auto"><table id="t">
       <thead><tr><th>Occupation</th>{''.join(f'<th>{LBL[r]}</th>' for r in ROUNDS)}<th>Pool @85</th><th>Pool &gt;85</th></tr></thead>
       <tbody></tbody></table></div>
@@ -200,15 +293,18 @@ HTML=f"""<title>189 Invitation Odds</title>
 </footer>
 </div>
 <script>
-const D={DATA},R={json.dumps([LBL[r] for r in ROUNDS])};
-const tb=document.querySelector("#t tbody"),q=document.getElementById("q");
+const D={DATA};
+const tb=document.querySelector("#t tbody"),q=document.getElementById("q"),pts=document.getElementById("pts");
+let PTS=85;
 function cell(v,n){{ if(v===null) return "<td class='n dim'>&mdash;</td>";
-  const k=v<=85?"ok":"no"; return `<td class='n'><span class='pill ${{k}}'>${{v}}</span><span class='dim' style='font-size:11px'> ${{n}}</span></td>`;}}
+  const k=v<=PTS?"ok":"no";
+  return `<td class='n'><span class='pill ${{k}}'>${{v}}</span><span class='dim' style='font-size:11px'> ${{n}}</span></td>`;}}
 function render(f){{
   tb.innerHTML=D.filter(r=>r.o.toLowerCase().includes(f)).map(r=>
     `<tr><td class='rd'>${{r.o}}</td>${{r.c.map((v,i)=>cell(v,r.n[i])).join("")}}<td class='n'>${{r.p85}}</td><td class='n'>${{r.pg}}</td></tr>`).join("")
     || "<tr><td colspan='8' class='dim' style='padding:18px'>No occupation matches that search.</td></tr>";}}
 q.addEventListener("input",e=>render(e.target.value.toLowerCase().trim()));
+pts.addEventListener("input",e=>{{PTS=+e.target.value||0;render(q.value.toLowerCase().trim());}});
 q.value="physicist";render("physicist");
 </script>"""
 OUT.parent.mkdir(exist_ok=True); OUT.write_text(HTML)

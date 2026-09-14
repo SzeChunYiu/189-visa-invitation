@@ -1,3 +1,5 @@
+import pathlib, os
+os.chdir(pathlib.Path(__file__).resolve().parent.parent/'data')
 import pandas as pd, numpy as np
 pd.set_option("display.width",250,"display.max_columns",50)
 d=pd.read_csv("inv189only_score.csv")

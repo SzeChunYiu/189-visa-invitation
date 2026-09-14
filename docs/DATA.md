@@ -34,7 +34,7 @@ pages them, and asserts `len(rows) == qSize.qcy` so truncation cannot pass silen
 | `Nominated State` | `N/A` for 189 legs; a state for 190/491 legs |
 | `English Test Score`, `PartnerSkills Score`, `Australian Study Flag`, `Regional Study`, `Comm Language Qual`, `Specialist Education`, `Professional Year` | Point components. Addends of `Score` — carry no independent ranking signal for 189 |
 
-## Extracted files (`data/`)
+## Key extracted files (`data/`, 46 files total)
 
 | File | Grain |
 |---|---|

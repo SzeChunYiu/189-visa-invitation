@@ -34,8 +34,18 @@ ranged from **65 to 100**.
 | Invitations to 2349 | 3 | 11 | 15 | 24 | 35 |
 | National floor | 65 | 65 | 65 | 65 | 65 |
 
-**4. For an 85-point physicist:** P(invited | a round is held) ≈ **77%**.
-The binding uncertainty is round *occurrence*, which this data cannot predict.
+**4. The model reduces to one threshold.** An 85-point physicist sits at **rank 32** in unit group 2349
+(11 above 85 points, 20 at 85 with earlier dates). They are invited iff the next round allocates ≥32 invitations
+to 2349. Allocation history: **5 → 21 → 29 → 43 → 87** — the last two rounds clear it, the first three do not.
+
+P(invited | a round is held) = **40%** unweighted (a floor that ignores the trend) to **77%** recency-weighted
+(2^−age). The allocation trend is monotone increasing and argues above 77%. The binding uncertainty is round
+*occurrence* and *size*, which this data cannot predict; the downside risk is a policy cut to this stratum,
+not the applicant's score.
+
+**5. The mechanism is validated out of sample.** Ranking each occupation's pool by points and allocating top-down
+predicts the Jun-2026 cut-off **within ±5 points for 49 of 49 occupations** (r = 0.941, MAE 2.86, bias +2.9 pts —
+real rounds go deeper than predicted, so the estimate is conservative).
 
 ## Reproduce
 
@@ -43,6 +53,7 @@ The binding uncertainty is round *occurrence*, which this data cannot predict.
 pip install -r requirements.txt
 python src/step3_core.py && python src/step4.py && python src/step5_occ.py && python src/step6.py
 python src/model.py && python src/model2.py && python src/cutoff_table.py
+python src/global_model.py && python src/forward_model.py
 python src/build_dashboard.py
 ```
 
@@ -57,5 +68,7 @@ Every hypercube asserts `fetched rows == qSize.qcy`, so silent truncation fails 
 | `src/test_only189.py` | Single-leg identification is exact (`all == only + multi`) |
 | `src/test_suppress.py` | Engine returns exact sub-20 counts (complement differencing) |
 | `src/test_drift.py` / `test_drift2.py` | `Score` on an INVITED row is the score at invitation |
+| `src/global_model.py` | Out-of-sample backtest + conservation check + macro drivers |
+| `src/forward_model.py` | Applies the validated mechanism to the next round |
 
 Not migration advice.

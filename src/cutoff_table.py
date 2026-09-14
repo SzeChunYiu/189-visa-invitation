@@ -1,3 +1,5 @@
+import pathlib, os
+os.chdir(pathlib.Path(__file__).resolve().parent.parent/'data')
 import pandas as pd, numpy as np, json
 ROUNDS=["2024-09","2024-11","2025-08","2025-11","2026-06"]
 def num(df,c="Score"):

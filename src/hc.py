@@ -1,4 +1,11 @@
-import asyncio, json, csv, os
+import asyncio, json, csv, os, pathlib
+
+DATA = pathlib.Path(__file__).resolve().parent.parent / "data"
+
+def _out(p):
+    """Resolve a bare filename into the repo data/ directory."""
+    q = pathlib.Path(p)
+    return q if q.is_absolute() or q.parent != pathlib.Path(".") else DATA / q.name
 
 async def cube(q, h, dims, measures, out_csv=None, page_cells=8000):
     """dims: list of (label, fieldOrExpr). measures: list of (label, expr).
@@ -30,6 +37,7 @@ async def cube(q, h, dims, measures, out_csv=None, page_cells=8000):
     await q.call("DestroySessionObject",h,[lay["qLayout"]["qInfo"]["qId"]])
     hdr=[d[0] for d in dims]+[m[0] for m in measures]
     if out_csv:
-        with open(out_csv,"w",newline="") as f:
+        dest = _out(out_csv); dest.parent.mkdir(parents=True, exist_ok=True)
+        with open(dest,"w",newline="") as f:
             wtr=csv.writer(f); wtr.writerow(hdr); wtr.writerows(rows)
     return hdr, rows, total
