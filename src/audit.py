@@ -300,6 +300,43 @@ chk("  (control) a renamed definition is caught while its call remains",
     "chartWaterfall" in (_c - _d - _GLOBALS),
     "renaming chartWaterfall leaves its call unresolved")
 
+# Atom-level checks on the built markup. These came out of a sweep done in the browser;
+# kept here so they run on every build rather than when someone remembers to look.
+for _pg in PAGES:
+    _h=(pathlib.Path("../docs")/_pg).read_text()
+
+    # one skip link, not two - build_pages injects one and the template carried another
+    _skips=_h.count('class="skip"')
+    chk(f"{_pg}: at most one skip link",_skips<=1,f"{_skips} found")
+
+    # every chart declares an accessible name, and clear() must not delete it
+    _svgs=_re.findall(r'<svg[^>]*id="(c\d+)"[\s\S]*?</svg>', _h)
+    _titled=_re.findall(r'<svg[^>]*id="(c\d+)"[^>]*>\s*<title', _h)
+    _untitled=sorted(set(_svgs)-set(_titled))
+    chk(f"{_pg}: every chart markup carries a <title>",len(_untitled)==0,
+        f"missing on {_untitled}" if _untitled else f"{len(_svgs)} charts")
+
+    # aria-labelledby must point at an id that exists
+    _bad=[t for t in _re.findall(r'aria-labelledby="([^"]+)"', _h) if f'id="{t}"' not in _h]
+    chk(f"{_pg}: every aria-labelledby resolves",len(_bad)==0,
+        f"dangling {_bad}" if _bad else "all resolve")
+
+# clear() is the function that deleted those titles; it must keep them by identity
+_dh=pathlib.Path("../src/dash_html.py").read_text()
+chk("clear() preserves the chart title by identity",
+    'querySelector("title")' in _dh,
+    "clear() keeps the <title> element" if 'querySelector("title")' in _dh
+    else "clear() relies on child position, which loses the title")
+_ctl='while(s.childNodes.length>1)' in _dh
+chk("  (control) the old position-based clear() is gone",not _ctl,
+    "position-based removal absent" if not _ctl else "still present")
+
+# nothing focusable without a visible ring
+_css=pathlib.Path("../src/dash_css.py").read_text()
+chk("a global focus-visible rule exists",
+    ':focus-visible{outline' in _css.replace(" ",""),
+    "covers every focusable element")
+
 allrefs=set().union(*SITE_REFS.values())
 orphans=sorted(allrefs-SITE_IDS)
 chk(f"no JS reference is orphaned across all {len(PAGES)} pages",len(orphans)==0,

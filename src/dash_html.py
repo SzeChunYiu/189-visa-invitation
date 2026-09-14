@@ -3,7 +3,6 @@ HTML = r"""<meta charset="utf-8">
 <title>SkillSelect 189 Explorer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <style>__CSS__</style>
-<a class="skip" href="#results">Skip to result</a>
 <div class="wrap">
 <header>
   <div>
@@ -245,7 +244,14 @@ __MODEL__
 /* ---------- svg helpers ---------- */
 const NS="http://www.w3.org/2000/svg";
 function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
-function clear(s){while(s.childNodes.length>1)s.removeChild(s.lastChild);}
+function clear(s){
+  /* Keep the <title> by identity, not by position. It was "the first child", but the
+     newline before it in the markup is a text node, so on every chart whose title sat
+     on its own line clear() kept the whitespace and deleted the accessible name. */
+  const t=s.querySelector("title");
+  while(s.lastChild) s.removeChild(s.lastChild);
+  if(t) s.appendChild(t);
+}
 /* the code that draws owns the viewBox: a static one in the markup silently clips */
 function noFc(s,W,H,line){
   const t=el("text",{x:W/2,y:H/2-6,class:"tick","text-anchor":"middle","font-weight":"700",
@@ -870,6 +876,7 @@ function chartRounds(o,pts){
   const yl=el("text",{x:ML-7,y:MT-8,class:"tick","text-anchor":"end"});yl.textContent="pts";s.appendChild(yl);
   const nl2=el("text",{x:2,y:H-MB+34,class:"tick","text-anchor":"start",fill:"var(--ink)",
     "font-weight":"700"});nl2.textContent="invites";s.appendChild(nl2);
+  axisTitle(s,W,H,MB,"round","lowest score invited (points)");
   
 }
 /* ---------- chart 4: the mechanism itself - cumulative queue vs allocation ---------- */
