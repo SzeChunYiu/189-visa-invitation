@@ -58,7 +58,24 @@ for o,x in latest.groupby("Occupation"):
     occ[o]=dict(g=str(o)[:4],rounds=[dict(r=r,lc=None,b=None,s="U",n=0) for r in ROUNDS],
                 pool=int(x.n.sum()),dist={int(r.Score):int(r.n) for _,r in x.iterrows() if r.n>0})
 
-bundle=dict(rounds=ROUNDS,sizes=SIZES,floor=FLOOR,groups=groups,occ=occ,policy=pol,unc=unc,rs=rs,
+# ---- date-of-effect CDF per (group, score): what share of a band is dated before month m.
+# Summing the raw DoE counts double-counts EOIs with several points versions in one snapshot
+# (+62% overall), so only the NORMALISED SHAPE is used, rescaled to the true band count.
+doe=num(pd.read_csv("doe_all_grp.csv")); doe["n"]=doe.n.fillna(0)
+doe=doe[doe.DoEMonth.astype(str).str.match(r"\d{4}-\d{2}")]
+doe["G"]=doe.OccGroup.astype(str).str[:4]
+doe=doe[doe.DoEMonth<="2026-08"]                       # anything later is snapshot leakage
+MONTHS=sorted(doe.DoEMonth.unique())
+MIDX={m:i for i,m in enumerate(MONTHS)}
+cdf={}
+for (g,sc),z in doe.groupby(["G","Score"]):
+    z=z.groupby("DoEMonth").n.sum().sort_index()
+    tot=z.sum()
+    if tot<=0: continue
+    c=(z.cumsum()/tot)
+    cdf.setdefault(g,{})[int(sc)]=[[MIDX[m],round(float(v),4)] for m,v in c.items()]
+
+bundle=dict(doe_months=MONTHS,doe_cdf=cdf,rounds=ROUNDS,sizes=SIZES,floor=FLOOR,groups=groups,occ=occ,policy=pol,unc=unc,rs=rs,
   meta=dict(fr=round(FR,6),round_min=6450,round_max=14724,oos_mae=val["oos"]["mae"],oos_within5=val["oos"]["within5"],oos_bias=val["oos"]["bias"],
             mech_exact=val["mech"]["exact"],cal_exact=round(cal["exact"]/cal["n"],3),cal_n=cal["n"],
             official_total=cal["official_total"],mobility=mob["pct_changed"],alloc_r=gate["pooled_r"],

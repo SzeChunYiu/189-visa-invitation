@@ -24,6 +24,8 @@ HTML = r"""<meta charset="utf-8">
   </div>
   <div class="f"><label for="pts">Your points</label>
     <input id="pts" type="number" value="85" min="0" max="180" step="5" aria-label="Your points score"></div>
+  <div class="f"><label for="doe">EOI submitted / last updated <span style="opacity:.7">(optional)</span></label>
+    <input id="doe" type="month" min="2024-07" max="2026-12" aria-label="Month your EOI was submitted or last changed"></div>
 
 </div>
 
@@ -74,6 +76,17 @@ HTML = r"""<meta charset="utf-8">
   strictly by points then date of effect, so everyone above your score and everyone on your score with an earlier
   date sits ahead. All EOIs in this snapshot pre-date a newly lodged one, so the whole of your own score row counts
   as ahead.</p></div>
+
+<div class="card"><div class="chead"><h2>Every score band, not just yours</h2>
+  <span class="eyebrow" id="hbn"></span></div>
+  <div class="scroll"><table id="bt"><thead><tr><th>Points</th><th>In your occupation</th>
+    <th>In your unit group</th><th>Ahead of that band</th><th>Forecast cut-off reaches it</th>
+    <th>Chance</th></tr></thead><tbody></tbody></table></div>
+  <p class="note">What the answer would be at every score, so you can see exactly what another 5 or 10 points buys.
+  Your row is highlighted. &ldquo;Ahead of that band&rdquo; counts everyone in your unit group on a higher score.
+  The chance column uses the same definition as the headline &mdash; averaged over how big the next round is likely
+  to be &mdash; and assumes you are last within a band unless you give a date above.
+  &ldquo;Forecast cut-off reaches it&rdquo; is judged at the central round size.</p></div>
 
 <div class="card"><div class="chead"><h2>Policy: the 2026&ndash;27 program</h2>
   <span class="eyebrow">published planning levels</span></div>
@@ -135,7 +148,7 @@ HTML = r"""<meta charset="utf-8">
 <div id="tip" role="status"></div>
 <script>
 const B=__BUNDLE__;
-const S={occ:"234914 Physicist",pts:85,szi:2};   /* szi 2 = the policy-implied central case, not a user guess */
+const S={occ:"234914 Physicist",pts:85,szi:2,doe:null};   /* szi 2 = the policy-implied central case, not a user guess */
 const $=id=>document.getElementById(id);
 const $$=id=>$(id)||{style:{},classList:{add(){},remove(){},toggle(){}},appendChild(){},addEventListener(){}};
 const RL={"2024-09":"Sep 24","2024-11":"Nov 24","2025-08":"Aug 25","2025-11":"Nov 25","2026-06":"Jun 26"};
@@ -150,11 +163,33 @@ function verdictFor(rd,pts){
   return {k:"crit",t:"not reached"};
 }
 /* Empirical P(actual cut-off <= pts) given a forecast, from held-out residuals. */
-function pClear(fc,pts){
+function pLE(fc,pts){
   if(fc===null||fc===undefined) return null;
   const R=B.unc.residuals, need=fc-pts;
   return R.filter(e=>e>=need).length/R.length;
 }
+/* Share of your own points band dated BEFORE you. null when the reader gives no date,
+   in which case we assume the worst - last in the band. */
+function aheadShare(g,pts){
+  if(S.doe===null) return null;
+  const band=B.doe_cdf[g]&&B.doe_cdf[g][String(Math.round(pts/5)*5)];
+  if(!band) return null;
+  const i=B.doe_months.indexOf(S.doe);
+  if(i<0) return S.doe<B.doe_months[0]?0:1;
+  let sh=0;
+  for(const [mi,c] of band){ if(mi<i) sh=c; else break; }
+  return sh;
+}
+/* P(invited) = P(cut-off lands below your band) + P(it lands ON your band) x P(it reaches you within it). */
+function pClear(fc,pts){
+  const le=pLE(fc,pts); if(le===null) return null;
+  const lt=pLE(fc,pts-5);
+  const eq=Math.max(0,le-lt);
+  const sh=(typeof CURG!=="undefined"&&CURG)?aheadShare(CURG,pts):null;
+  const reach = sh===null ? 0 : Math.max(0,1-sh);
+  return lt+eq*reach;
+}
+let CURG=null;
 function pBand(fc){ return fc===null?null:[fc-B.unc.hi80, fc-B.unc.lo80]; }
 function fcVerdict(c,pts){
   if(c===null||c===undefined) return {k:"n",t:"no forecast"};
@@ -374,6 +409,28 @@ function chartScatter(selG,pts){
   nt.textContent="further right = more competition for each place";s.appendChild(nt);
 }
 
+/* ---------- every score band ---------- */
+function bandTable(o,g,pts){
+  const tb=document.querySelector("#bt tbody"); if(!tb||!g) return; tb.innerHTML="";
+  const cen=B.policy?B.policy.per_round["3"]:10000, fc=cutoffAt(g,cen);
+  const my=Math.round(pts/5)*5;
+  const keys=[...new Set([...Object.keys(g.dist).map(Number),my])].filter(k=>k>=B.floor).sort((a,b)=>b-a);
+  keys.forEach(k=>{
+    const above=Object.keys(g.dist).map(Number).filter(x=>x>k).reduce((a,x)=>a+g.dist[x],0);
+    const saveP=S.pts; S.pts=k;
+    const P=pMarginal(g,k); S.pts=saveP;
+    const reaches = fc===null?null:(k>fc?"yes":k===fc?"on the boundary":"no");
+    const tr=document.createElement("tr"); if(k===my)tr.className="hl";
+    const cells=[k+(k===my?" (you)":""),fmt(o.dist[k]||0),fmt(g.dist[k]||0),fmt(above),reaches||"—",""];
+    cells.forEach((c,i)=>{const td=document.createElement("td");
+      if(i===5){const sp=document.createElement("span");
+        sp.className="pill "+(P===null?"n":P>=.8?"good":P>=.5?"warn":"crit");
+        sp.textContent=P===null?"—":Math.round(P*100)+"%";td.appendChild(sp);}
+      else td.textContent=c;
+      tr.appendChild(td);});
+    tb.appendChild(tr);});
+  const hb=$("hbn"); if(hb) hb.textContent="averaged over round size";
+}
 /* ---------- exact queue table ---------- */
 function queueTable(o,g,pts){
   const tb=document.querySelector("#qt tbody");if(!tb)return;tb.innerHTML="";
@@ -583,6 +640,7 @@ function takeaways(o,g,pts,size){
 /* ---------- render ---------- */
 function render(){
   const o=B.occ[S.occ]; if(!o) return;
+  CURG=o.g;
   const g=B.groups[o.g]; const pts=S.pts; const size=B.sizes[S.szi];
   const last=o.rounds[o.rounds.length-1];
   const fc=g?g.fc[S.szi]:null;
@@ -631,7 +689,7 @@ function render(){
   chartRounds(o,pts);chartQueue(g,pts);
   chartLandscape(o.g,pts);chartScatter(o.g,pts);
   takeaways(o,g,pts,size);
-  queueTable(o,g,pts);policyTable();
+  queueTable(o,g,pts);bandTable(o,g,pts);policyTable();
   
   const tb=document.querySelector("#rt tbody");tb.innerHTML="";
   o.rounds.forEach(r=>{const v2=verdictFor(r,pts);const tr=document.createElement("tr");
@@ -709,6 +767,7 @@ function initCombo(){
 }
 
 $("pts").addEventListener("input",e=>{S.pts=+e.target.value||0;render();});
+$("doe").addEventListener("input",e=>{S.doe=e.target.value||null;render();});
 $("hmsort").addEventListener("change",e=>{HMSORT=e.target.value;render();});
 $("dl").addEventListener("click",()=>{
   const rows=[["occupation","unit_group","pool","at_your_score","your_points",
