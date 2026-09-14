@@ -81,6 +81,12 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 17px 12px;box-shadow:var(--shadow)}
 .chead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.takeaway{margin:0 0 10px;font-size:13px;line-height:1.45;color:var(--ink);
+  background:var(--brand-soft);border-left:3px solid var(--brand);padding:8px 11px;border-radius:0 7px 7px 0}
+.takeaway b{font-weight:700}
+.takeaway.good{background:var(--good-bg);border-left-color:var(--good)}
+.takeaway.warn{background:var(--warn-bg);border-left-color:var(--warn)}
+.takeaway.crit{background:var(--crit-bg);border-left-color:var(--crit)}
 .note{font-size:11.5px;color:var(--muted);margin:8px 0 0;line-height:1.45}
 svg{width:100%;height:auto;display:block;overflow:visible}
 .gl{stroke:var(--grid);stroke-width:1}

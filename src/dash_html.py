@@ -43,34 +43,37 @@ HTML = r"""<meta charset="utf-8">
 <div class="tiles" id="tiles"></div>
 
 <div class="grid2">
-  <div class="card"><div class="chead"><h2>What this occupation actually reached</h2>
+  <div class="card"><div class="chead"><h2>Would you have got in before?</h2>
     <span class="eyebrow" id="h1n"></span></div>
+    <p class="takeaway" id="t1"></p>
     <svg id="c1" viewBox="0 0 520 220" role="img" aria-labelledby="c1t"><title id="c1t">Minimum points invited, by round</title></svg>
-    <p class="note">Lowest points invited in each of the five real rounds. A filled marker means that score was
-    fully exhausted, so everyone at it was invited; a hollow marker means it was rationed by date of effect.
-    The red rule is your score.</p></div>
-  <div class="card"><div class="chead"><h2>Forecast for the next round</h2>
+    <p class="note">Each dot is the lowest score that still got an invitation in that round. If the dot sits
+    <b>below your red line</b>, you would have been invited. A solid dot means everyone on that score got in; a hollow
+    dot means only the earliest applicants on it did.</p></div>
+  <div class="card"><div class="chead"><h2>What happens at the next round</h2>
     <span class="eyebrow" id="h2n"></span></div>
+    <p class="takeaway" id="t2"></p>
     <svg id="c2" viewBox="0 0 520 220" role="img" aria-labelledby="c2t"><title id="c2t">Forecast cut-off by round size</title></svg>
     <p class="note">Where the cut-off lands if the next round is this size, using this group's current share of
     invitations. The shaded band is the 80% prediction interval, taken from the
     distribution of this method's own errors on held-out rounds &mdash; not an assumption. Hover any point for
     the interval and the probability it reaches your score.</p></div>
-  <div class="card"><div class="chead"><h2>Who you are competing with</h2>
+  <div class="card"><div class="chead"><h2>How many people share your score</h2>
     <span class="eyebrow" id="h3n"></span></div>
+    <p class="takeaway" id="t3"></p>
     <svg id="c3" viewBox="0 0 520 220" role="img" aria-labelledby="c3t"><title id="c3t">Standing pool by points score</title></svg>
     <p class="note">Everyone in this occupation currently sitting in the 189 pool, by points. Your bucket is
     highlighted. Hover any column for the count.</p></div>
-  <div class="card"><div class="chead"><h2>Your position in the queue</h2>
+  <div class="card"><div class="chead"><h2>How many people are ahead of you</h2>
     <span class="eyebrow" id="h4n"></span></div>
+    <p class="takeaway" id="t4"></p>
     <svg id="c4" viewBox="0 0 520 220" role="img" aria-labelledby="c4t"><title id="c4t">Queue position within the unit group</title></svg>
-    <p class="note">This is the mechanism itself. The curve is the cumulative number of EOIs at or above each score
-    in your unit group; the dashed line is how many the last round actually invited. <b>Where they cross is the
-    cut-off.</b> Your position is marked &mdash; if the dashed line sits above your marker, a round of that size
-    reaches you.</p></div>
+    <p class="note">Walk from the highest score downwards and count people as you go &mdash; that is the blue line.
+    The green dashed line is how many invitations the last round handed out. <b>If your red dot sits below the green
+    line, the invitations reach you.</b> If it sits above, they run out first.</p></div>
 </div>
 
-<div class="card wide"><div class="chead"><h2>Exactly who is ahead of you</h2>
+<div class="card wide"><div class="chead"><h2>The exact head count ahead of you</h2>
   <span class="eyebrow" id="h8n"></span></div>
   <div class="scroll"><table id="qt"><thead><tr><th>Points</th><th>In your occupation</th>
     <th>In your unit group</th><th>Running total ahead of you</th><th>Standing</th></tr></thead><tbody></tbody></table></div>
@@ -84,9 +87,10 @@ HTML = r"""<meta charset="utf-8">
   <div class="scroll"><table id="pt"><thead><tr><th>Category</th><th>2025&ndash;26</th><th>2026&ndash;27</th><th>Change</th></tr></thead><tbody></tbody></table></div>
   <p class="note" id="pnote"></p></div>
 
-<div class="card"><div class="chead"><h2>Your forecast at every score</h2>
+<div class="card"><div class="chead"><h2>What if your score or the round size changed?</h2>
   <span class="eyebrow" id="h5n"></span></div>
-  <svg id="c5" viewBox="0 0 520 300" role="img" aria-labelledby="c5t"><title id="c5t">Outcome by points score and round size</title></svg>
+  <p class="takeaway" id="t5"></p>
+    <svg id="c5" viewBox="0 0 520 300" role="img" aria-labelledby="c5t"><title id="c5t">Outcome by points score and round size</title></svg>
   <div class="legend"><span><i style="background:var(--good)"></i>invited regardless of date</span>
     <span><i style="background:var(--warn)"></i>on the boundary, date decides</span>
     <span><i style="background:var(--crit)"></i>not reached</span></div>
@@ -96,19 +100,26 @@ HTML = r"""<meta charset="utf-8">
 
 <div class="grid2">
   <div class="card"><div class="chead"><h2>The whole landscape</h2>
-    <span class="eyebrow">82 unit groups &times; 5 rounds</span></div>
+    <select id="hmsort" aria-label="Sort the landscape" style="font:inherit;font-size:11.5px;padding:4px 7px;
+      border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--body)">
+      <option value="cut">sort: cut-off, lowest first</option>
+      <option value="alloc">sort: invitations, most first</option>
+      <option value="name">sort: ANZSCO code</option></select></div>
     <div class="hm"><svg id="c6" viewBox="0 0 520 1420" role="img" aria-labelledby="c6t"><title id="c6t">Cut-off by unit group and round</title></svg></div>
     <div class="legend"><span>lowest points invited</span>
       <span class="ramp"><span style="background:#cde2fb"></span><span style="background:#9ec5f4"></span><span style="background:#6da7ec"></span><span style="background:#3987e5"></span><span style="background:#256abf"></span><span style="background:#184f95"></span><span style="background:#0d366b"></span></span>
       <span>65 &rarr; 100+</span><span><i style="background:var(--deemph)"></i>no invitation</span></div>
-    <p class="note">Darker means a higher points bar. Sorted by the most recent round. Click any row to load that
-    group's occupations. Your group is highlighted.</p></div>
+    <p class="note">Every unit group, every round, with the minimum points invited printed in each cell &mdash; so the
+    value never rests on colour alone. Darker means a higher bar; a dot means no invitations that round. Click any
+    row to load that group. Yours is outlined.</p></div>
   <div class="card"><div class="chead"><h2>Where your occupation sits</h2>
     <span class="eyebrow">pool vs cut-off, Jun 2026</span></div>
+    <p class="takeaway" id="t7"></p>
     <svg id="c7" viewBox="0 0 520 300" role="img" aria-labelledby="c7t"><title id="c7t">Pool size against cut-off</title></svg>
-    <p class="note">Each dot is a unit group: how many EOIs it holds against the points bar it actually reached.
-    Dot area is the invitations it received. Yours is outlined. Big pools do not automatically mean high
-    cut-offs &mdash; what matters is the pool relative to the group's allocation.</p></div>
+    <p class="note">One dot per occupation group. Left&ndash;right is how many people are waiting; up&ndash;down is the
+    score they had to beat. Bigger dots got more invitations. <b>Yours is the ringed dot.</b> Crowded occupations are not
+    automatically harder &mdash; what matters is how many invitations the group gets for its size. (The bottom axis is
+    squashed so both tiny and huge occupations fit on one chart.)</p></div>
 </div>
 
 <div class="card"><div class="chead"><h2>Round by round</h2><span class="eyebrow">the record for this occupation</span></div>
@@ -118,11 +129,17 @@ HTML = r"""<meta charset="utf-8">
   you are in regardless of date. On a rationed boundary, your date of effect decides.</p></div>
 
 <div class="card"><div class="chead"><h2>Every occupation at your score</h2>
-  <span class="eyebrow" id="allN"></span></div>
+  <span style="display:flex;gap:12px;align-items:center">
+    <span class="eyebrow" id="allN"></span>
+    <button id="dl" style="font:inherit;font-size:11.5px;padding:5px 10px;border:1px solid var(--line);
+      border-radius:7px;background:var(--paper);color:var(--brand);cursor:pointer">Download source data (CSV)</button>
+  </span></div>
   <div class="scroll" style="max-height:420px;overflow-y:auto"><table id="at"><thead><tr><th>Occupation</th>
     <th>Pool</th><th>At your score</th><th>Sep 24</th><th>Nov 24</th><th>Aug 25</th><th>Nov 25</th><th>Jun 26</th>
     <th>Next round</th></tr></thead><tbody></tbody></table></div>
-  <p class="note">Sorted by pool size. Click a row to load that occupation above.</p></div>
+  <p class="note">Sorted by pool size. Click a row to load that occupation above. The CSV carries every figure
+  behind this page for all 199 occupations at your current score and round size &mdash; the same numbers the
+  charts are drawn from.</p></div>
 
 <footer>
   Built from all 24 monthly SkillSelect EOI snapshots read directly from the Qlik engine behind the Department of
@@ -137,6 +154,7 @@ HTML = r"""<meta charset="utf-8">
 const B=__BUNDLE__;
 const S={occ:"234914 Physicist",pts:85,szi:2};
 const $=id=>document.getElementById(id);
+const $$=id=>$(id)||{style:{},classList:{add(){},remove(){},toggle(){}},appendChild(){},addEventListener(){}};
 const RL={"2024-09":"Sep 24","2024-11":"Nov 24","2025-08":"Aug 25","2025-11":"Nov 25","2026-06":"Jun 26"};
 const OCCS=Object.keys(B.occ).sort();
 const fmt=n=>n.toLocaleString();
@@ -213,7 +231,7 @@ function chartRounds(o,pts){
     hover(h,"<b>"+r.b+" points</b><span>"+RL[r.r]+" &middot; "+fmt(r.n)+" invited &middot; "+
       (cleared?"fully cleared":"rationed by date")+"</span><span>At "+pts+" pts: "+v.t+"</span>");
     s.appendChild(h);});
-  axisTitle(s,W,H,MB,"invitation round","minimum points invited");panel(s,"a");
+  axisTitle(s,W,H,MB,"invitation round","lowest score that got in");panel(s,"a");
 }
 /* ---------- chart 2: forecast by round size ---------- */
 function chartForecast(g,pts){
@@ -253,7 +271,7 @@ function chartForecast(g,pts){
       "</span><span>80% interval "+bb[0]+"–"+bb[1]+"</span><span>P(reaches "+pts+" pts) = "+
       Math.round(pp*100)+"%</span>");
     s.appendChild(h);});
-  axisTitle(s,W,H,MB,"assumed size of the next round","forecast cut-off (points)");panel(s,"b");
+  axisTitle(s,W,H,MB,"how many people the next round invites","lowest score expected to get in");panel(s,"b");
 }
 /* ---------- chart 3: pool by score (emphasis) ---------- */
 function chartPool(o,pts){
@@ -276,7 +294,7 @@ function chartPool(o,pts){
     if(keys.length<=14||i%2===0){
       const t=el("text",{x:x+bw/2,y:H-MB+16,class:"tick","text-anchor":"middle"});t.textContent=k;s.appendChild(t);}
     if(on){const t=el("text",{x:x+bw/2,y:y-6,class:"vlab","text-anchor":"middle"});t.textContent=fmt(n);s.appendChild(t);}});
-  axisTitle(s,W,H,MB,"points score","EOIs in the pool");panel(s,"c");
+  axisTitle(s,W,H,MB,"points score","people waiting with that score");panel(s,"c");
 }
 /* ---------- chart 4: the mechanism itself - cumulative queue vs allocation ---------- */
 function chartQueue(g,pts){
@@ -326,7 +344,7 @@ function chartQueue(g,pts){
       const q=el("text",{x:X(i),y:H-MB+15,class:"tick","text-anchor":"middle"});q.textContent=k;s.appendChild(q);}
     const hit=el("rect",{x:X(i)-8,y:MT,width:16,height:ph,class:"hit"});
     hover(hit,"<b>"+fmt(step[i].cum)+"</b><span>EOIs at "+k+" points or above</span>");s.appendChild(hit);});
-  axisTitle(s,W,H,MB,"points score (descending)","cumulative EOIs at or above");panel(s,"d");
+  axisTitle(s,W,H,MB,"points score, highest first","people ahead of you (running total)");panel(s,"d");
 }
 /* ---------- chart 5: forecast matrix (score x round size) ---------- */
 const SCORES=[120,115,110,105,100,95,90,85,80,75,70,65];
@@ -355,40 +373,50 @@ function chartMatrix(g,pts){
       if(mine){const o=el("rect",{x:ML+cw*c+1,y:y+1,width:cw-2,height:ch-2,rx:3,fill:"none",
         stroke:"var(--ink)","stroke-width":2,"pointer-events":"none"});s.appendChild(o);}});});
 }
-/* ---------- chart 6: landscape heatmap (group x round) ---------- */
+/* ---------- chart 6: annotated landscape heatmap (group x round) ---------- */
 const RAMP=["#cde2fb","#9ec5f4","#6da7ec","#3987e5","#256abf","#184f95","#0d366b"];
-function rampFor(v){ if(v===null||v===undefined) return "var(--deemph)";
-  const i=Math.max(0,Math.min(RAMP.length-1,Math.round((v-65)/6))); return RAMP[i]; }
+function rampIdx(v){ return Math.max(0,Math.min(RAMP.length-1,Math.round((v-65)/6))); }
+function rampFor(v){ return (v===null||v===undefined)?"var(--deemph)":RAMP[rampIdx(v)]; }
+function inkOn(v){ return (v===null||v===undefined)?"var(--muted)":(rampIdx(v)>=3?"#ffffff":"#0b0b0b"); }
+let HMSORT="cut";
 function chartLandscape(selG,pts){
   const s=$("c6");clear(s);
   const keys=Object.keys(B.groups);
-  const last=g=>{const f=B.groups[g].alloc; return f[f.length-1];};
-  keys.sort((a,b)=>{
-    const av=lastCut(a), bv=lastCut(b);
-    if(av===null&&bv===null) return last(b)-last(a);
-    if(av===null) return 1; if(bv===null) return -1;
-    return av-bv || last(b)-last(a);});
-  const ML=176,MR=14,MT=22,rh=16,W=520;
-  const H=MT+keys.length*rh+10;
+  const alloc=g=>{const f=B.groups[g].alloc;return f[f.length-1];};
+  const cmp={
+    cut:(a,b)=>{const av=lastCut(a),bv=lastCut(b);
+      if(av===null&&bv===null)return alloc(b)-alloc(a);
+      if(av===null)return 1; if(bv===null)return -1; return av-bv||alloc(b)-alloc(a);},
+    alloc:(a,b)=>alloc(b)-alloc(a),
+    name:(a,b)=>B.groups[a].name.localeCompare(B.groups[b].name)
+  }[HMSORT];
+  keys.sort(cmp);
+  const ML=190,MR=12,MT=26,rh=19,W=520,H=MT+keys.length*rh+8;
   s.setAttribute("viewBox","0 0 "+W+" "+H);
   const cw=(W-ML-MR)/B.rounds.length;
-  B.rounds.forEach((r,i)=>{const t=el("text",{x:ML+cw*(i+.5),y:MT-8,class:"tick","text-anchor":"middle"});
-    t.textContent=RL[r];s.appendChild(t);});
+  B.rounds.forEach((r,i)=>{const q=el("text",{x:ML+cw*(i+.5),y:MT-10,class:"tick","text-anchor":"middle",
+    "font-weight":"600"});q.textContent=RL[r];s.appendChild(q);});
   panel(s,"f");
   keys.forEach((gk,ri)=>{
     const G=B.groups[gk], y=MT+ri*rh, on=(gk===selG);
+    const nm=G.name.replace(/^\d+\s/,"");
     const lt=el("text",{x:ML-8,y:y+rh/2,class:"rowlab"+(on?" on":""),"text-anchor":"end"});
-    lt.textContent=(G.name.length>30?G.name.slice(0,29)+"…":G.name);s.appendChild(lt);
+    lt.textContent=gk+" "+(nm.length>26?nm.slice(0,25)+"…":nm);s.appendChild(lt);
     B.rounds.forEach((r,ci)=>{
       const v=cutOf(gk,r);
-      const rect=el("rect",{x:ML+cw*ci,y:y+1,width:cw,height:rh-2,rx:2,fill:rampFor(v),class:"cell"});
+      const rect=el("rect",{x:ML+cw*ci,y:y+1.5,width:cw,height:rh-3,rx:2,fill:rampFor(v),class:"cell"});
       s.appendChild(rect);
-      hover(rect,"<b>"+(v===null?"no invitations":v+" points")+"</b><span>"+G.name+"</span><span>"+RL[r]+"</span>");
+      /* value annotation - identity never rests on colour alone */
+      const vt=el("text",{x:ML+cw*(ci+.5),y:y+rh/2+3.5,"text-anchor":"middle","font-size":"10",
+        "font-weight":"650",fill:inkOn(v),"pointer-events":"none"});
+      vt.textContent=(v===null?"·":v);s.appendChild(vt);
+      hover(rect,"<b>"+(v===null?"no invitations":v+" points")+"</b><span>"+G.name+"</span><span>"+
+        RL[r]+" &middot; "+fmt(G.alloc[B.rounds.indexOf(r)])+" invited</span>");
       rect.addEventListener("click",()=>{
-        const first=OCCS.find(o=>B.occ[o].g===gk); if(first){S.occ=first;$("occ").value=first;render();
-          window.scrollTo({top:0,behavior:"smooth"});}});});
-    if(on){s.appendChild(el("rect",{x:ML,y:y+1,width:W-ML-MR,height:rh-2,rx:2,fill:"none",
-      stroke:"var(--ink)","stroke-width":2,"pointer-events":"none"}));}});
+        const first=OCCS.find(o=>B.occ[o].g===gk);
+        if(first){S.occ=first;$("occ").value=first;render();window.scrollTo({top:0,behavior:"smooth"});}});});
+    if(on)s.appendChild(el("rect",{x:ML,y:y+1.5,width:W-ML-MR,height:rh-3,rx:2,fill:"none",
+      stroke:"var(--ink)","stroke-width":2,"pointer-events":"none"}));});
 }
 function cutOf(gk,round){
   let best=null;
@@ -418,7 +446,7 @@ function chartScatter(selG,pts){
     const t=el("text",{x:X(xv),y:H-MB+16,class:"tick","text-anchor":"middle"});
     t.textContent=xv>=1000?(xv/1000)+"k":xv;s.appendChild(t);}
 
-  axisTitle(s,W,H,MB,"EOIs in the group's pool (log scale)","minimum points invited");panel(s,"g");
+  axisTitle(s,W,H,MB,"people waiting in that occupation","lowest score that got in");panel(s,"g");
   if(pts>=y0&&pts<=y1){
     s.appendChild(el("line",{x1:ML,y1:Y(pts),x2:W-MR,y2:Y(pts),class:"refl"}));
     const t=el("text",{x:W-MR,y:Y(pts)-6,class:"reft","text-anchor":"end"});t.textContent="your "+pts+" pts";s.appendChild(t);}
@@ -494,6 +522,42 @@ function policyTable(){
     "swell faster than it has: it would appear in later snapshots, not in today's forecast.";
 }
 
+
+/* ---------- plain-English takeaways: each chart states its own conclusion ---------- */
+function say(id,kind,html){const e=$(id);if(!e)return;e.className="takeaway"+(kind?" "+kind:"");e.innerHTML=html;}
+function takeaways(o,g,pts,size){
+  const inv=o.rounds.filter(r=>verdictFor(r,pts).k==="good").length;
+  const dated=o.rounds.filter(r=>verdictFor(r,pts).k==="warn").length;
+  say("t1", inv>=3?"good":inv>0?"warn":"crit",
+    inv===0 ? "On <b>"+pts+" points</b> you would <b>not</b> have been invited in any of the last five rounds for this occupation."
+    : "On <b>"+pts+" points</b> you would have been invited in <b>"+inv+" of the last 5 rounds</b>"+
+      (dated?", plus "+dated+" where it would have come down to your application date":"")+".");
+  const fc=g?g.fc[S.szi]:null, P=pClear(fc,pts);
+  say("t2", P===null?"":P>=.8?"good":P>=.5?"warn":"crit",
+    P===null ? "This occupation got no invitations last round, so there is nothing to forecast from."
+    : "If the next round invites <b>"+fmt(size)+"</b> people, the lowest score getting in should be about <b>"+fc+
+      "</b>. You are on <b>"+pts+"</b>, so your chance is <b>"+Math.round(P*100)+"%</b>.");
+  const my=Math.round(pts/5)*5, same=o.dist[my]||0, above=Object.keys(o.dist).map(Number).filter(k=>k>my)
+    .reduce((a,k)=>a+o.dist[k],0);
+  say("t3","", same===0 && above===0
+    ? "Nobody is currently waiting in this occupation at your score or above."
+    : "<b>"+fmt(same)+"</b> "+(same===1?"person is":"people are")+" waiting on exactly your score in this occupation, and <b>"+
+      fmt(above)+"</b> "+(above===1?"is":"are")+" on a higher one.");
+  const ge=g?Object.keys(g.dist).map(Number).filter(k=>k>=my).reduce((a,k)=>a+g.dist[k],0):0;
+  const al=g?g.alloc[g.alloc.length-1]:0;
+  say("t4", al>=ge?"good":"crit",
+    "About <b>"+fmt(ge)+"</b> people sit ahead of you. The last round handed out <b>"+fmt(al)+
+    "</b> invitations to your occupation group &mdash; "+
+    (al>=ge?"<b>more than enough to reach you</b>.":"<b>which would have stopped short of you</b>."));
+  const need=g?B.sizes.find((sz,i)=>{const p=pClear(g.fc[i],pts);return p!==null&&p>=.8;}):null;
+  say("t5","", need
+    ? "Reading your row: you are comfortably in once the round reaches about <b>"+fmt(need)+"</b> invitations."
+    : "Reading your row: no round size in this range gets you comfortably in at <b>"+pts+"</b> points.");
+  const gp=g?Object.values(g.dist).reduce((a,b)=>a+b,0):0;
+  say("t7","", g ? "Your occupation group has <b>"+fmt(gp)+"</b> people waiting and got <b>"+fmt(al)+
+      "</b> invitations last round &mdash; that ratio, not the raw crowd size, is what decides your odds." : "");
+}
+
 /* ---------- render ---------- */
 function render(){
   const o=B.occ[S.occ]; if(!o) return;
@@ -542,6 +606,7 @@ function render(){
   $("h3n").textContent=fmt(o.pool)+" EOIs"; $("h4n").textContent=o.g+" group";
   chartRounds(o,pts);chartForecast(g,pts);chartPool(o,pts);chartQueue(g,pts);
   chartMatrix(g,pts);chartLandscape(o.g,pts);chartScatter(o.g,pts);
+  takeaways(o,g,pts,size);
   queueTable(o,g,pts);policyTable();
   $("h5n").textContent=o.g+" group";
   const tb=document.querySelector("#rt tbody");tb.innerHTML="";
@@ -557,7 +622,7 @@ function render(){
 function renderAll(pts){
   const tb=document.querySelector("#at tbody");tb.innerHTML="";
   const list=OCCS.map(k=>({k:k,o:B.occ[k]})).sort((a,b)=>b.o.pool-a.o.pool);
-  $("allN").textContent=list.length+" occupations";
+  ($(  "allN")||{}).textContent=list.length+" occupations";
   list.forEach(({k,o})=>{
     const g=B.groups[o.g];const tr=document.createElement("tr");
     if(k===S.occ)tr.className="hl";
@@ -592,6 +657,25 @@ B.sizes.forEach((s,i)=>{const o=document.createElement("option");o.value=i;o.tex
   if(i===2)o.selected=true;$("sz").appendChild(o);});
 $("pts").addEventListener("input",e=>{S.pts=+e.target.value||0;render();});
 $("sz").addEventListener("change",e=>{S.szi=+e.target.value;render();});
+$("hmsort").addEventListener("change",e=>{HMSORT=e.target.value;render();});
+$("dl").addEventListener("click",()=>{
+  const rows=[["occupation","unit_group","pool","at_your_score","your_points",
+    ...B.rounds.map(r=>"boundary_"+r),...B.rounds.map(r=>"state_"+r),
+    ...B.sizes.map(s=>"forecast_"+s),"assumed_round_size","p_reaches_your_score"]];
+  const my=Math.round(S.pts/5)*5;
+  OCCS.forEach(k=>{const o=B.occ[k],g=B.groups[o.g];
+    const fc=g?g.fc[S.szi]:null, p=pClear(fc,S.pts);
+    rows.push([k,o.g,o.pool,o.dist[my]||0,S.pts,
+      ...o.rounds.map(r=>r.b===null?"":r.b),
+      ...o.rounds.map(r=>r.b===null?"":(r.s==="C"?"cleared":"partial")),
+      ...(g?g.fc.map(v=>v===null?"":v):B.sizes.map(()=>"")),
+      B.sizes[S.szi], p===null?"":p.toFixed(3)]);});
+  const csv=rows.map(r=>r.map(c=>{const s=String(c);
+    return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(",")).join("\n");
+  const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  const a=document.createElement("a");a.href=url;
+  a.download="skillselect189_"+S.pts+"pts_"+B.sizes[S.szi]+".csv";
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);});
 initCombo();render();
 </script>
 """
