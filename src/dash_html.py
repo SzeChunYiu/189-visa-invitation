@@ -90,7 +90,7 @@ HTML = r"""<meta charset="utf-8">
       <option value="name">sort: ANZSCO code</option></select><button class="q" type="button" aria-expanded="false" aria-controls="n6" aria-label="Explain this panel" data-note="n6">?</button></div>
     <div class="hm"><svg id="c6" viewBox="0 0 520 1420" role="img" aria-labelledby="c6t"><title id="c6t">Cut-off by unit group and round</title></svg></div>
     <div class="legend"><span>lowest points invited</span>
-      <span class="ramp"><span style="background:#cde2fb"></span><span style="background:#9ec5f4"></span><span style="background:#6da7ec"></span><span style="background:#3987e5"></span><span style="background:#256abf"></span><span style="background:#184f95"></span><span style="background:#0d366b"></span></span>
+      <span class="ramp"><span style="background:var(--r1)"></span><span style="background:var(--r2)"></span><span style="background:var(--r3)"></span><span style="background:var(--r4)"></span><span style="background:var(--r5)"></span><span style="background:var(--r6)"></span><span style="background:var(--r7)"></span></span>
       <span>65 &rarr; 100+</span><span><i style="background:var(--deemph)"></i>no invitation</span></div>
     <p class="note" id="n6" hidden>Darker = higher score needed. A dot = no invitations. Click a row to load that group.</p></div>
   <div class="card"><div class="chead"><h2>Why some occupations need more points</h2>
@@ -303,12 +303,19 @@ function chartQueue(g,pts){
 /* ---------- chart 5: forecast matrix (score x round size) ---------- */
 const SCORES=[120,115,110,105,100,95,90,85,80,75,70,65];
 /* ---------- chart 6: annotated landscape heatmap (group x round) ---------- */
-const RAMP=["#cde2fb","#9ec5f4","#6da7ec","#3987e5","#256abf","#184f95","#0d366b"];
+/* Red-earth ramp, read from CSS so it swaps with the theme. Both variants were validated
+   as ordinal ramps (monotone lightness, >=0.06 step gaps, light end clears 2:1 on its surface). */
+function rampSteps(){
+  const cs=getComputedStyle(document.documentElement);
+  return [1,2,3,4,5,6,7].map(i=>cs.getPropertyValue("--r"+i).trim()).filter(Boolean);
+}
+let RAMP=rampSteps();
 function rampIdx(v){ return Math.max(0,Math.min(RAMP.length-1,Math.round((v-65)/6))); }
-function rampFor(v){ return (v===null||v===undefined)?"var(--deemph)":RAMP[rampIdx(v)]; }
+function rampFor(v){ return (v===null||v===undefined)?"var(--deemph)":(RAMP[rampIdx(v)]||RAMP[0]); }
 function inkOn(v){ return (v===null||v===undefined)?"var(--muted)":(rampIdx(v)>=3?"#ffffff":"#0b0b0b"); }
 let HMSORT="cut";
 function chartLandscape(selG,pts){
+  RAMP=rampSteps();
   const s=$("c6");clear(s);
   const keys=Object.keys(B.groups);
   const alloc=g=>{const f=B.groups[g].alloc;return f[f.length-1];};

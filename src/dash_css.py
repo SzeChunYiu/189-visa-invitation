@@ -1,29 +1,35 @@
 CSS = """
 :root{
-  --paper:#f7f8f7; --card:#ffffff; --ink:#101418; --body:#38414b; --muted:#6b7684; --line:#e3e7e5;
-  --brand:#2f6f5e; --brand-soft:#e9f1ee;
-  --series:#2a78d6; --series-soft:rgba(42,120,214,.12); --deemph:#c9ced6;
+  --paper:#faf8f4; --card:#ffffff; --ink:#221d18; --body:#4a4238; --muted:#6e6459; --line:#e6e0d6;
+  --brand:#2f6f5e; --brand-soft:#e7f0ec;
+  --series:#1479a8; --series-soft:rgba(20,121,168,.12); --deemph:#cfc6b8;
+  --gold:#b97a0e; --gold-soft:#fbf1dd;
   --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
   --good-bg:#e8f6e8; --warn-bg:#fdf3de; --crit-bg:#fbeaea;
-  --grid:#e8ebe9; --axis:#c8cfcb;
-  --shadow:0 1px 2px rgba(16,20,24,.05), 0 10px 28px -20px rgba(16,20,24,.3);
+  --grid:#ece6dc; --axis:#cfc6b8;
+  --r1:#dda288; --r2:#d38867; --r3:#c96e47; --r4:#b25a34; --r5:#91492a; --r6:#703821; --r7:#4f2817;
+  --shadow:0 1px 2px rgba(34,29,24,.05), 0 10px 28px -20px rgba(34,29,24,.3);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#0d1014; --card:#161b21; --ink:#eef2f6; --body:#c0c8d2; --muted:#8a94a1; --line:#242c34;
-  --brand:#63b39b; --brand-soft:#16302a;
-  --series:#3987e5; --series-soft:rgba(57,135,229,.18); --deemph:#3a444f;
+  --paper:#17140f; --card:#211c16; --ink:#f3efe8; --body:#d3cabd; --muted:#9c9084; --line:#302a22;
+  --brand:#6fbfa3; --brand-soft:#1a2f28;
+  --series:#4faed4; --series-soft:rgba(79,174,212,.18); --deemph:#3d362d;
+  --gold:#e8b341; --gold-soft:#332912;
   --good:#0ca30c; --warn:#fab219; --crit:#e06b6b;
   --good-bg:#12301a; --warn-bg:#332a14; --crit-bg:#3a1f1f;
-  --grid:#222a32; --axis:#39434d;
+  --grid:#292319; --axis:#3d362d;
+  --r1:#f4e0d7; --r2:#e8c1b0; --r3:#dda288; --r4:#d18361; --r5:#c66339; --r6:#9e502e; --r7:#773c22;
   --shadow:0 1px 2px rgba(0,0,0,.5), 0 12px 32px -22px rgba(0,0,0,.8);
 }}
 :root[data-theme="dark"]{
-  --paper:#0d1014; --card:#161b21; --ink:#eef2f6; --body:#c0c8d2; --muted:#8a94a1; --line:#242c34;
-  --brand:#63b39b; --brand-soft:#16302a;
-  --series:#3987e5; --series-soft:rgba(57,135,229,.18); --deemph:#3a444f;
+  --paper:#17140f; --card:#211c16; --ink:#f3efe8; --body:#d3cabd; --muted:#9c9084; --line:#302a22;
+  --brand:#6fbfa3; --brand-soft:#1a2f28;
+  --series:#4faed4; --series-soft:rgba(79,174,212,.18); --deemph:#3d362d;
+  --gold:#e8b341; --gold-soft:#332912;
   --good:#0ca30c; --warn:#fab219; --crit:#e06b6b;
   --good-bg:#12301a; --warn-bg:#332a14; --crit-bg:#3a1f1f;
-  --grid:#222a32; --axis:#39434d;
+  --grid:#292319; --axis:#3d362d;
+  --r1:#f4e0d7; --r2:#e8c1b0; --r3:#dda288; --r4:#d18361; --r5:#c66339; --r6:#9e502e; --r7:#773c22;
   --shadow:0 1px 2px rgba(0,0,0,.5), 0 12px 32px -22px rgba(0,0,0,.8);
 }
 *{box-sizing:border-box}
