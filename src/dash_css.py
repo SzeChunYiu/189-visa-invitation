@@ -104,6 +104,12 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .takeaway.good{background:var(--good-bg);border-left-color:var(--good)}
 .takeaway.warn{background:var(--warn-bg);border-left-color:var(--warn)}
 .takeaway.crit{background:var(--crit-bg);border-left-color:var(--crit)}
+.q{appearance:none;border:1px solid var(--line);background:var(--paper);color:var(--muted);
+  width:19px;height:19px;border-radius:50%;font:inherit;font-size:11px;font-weight:700;line-height:1;
+  cursor:pointer;padding:0;flex:0 0 auto}
+.q:hover{border-color:var(--brand);color:var(--brand)}
+.q[aria-expanded="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+.chead{align-items:center}
 .note{font-size:11.5px;color:var(--muted);margin:8px 0 0;line-height:1.45}
 svg{width:100%;height:auto;display:block;overflow:visible}
 .chartwrap{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
