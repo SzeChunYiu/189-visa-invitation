@@ -1,0 +1,176 @@
+OccGroup,2024-09,2024-11,2025-08,2025-11,2026-06
+1212 Crop Farmers,0,0,0,0,0
+1213 Livestock Farmers,0,0,0,0,0
+1311 Advertising and Sales Managers,0,0,0,0,0
+1321 Corporate Services Managers,0,0,0,0,0
+1322 Finance Managers,0,0,0,0,0
+1323 Human Resource Managers,0,0,0,0,0
+1324 Policy and Planning Managers,0,0,0,0,0
+1325 Research and Development Managers,0,0,0,0,0
+1331 Construction Managers,378,598,3,103,424
+1332 Engineering Managers,1,1,1,20,46
+1334 Manufacturers,0,0,0,0,0
+1335 Production Managers,0,0,0,0,0
+1336 Supply and Distribution Managers,0,0,0,0,0
+1341 Child Care Centre Managers,3,3,1,4,5
+1342 Health and Welfare Services Managers,3,3,1,5,12
+1343 School Principals,0,0,0,0,0
+1344 Other Education Managers,0,0,0,0,0
+1351 ICT Managers,0,0,0,0,0
+1399 Other Specialist Managers,1,11,7,27,56
+1411 Cafe and Restaurant Managers,0,0,0,0,0
+1412 Caravan Park and Camping Ground Managers,0,0,0,0,0
+1413 Hotel and Motel Managers,0,0,0,0,0
+1419 Other Accommodation and Hospitality Managers,0,0,0,0,0
+1421 Retail Managers,0,0,0,0,0
+1492 Call or Contact Centre and Customer Service Managers,0,0,0,0,0
+1493 Conference and Event Organisers,0,0,0,0,0
+1494 Transport Services Managers,0,0,0,0,0
+"1499 Other Hospitality, Retail and Service Managers",0,0,0,0,0
+"2111 Actors, Dancers and Other Entertainers",0,1,0,0,5
+2112 Music Professionals,0,3,1,1,8
+2113 Photographers,0,0,0,0,0
+"2121 Artistic Directors, and Media Producers and Presenters",0,0,0,1,0
+"2123 Film, Television, Radio and Stage Directors",0,0,0,0,0
+2124 Journalists and Other Writers,0,0,0,0,0
+2211 Accountants,252,802,0,0,0
+"2212 Auditors, Company Secretaries and Corporate Treasurers",136,464,0,0,0
+2221 Financial Brokers,0,0,0,0,0
+2222 Financial Dealers,0,0,0,0,0
+2223 Financial Investment Advisers and Managers,0,0,0,0,0
+2231 Human Resource Professionals,0,0,0,0,0
+2232 ICT Trainers,0,0,0,0,0
+"2241 Actuaries, Mathematicians and Statisticians",32,109,113,286,146
+"2242 Archivists, Curators and Records Managers",0,0,0,0,0
+2243 Economists,4,18,19,41,98
+2244 Intelligence and Policy Analysts,0,0,0,0,0
+2245 Land Economists and Valuers,0,4,7,25,46
+2246 Librarians,0,0,0,0,0
+2247 Management and Organisation Analysts,6,71,50,173,292
+2249 Other Information and Organisation Professionals,0,0,0,0,0
+2251 Advertising and Marketing Professionals,0,0,0,0,0
+2252 ICT Sales Professionals,0,0,0,0,0
+2253 Public Relations Professionals,0,0,0,0,0
+2254 Technical Sales Representatives,0,0,0,0,0
+2311 Air Transport Professionals,0,0,0,0,0
+2321 Architects and Landscape Architects,606,525,16,136,118
+2322 Cartographers and Surveyors,8,26,8,46,66
+"2323 Fashion, Industrial and Jewellery Designers",0,0,0,0,0
+"2324 Graphic and Web Designers, and Illustrators",0,0,0,0,0
+2325 Interior Designers,0,0,0,0,0
+2326 Urban and Regional Planners,0,0,0,0,0
+2331 Chemical and Materials Engineers,41,136,121,327,2
+2332 Civil Engineering Professionals,792,1132,0,0,0
+2333 Electrical Engineers,72,219,0,0,3
+2334 Electronics Engineers,52,167,22,0,15
+"2335 Industrial, Mechanical and Production Engineers",170,669,0,0,0
+2336 Mining Engineers,4,44,24,93,212
+2339 Other Engineering Professionals,162,472,0,0,0
+2341 Agricultural and Forestry Scientists,14,49,64,114,271
+"2342 Chemists, and Food and Wine Scientists",10,47,55,215,134
+2343 Environmental Scientists,6,56,68,178,240
+2344 Geologists Geophysicists and Hydrogeologists,1,5,3,11,25
+2345 Life Scientists,37,134,149,283,46
+2346 Medical Laboratory Scientists,39,145,6,35,149
+2347 Veterinarians,6,24,28,102,134
+2349 Other Natural and Physical Science Professionals,5,21,29,43,87
+2411 Early Childhood (Pre-primary School) Teachers,470,994,550,392,0
+2412 Primary School Teachers,0,0,0,0,0
+2413 Middle School Teachers (Aus) / Intermediate School Teachers (NZ),0,0,0,0,0
+2414 Secondary School Teachers,194,258,64,534,574
+2415 Special Education Teachers,4,12,2,12,8
+2421 University Lecturers and Tutors,46,148,362,0,0
+2422 Vocational Education Teachers (Aus) / Polytechnic Teachers (NZ),0,0,0,0,0
+2491 Education Advisers and Reviewers,0,0,0,0,0
+2492 Private Tutors and Teachers,0,0,0,0,0
+2493 Teachers of English to Speakers of Other Languages,0,0,0,0,0
+2511 Dietitians,0,0,0,0,0
+2512 Medical Imaging Professionals,17,45,64,80,47
+2513 Occupational and Environmental Health Professionals,0,0,0,0,0
+2514 Optometrists and Orthoptists,5,7,9,6,10
+2515 Pharmacists,0,0,0,0,0
+2519 Other Health Diagnostic and Promotion Professionals,1,1,0,0,1
+2521 Chiropractors and Osteopaths,4,11,0,3,25
+2522 Complementary Health Therapists,0,0,0,0,0
+2523 Dental Practitioners,0,0,0,0,0
+2524 Occupational Therapists,84,132,84,140,114
+2525 Physiotherapists,116,228,166,226,176
+2526 Podiatrists,4,5,7,11,8
+2527 Speech Professionals and Audiologists,52,66,62,54,104
+2531 General Practitioners and Resident Medical officers,204,196,352,312,362
+2533 Internal Medicine Specialists,12,12,19,20,16
+2534 Psychiatrists,6,6,5,8,8
+2535 Surgeons,3,3,3,4,3
+2539 Other Medical Practitioners,198,170,303,243,311
+2541 Midwives,17,19,28,33,28
+2542 Nurse Educators and Researchers,0,0,0,0,0
+2543 Nurse Managers,0,0,0,0,0
+2544 Registered Nurses,637,1736,1716,2822,2684
+2611 ICT Business and Systems Analysts,91,529,0,0,0
+2612 Multimedia Specialists and Web Developers,13,62,0,45,25
+2613 Software and Applications Programmers,224,1153,0,0,0
+"2621 Database and Systems Administrators, and ICT Security Specialists",8,204,0,0,0
+2631 Computer Network Professionals,27,216,0,0,0
+2632 ICT Support and Test Engineers,0,0,0,0,0
+2633 Telecommunications Engineering Professionals,36,119,0,45,24
+2711 Barristers,0,0,1,2,2
+2712 Judicial and Other Legal Professionals,0,0,0,0,0
+2713 Solicitors,22,106,90,286,417
+2721 Counsellors,0,0,0,0,0
+2723 Psychologists,32,42,21,73,94
+2724 Social Professionals,0,0,0,0,0
+2725 Social Workers,153,237,101,472,478
+"2726 Welfare, Recreation and Community Arts Workers",0,0,0,0,0
+3111 Agricultural Technicians,0,0,0,0,0
+3112 Medical Technicians,0,0,0,0,0
+3113 Primary Products Inspectors,0,0,0,0,0
+3114 Science Technicians,0,0,0,0,0
+"3121 Architectural, Building and Surveying Technicians",0,0,0,0,0
+3122 Civil Engineering Draftspersons and Technicians,660,1235,5,255,8
+3123 Electrical Engineering Draftspersons and Technicians,0,1,7,29,94
+3125 Mechanical Engineering Draftspersons and Technicians,0,0,0,0,0
+3129 Other Building and Engineering Technicians,0,0,0,0,0
+3131 ICT Support Technicians,0,0,0,0,0
+3132 Telecommunications Technical Specialists,0,9,0,8,0
+3211 Automotive Electricians,1,0,0,2,8
+3212 Motor Mechanics,4,32,0,2,1
+3222 Sheetmetal Trades Workers,5,2,0,0,0
+3223 Structural Steel and Welding Trades Workers,52,95,1,15,88
+3231 Aircraft Maintenance Engineers,0,0,0,0,0
+3232 Metal Fitters and Machinists,0,2,0,6,32
+3234 Toolmakers and Engineering Patternmakers,0,0,0,0,0
+3241 Panelbeaters,0,0,0,0,3
+3311 Bricklayers and Stonemasons,71,21,106,94,105
+3312 Carpenters and Joiners,579,208,877,788,852
+3322 Painting Trades Workers,488,164,222,202,8
+3331 Glaziers,6,0,13,8,11
+3332 Plasterers,19,9,21,14,33
+3333 Roof Tilers,0,0,0,0,0
+3334 Wall and Floor Tilers,88,33,130,96,114
+3341 Plumbers,44,15,69,59,53
+3411 Electricians,101,21,190,132,126
+3421 Airconditioning and Refrigeration Mechanics,0,0,0,1,2
+3423 Electronics Trades Workers,0,0,1,13,28
+3424 Telecommunications Trades Workers,0,0,0,0,0
+3511 Bakers and Pastrycooks,0,0,0,0,0
+3513 Chefs,59,186,0,0,0
+3514 Cooks,0,0,0,0,0
+3611 Animal Attendants and Trainers,0,0,0,0,0
+3613 Veterinary Nurses,0,0,0,0,0
+3622 Gardeners,0,0,0,0,0
+3911 Hairdressers,0,0,0,0,0
+3941 Cabinetmakers,37,15,0,3,7
+3991 Boat Builders and Shipwrights,0,0,2,5,8
+3995 Performing Arts Technicians,0,0,0,0,0
+4111 Ambulance Officers and Paramedics,0,0,0,0,0
+4113 Diversional Therapists,0,0,0,0,0
+4114 Enrolled and Mothercraft Nurses,0,0,0,0,0
+4116 Massage Therapists,0,0,0,0,0
+4117 Welfare Support Workers,0,0,0,0,0
+4512 Driving Instructors,0,0,0,0,0
+4518 Other Personal Service Workers,0,0,0,0,0
+"4523 Sports Coaches, Instructors and Officials",0,0,1,2,7
+4524 Sportspersons,0,0,0,0,1
+"5111 Contract, Program and Project Administrators",0,0,0,0,0
+6112 Insurance Agents,0,0,0,0,0
+6121 Real Estate Sales Agents,0,0,0,0,0
