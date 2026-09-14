@@ -211,7 +211,7 @@ footer a{color:var(--brand)}
 <div class="card"><div class="chead"><h2>Your chance, against how many they invite</h2>
   <span class="eyebrow" id="h8n"></span></div>
   <p class="takeaway" id="t8"></p>
-  <div class="chartwrap"><svg id="c8" viewBox="0 0 520 268" role="img" aria-labelledby="c8t">
+  <div class="chartwrap"><svg id="c8" viewBox="0 0 586 268" role="img" aria-labelledby="c8t">
     <title id="c8t">Chance of an invitation against the size of the next round</title></svg></div>
   <p class="note" id="scennote"></p></div>
 
@@ -670,7 +670,7 @@ function pMarginal(g,pts){
 }
 function chartProb(g,pts){
   const s=$("c8");clear(s);
-  const W=520,H=268,ML=44,MR=58,MT=26,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  const W=586,H=268,ML=44,MR=66,MT=30,MB=46,pw=W-ML-MR,ph=H-MT-MB;
   if(!g||g.share<=0){const q=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
     q.textContent="No invitations last round, so there is nothing to forecast at any size.";s.appendChild(q);return;}
   const S0=2000,S1=20000;
@@ -688,7 +688,7 @@ function chartProb(g,pts){
     if(p!==null)a.push([v,p]);}return a;};
   const path=a=>{let d="";a.forEach((q,i)=>{d+=(i?" L":"M")+X(q[0]).toFixed(1)+","+Y(q[1]).toFixed(1);});return d;};
   const ends=[];
-  [[pts+5,"+5 pts","var(--deemph)"],[pts,"your "+pts+" pts","var(--series)"],[pts-5,"\u22125 pts","var(--deemph)"]]
+  [[pts+5,(pts+5)+" pts","var(--deemph)"],[pts,"YOU \u2192 "+pts,"var(--series)"],[pts-5,(pts-5)+" pts","var(--deemph)"]]
    .forEach(([sc,lab,col])=>{
     const a=curve(sc); if(a.length<2) return;
     const main=(sc===pts);
@@ -700,8 +700,8 @@ function chartProb(g,pts){
   for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<13) ends[i].y=ends[i-1].y+13;
   const shift=Math.max(0,ends[ends.length-1].y-(MT+ph));
   ends.forEach(e=>{
-    const q=el("text",{x:W-MR-2,y:e.y-shift+3.5,fill:e.col,"font-size":e.main?"11":"10.5",
-      "font-weight":e.main?"700":"600","text-anchor":"end"});
+    const q=el("text",{x:W-MR+5,y:e.y-shift+3.5,fill:e.col,"font-size":e.main?"11":"10",
+      "font-weight":e.main?"700":"600","text-anchor":"start"});
     q.textContent=e.lab;s.appendChild(q);});
   /* how likely each round size is, as a ribbon under the curve - same panel, no extra chart */
   if(B.rs){
@@ -712,8 +712,8 @@ function chartProb(g,pts){
     dd+=" L"+X(Math.min(S1,B.rs.grid[B.rs.grid.length-1])).toFixed(1)+","+(MT+ph).toFixed(1)+" Z";
     s.appendChild(el("path",{d:dd,fill:"var(--brand)","fill-opacity":".16",stroke:"var(--brand)",
       "stroke-width":1,"stroke-opacity":".45"}));
-    const dl=el("text",{x:X(B.rs.q10),y:MT+ph-hband-6,class:"tick","text-anchor":"start",fill:"var(--brand)"});
-    dl.textContent="how likely each size is";s.appendChild(dl);}
+    const dl=el("text",{x:ML+4,y:MT+ph-hband-6,class:"tick","text-anchor":"start",fill:"var(--brand)"});
+    dl.textContent="how likely each round size is";s.appendChild(dl);}
   /* the policy-implied central case */
   const cen=B.policy?B.policy.per_round["3"]:10000;
   const cp=pClear(cutoffAt(g,cen),pts);
@@ -722,8 +722,9 @@ function chartProb(g,pts){
     s.appendChild(el("circle",{cx:X(cen),cy:Y(cp),r:6,fill:"var(--brand)",stroke:"var(--card)","stroke-width":2}));
     const lab=el("text",{x:X(cen)+9,y:Y(cp)-9,fill:"var(--brand)","font-size":"12","font-weight":"700"});
     lab.textContent=Math.round(cp*100)+"%";s.appendChild(lab);}
-  const cl=el("text",{x:X(cen),y:H-MB+30,class:"tick","text-anchor":"middle",fill:"var(--brand)","font-weight":"650"});
-  cl.textContent="what the planning levels imply";s.appendChild(cl);
+  const cl=el("text",{x:X(cen)-7,y:MT+10,fill:"var(--brand)","font-size":"10","font-weight":"650",
+    "text-anchor":"end"});
+  cl.textContent="planning levels imply";s.appendChild(cl);
   [2000,5000,8000,11000,14000,17000,20000].forEach(v=>{
     const q=el("text",{x:X(v),y:H-MB+15,class:"tick","text-anchor":"middle"});
     q.textContent=(v/1000)+"k";s.appendChild(q);});
