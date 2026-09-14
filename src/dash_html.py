@@ -23,8 +23,7 @@ HTML = r"""<meta charset="utf-8">
   </div>
   <div class="f"><label for="pts">Your points</label>
     <input id="pts" type="number" value="85" min="0" max="180" step="5" aria-label="Your points score"></div>
-  <div class="f"><label for="sz">Assume next round size</label>
-    <select id="sz" aria-label="Assumed round size"></select></div>
+
 </div>
 
 <div class="verdict">
@@ -39,6 +38,11 @@ HTML = r"""<meta charset="utf-8">
   </div>
   <div class="vside" id="vside"></div>
 </div>
+
+<div class="card"><div class="chead"><h2>Nobody knows how big the next round will be &mdash; so here is every case</h2>
+  <span class="eyebrow">your chance at each size</span></div>
+  <div class="scen" id="scen"></div>
+  <p class="note" id="scennote"></p></div>
 
 <div class="tiles" id="tiles"></div>
 
@@ -153,7 +157,7 @@ HTML = r"""<meta charset="utf-8">
 <div id="tip" role="status"></div>
 <script>
 const B=__BUNDLE__;
-const S={occ:"234914 Physicist",pts:85,szi:2};
+const S={occ:"234914 Physicist",pts:85,szi:2};   /* szi 2 = the policy-implied central case, not a user guess */
 const $=id=>document.getElementById(id);
 const $$=id=>$(id)||{style:{},classList:{add(){},remove(){},toggle(){}},appendChild(){},addEventListener(){}};
 const RL={"2024-09":"Sep 24","2024-11":"Nov 24","2025-08":"Aug 25","2025-11":"Nov 25","2026-06":"Jun 26"};
@@ -531,6 +535,42 @@ function policyTable(){
     "which the 189 pool could swell faster than it has: it would appear in later snapshots, not in today's forecast.";
 }
 
+/* ---------- every round-size case, side by side ---------- */
+function rangeText(g,pts){
+  if(!g) return "—";
+  const ps=g.fc.map(f=>pClear(f,pts)).filter(v=>v!==null);
+  if(!ps.length) return "—";
+  const lo=Math.round(Math.min(...ps)*100), hi=Math.round(Math.max(...ps)*100);
+  return lo===hi ? lo+"%" : lo+"% to "+hi+"%";
+}
+function scenarios(g,pts){
+  const box=$("scen"); if(!box) return; box.innerHTML="";
+  if(!g||g.fc.every(v=>v===null)){
+    box.innerHTML="<p class='note' style='margin:0'>This occupation received no invitations in the last round, "+
+      "so there is no share to forecast from at any round size.</p>";
+    $("scennote").textContent=""; return;}
+  B.sizes.forEach((sz,i)=>{
+    const fc=g.fc[i], P=pClear(fc,pts), bb=pBand(fc);
+    const k=P===null?"n":P>=.8?"good":P>=.5?"warn":"crit";
+    const d=document.createElement("div");
+    d.className="scard "+k+(i===S.szi?" mid":"");
+    const pct=document.createElement("div");pct.className="spct";
+    pct.textContent=P===null?"—":Math.round(P*100)+"%";
+    const sub=document.createElement("div");sub.className="ssub";
+    sub.textContent="round of "+fmt(sz);
+    const cut=document.createElement("div");cut.className="scut";
+    cut.textContent=fc===null?"":"cut-off ~"+fc+"  ("+bb[0]+"–"+bb[1]+")";
+    d.appendChild(pct);d.appendChild(sub);d.appendChild(cut);
+    if(i===S.szi){const tag=document.createElement("div");tag.className="stag";
+      tag.textContent="what the planning levels imply";d.appendChild(tag);}
+    box.appendChild(d);});
+  const P=B.policy;
+  $("scennote").innerHTML="Round size is set by migration policy, not by the pool, and it is the one thing this model "+
+    "cannot predict &mdash; so it is not something to guess at. The 2026&ndash;27 program funds <b>"+
+    fmt(P.places["2026-27"])+"</b> places; at the <b>"+P.ratio.toFixed(2)+"</b> invitations-per-place rate observed "+
+    "last year and three rounds a year, that points to about <b>"+fmt(P.per_round["3"])+"</b> per round, which is why "+
+    "the "+fmt(B.sizes[S.szi])+" case is marked. The five rounds on record ranged from 6,450 to 14,724.";
+}
 /* ---------- plain-English takeaways: each chart states its own conclusion ---------- */
 function say(id,kind,html){const e=$(id);if(!e)return;e.className="takeaway"+(kind?" "+kind:"");e.innerHTML=html;}
 function takeaways(o,g,pts,size){
@@ -581,6 +621,7 @@ function render(){
   const fc=g?g.fc[S.szi]:null;
   const v=fcVerdict(fc,pts);
   const P=pClear(fc,pts), bb=pBand(fc);
+  scenarios(g,pts);
   const band = P===null?null:(P>=.8?"good":P>=.5?"warn":"crit");
   $("flag").className="vflag "+(band||"crit");
   $("flag").textContent = P===null ? "✕ No forecast available"
@@ -588,10 +629,11 @@ function render(){
   $("hero").textContent = P===null ? "—" : Math.round(P*100)+"%";
   $("vsub").innerHTML = P===null
     ? "This occupation received no invitations in the most recent round, so there is no allocation share to forecast from. The round-by-round record below still applies."
-    : "is the probability that the cut-off for <b>"+o.g+" "+(g?g.name.replace(/^\d+\s/,""):"")+
-      "</b> reaches <b>"+pts+" points</b> in a round of "+fmt(size)+
-      ", <b>if a round is held</b>. Central forecast <b>"+fc+" points</b> (80% interval "+bb[0]+"–"+bb[1]+
-      "). Calibrated on how wrong this same method was on the two most recent held-out rounds, not on a judgement call.";
+    : "is your chance at the <b>central case</b> &mdash; a round of "+fmt(size)+", the size the 2026&ndash;27 planning "+
+      "levels imply. Nobody can know the real figure, so the panel below gives every plausible size. Across that whole "+
+      "range your chance runs <b>"+rangeText(g,pts)+"</b>. Forecast cut-off <b>"+fc+" points</b> (80% interval "+
+      bb[0]+"&ndash;"+bb[1]+"), calibrated on this method's own held-out errors &mdash; and all of it conditional on a "+
+      "round being held at all.";
   const ge=g?Object.keys(g.dist).map(Number).filter(k=>k>=pts).reduce((a,k)=>a+g.dist[k],0):0;
   const al=g?g.alloc[g.alloc.length-1]:0;
   const ratio=ge>0?al/ge:0;
@@ -668,10 +710,8 @@ function initCombo(){
   inp.addEventListener("blur",()=>setTimeout(()=>box.classList.remove("on"),120));
   inp.value=S.occ;
 }
-B.sizes.forEach((s,i)=>{const o=document.createElement("option");o.value=i;o.textContent=s.toLocaleString();
-  if(i===2)o.selected=true;$("sz").appendChild(o);});
+
 $("pts").addEventListener("input",e=>{S.pts=+e.target.value||0;render();});
-$("sz").addEventListener("change",e=>{S.szi=+e.target.value;render();});
 $("hmsort").addEventListener("change",e=>{HMSORT=e.target.value;render();});
 $("dl").addEventListener("click",()=>{
   const rows=[["occupation","unit_group","pool","at_your_score","your_points",

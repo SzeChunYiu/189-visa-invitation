@@ -75,6 +75,16 @@ header a{color:var(--brand);font-size:13px}
 dl.kv{display:flex;justify-content:space-between;gap:14px;align-items:baseline;margin:0;font-size:13px}
 dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums}
 /* ---- tiles + charts ---- */
+.scen{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.scard{border:1px solid var(--line);border-radius:10px;padding:12px 13px;position:relative;background:var(--paper)}
+.scard.mid{border-width:2px;border-color:var(--brand);background:var(--brand-soft)}
+.scard.good .spct{color:var(--good)} .scard.warn .spct{color:#8a6412}
+:root[data-theme="dark"] .scard.warn .spct{color:var(--warn)} .scard.crit .spct{color:var(--crit)}
+.scard.n .spct{color:var(--muted)}
+.spct{font-size:28px;font-weight:750;line-height:1.05;font-variant-numeric:tabular-nums}
+.ssub{font-size:12px;color:var(--body);margin-top:2px}
+.scut{font-size:10.5px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.stag{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);font-weight:700;margin-top:7px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 15px;box-shadow:var(--shadow)}
 .tval{font-size:26px;font-weight:700;color:var(--ink);line-height:1.1}

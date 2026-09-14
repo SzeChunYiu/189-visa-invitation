@@ -64,6 +64,28 @@ already inside these residuals:
 
 The 3.4-point MAE gap **is** the share-forecast error. A separate share-uncertainty layer would count it twice.
 
+## Round size is not the reader's to guess
+
+An earlier version of the dashboard asked the reader to pick an assumed round size. That was wrong: it made the
+headline probability depend on a number **nobody can know**, and quietly transferred the model's largest
+uncertainty onto the user.
+
+Round size is set by migration planning levels, not by the pool, and it is precisely what this model cannot
+predict. So the dashboard no longer asks. It fixes nothing and shows **every plausible size at once**, with the
+policy-implied case marked:
+
+| Round size | Forecast cut-off | P(reaches 85) for ANZSCO 2349 |
+|---|---|---|
+| 5,000 | 85 | 77% |
+| 7,500 | 80 | 90% |
+| **10,000** — what the planning levels imply | **75** | **94%** |
+| 12,500 | 75 | 94% |
+| 15,000 | 70 | 96% |
+
+The five rounds on record ranged from 6,450 to 14,724, so the panel spans the realistic range rather than a
+hypothetical one. The honest answer for a physicist on 85 points is therefore **77–96%, most likely around 94%** —
+a range with a marked central case, not a single number resting on someone's guess.
+
 ## What this probability does and does not cover
 
 **Covers:** error in locating the cut-off — allocation-share forecasting, pool measurement, the 5-point score
