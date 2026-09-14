@@ -68,6 +68,47 @@ HTML = r"""<meta charset="utf-8">
     sits ahead of you.</p></div>
 </div>
 
+<div class="card wide"><div class="chead"><h2>Exactly who is ahead of you</h2>
+  <span class="eyebrow" id="h8n"></span></div>
+  <div class="scroll"><table id="qt"><thead><tr><th>Points</th><th>In your occupation</th>
+    <th>In your unit group</th><th>Running total ahead of you</th><th>Standing</th></tr></thead><tbody></tbody></table></div>
+  <p class="note">Every EOI counted individually, from the Aug 2026 snapshot, single-leg basis. Invitations run
+  strictly by points then date of effect, so everyone above your score and everyone on your score with an earlier
+  date sits ahead. All EOIs in this snapshot pre-date a newly lodged one, so the whole of your own score row counts
+  as ahead.</p></div>
+
+<div class="card"><div class="chead"><h2>Policy: the 2026&ndash;27 program</h2>
+  <span class="eyebrow">published planning levels</span></div>
+  <div class="scroll"><table id="pt"><thead><tr><th>Category</th><th>2025&ndash;26</th><th>2026&ndash;27</th><th>Change</th></tr></thead><tbody></tbody></table></div>
+  <p class="note" id="pnote"></p></div>
+
+<div class="card"><div class="chead"><h2>Your forecast at every score</h2>
+  <span class="eyebrow" id="h5n"></span></div>
+  <svg id="c5" viewBox="0 0 520 300" role="img" aria-labelledby="c5t"><title id="c5t">Outcome by points score and round size</title></svg>
+  <div class="legend"><span><i style="background:var(--good)"></i>invited regardless of date</span>
+    <span><i style="background:var(--warn)"></i>on the boundary, date decides</span>
+    <span><i style="background:var(--crit)"></i>not reached</span></div>
+  <p class="note">Every combination of points and round size for this occupation group, read like a forecast grid.
+  Your row is outlined. Reading across a row shows how much a bigger round helps; reading down a column shows how
+  much each extra 5 points is worth.</p></div>
+
+<div class="grid2">
+  <div class="card"><div class="chead"><h2>The whole landscape</h2>
+    <span class="eyebrow">82 unit groups &times; 5 rounds</span></div>
+    <div class="hm"><svg id="c6" viewBox="0 0 520 1420" role="img" aria-labelledby="c6t"><title id="c6t">Cut-off by unit group and round</title></svg></div>
+    <div class="legend"><span>lowest points invited</span>
+      <span class="ramp"><span style="background:#cde2fb"></span><span style="background:#9ec5f4"></span><span style="background:#6da7ec"></span><span style="background:#3987e5"></span><span style="background:#256abf"></span><span style="background:#184f95"></span><span style="background:#0d366b"></span></span>
+      <span>65 &rarr; 100+</span><span><i style="background:var(--deemph)"></i>no invitation</span></div>
+    <p class="note">Darker means a higher points bar. Sorted by the most recent round. Click any row to load that
+    group's occupations. Your group is highlighted.</p></div>
+  <div class="card"><div class="chead"><h2>Where your occupation sits</h2>
+    <span class="eyebrow">pool vs cut-off, Jun 2026</span></div>
+    <svg id="c7" viewBox="0 0 520 300" role="img" aria-labelledby="c7t"><title id="c7t">Pool size against cut-off</title></svg>
+    <p class="note">Each dot is a unit group: how many EOIs it holds against the points bar it actually reached.
+    Dot area is the invitations it received. Yours is outlined. Big pools do not automatically mean high
+    cut-offs &mdash; what matters is the pool relative to the group's allocation.</p></div>
+</div>
+
 <div class="card"><div class="chead"><h2>Round by round</h2><span class="eyebrow">the record for this occupation</span></div>
   <div class="scroll"><table id="rt"><thead><tr><th>Round</th><th>Invited</th><th>Fully cleared to</th>
     <th>Boundary score</th><th>Boundary</th><th>Would you have been invited?</th></tr></thead><tbody></tbody></table></div>
@@ -247,6 +288,174 @@ function chartQueue(g,pts){
   q2.textContent="Everyone on your score in the Aug-2026 snapshot is dated before a new EOI, so counts as ahead.";
   s.appendChild(q2);
 }
+
+/* ---------- chart 5: forecast matrix (score x round size) ---------- */
+const SCORES=[120,115,110,105,100,95,90,85,80,75,70,65];
+function chartMatrix(g,pts){
+  const s=$("c5");clear(s);
+  const W=520,H=300,ML=34,MR=14,MT=26,MB=34;
+  if(!g||!g.fc||g.fc.every(v=>v===null)){
+    const t=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
+    t.textContent="No invitations last round, so no forecast for this group.";s.appendChild(t);return;}
+  const cols=B.sizes.length, cw=(W-ML-MR)/cols, ch=(H-MT-MB)/SCORES.length;
+  const col={good:"var(--good)",warn:"var(--warn)",crit:"var(--crit)",n:"var(--deemph)"};
+  B.sizes.forEach((sz,i)=>{const t=el("text",{x:ML+cw*(i+.5),y:MT-9,class:"tick","text-anchor":"middle"});
+    t.textContent=(sz/1000)+"k";s.appendChild(t);});
+  const xl=el("text",{x:(ML+W-MR)/2,y:H-MB+24,class:"tick","text-anchor":"middle"});
+  xl.textContent="assumed size of the next round";s.appendChild(xl);
+  SCORES.forEach((sc,r)=>{
+    const y=MT+ch*r, mine=(sc===Math.round(pts/5)*5);
+    const lt=el("text",{x:ML-8,y:y+ch/2,class:"rowlab"+(mine?" on":""),"text-anchor":"end"});
+    lt.textContent=sc;s.appendChild(lt);
+    B.sizes.forEach((sz,c)=>{
+      const v=fcVerdict(g.fc[c],sc);
+      const rect=el("rect",{x:ML+cw*c,y:y,width:cw,height:ch,rx:3,fill:col[v.k],class:"cell"});
+      s.appendChild(rect);
+      hover(rect,"<b>"+sc+" points</b><span>round of "+fmt(sz)+" &middot; forecast cut-off "+
+        (g.fc[c]===null?"—":g.fc[c])+"</span><span>"+v.t+"</span>");
+      if(mine){const o=el("rect",{x:ML+cw*c+1,y:y+1,width:cw-2,height:ch-2,rx:3,fill:"none",
+        stroke:"var(--ink)","stroke-width":2,"pointer-events":"none"});s.appendChild(o);}});});
+  const yl=el("text",{x:ML-8,y:MT-9,class:"tick","text-anchor":"end"});yl.textContent="pts";s.appendChild(yl);
+}
+/* ---------- chart 6: landscape heatmap (group x round) ---------- */
+const RAMP=["#cde2fb","#9ec5f4","#6da7ec","#3987e5","#256abf","#184f95","#0d366b"];
+function rampFor(v){ if(v===null||v===undefined) return "var(--deemph)";
+  const i=Math.max(0,Math.min(RAMP.length-1,Math.round((v-65)/6))); return RAMP[i]; }
+function chartLandscape(selG,pts){
+  const s=$("c6");clear(s);
+  const keys=Object.keys(B.groups);
+  const last=g=>{const f=B.groups[g].alloc; return f[f.length-1];};
+  keys.sort((a,b)=>{
+    const av=lastCut(a), bv=lastCut(b);
+    if(av===null&&bv===null) return last(b)-last(a);
+    if(av===null) return 1; if(bv===null) return -1;
+    return av-bv || last(b)-last(a);});
+  const ML=176,MR=14,MT=22,rh=16,W=520;
+  const H=MT+keys.length*rh+10;
+  s.setAttribute("viewBox","0 0 "+W+" "+H);
+  const cw=(W-ML-MR)/B.rounds.length;
+  B.rounds.forEach((r,i)=>{const t=el("text",{x:ML+cw*(i+.5),y:MT-8,class:"tick","text-anchor":"middle"});
+    t.textContent=RL[r];s.appendChild(t);});
+  keys.forEach((gk,ri)=>{
+    const G=B.groups[gk], y=MT+ri*rh, on=(gk===selG);
+    const lt=el("text",{x:ML-8,y:y+rh/2,class:"rowlab"+(on?" on":""),"text-anchor":"end"});
+    lt.textContent=(G.name.length>30?G.name.slice(0,29)+"…":G.name);s.appendChild(lt);
+    B.rounds.forEach((r,ci)=>{
+      const v=cutOf(gk,r);
+      const rect=el("rect",{x:ML+cw*ci,y:y+1,width:cw,height:rh-2,rx:2,fill:rampFor(v),class:"cell"});
+      s.appendChild(rect);
+      hover(rect,"<b>"+(v===null?"no invitations":v+" points")+"</b><span>"+G.name+"</span><span>"+RL[r]+"</span>");
+      rect.addEventListener("click",()=>{
+        const first=OCCS.find(o=>B.occ[o].g===gk); if(first){S.occ=first;$("occ").value=first;render();
+          window.scrollTo({top:0,behavior:"smooth"});}});});
+    if(on){s.appendChild(el("rect",{x:ML,y:y+1,width:W-ML-MR,height:rh-2,rx:2,fill:"none",
+      stroke:"var(--ink)","stroke-width":2,"pointer-events":"none"}));}});
+}
+function cutOf(gk,round){
+  let best=null;
+  for(const o of OCCS){const oc=B.occ[o]; if(oc.g!==gk) continue;
+    const r=oc.rounds.find(x=>x.r===round); if(r&&r.b!==null) best=(best===null?r.b:Math.min(best,r.b));}
+  return best;
+}
+function lastCut(gk){ return cutOf(gk,B.rounds[B.rounds.length-1]); }
+/* ---------- chart 7: scatter pool vs cut-off ---------- */
+function chartScatter(selG,pts){
+  const s=$("c7");clear(s);
+  const W=520,H=300,ML=40,MR=18,MT=18,MB=44,pw=W-ML-MR,ph=H-MT-MB;
+  const pts2=[];
+  for(const gk in B.groups){
+    const G=B.groups[gk], pool=Object.values(G.dist).reduce((a,b)=>a+b,0), c=lastCut(gk);
+    if(pool<1) continue;
+    pts2.push({gk:gk,name:G.name,pool:pool,cut:c,alloc:G.alloc[G.alloc.length-1]});}
+  const xs=pts2.map(p=>Math.log10(Math.max(1,p.pool)));
+  const x0=Math.floor(Math.min(...xs)),x1=Math.ceil(Math.max(...xs));
+  const cuts=pts2.filter(p=>p.cut!==null).map(p=>p.cut);
+  const y0=Math.min(60,...cuts), y1=Math.max(100,...cuts);
+  const X=v=>ML+pw*(Math.log10(Math.max(1,v))-x0)/(x1-x0), Y=v=>MT+ph*(1-(v-y0)/(y1-y0));
+  for(let v=Math.ceil(y0/10)*10;v<=y1;v+=10){
+    s.appendChild(el("line",{x1:ML,y1:Y(v),x2:W-MR,y2:Y(v),class:"gl"}));
+    const t=el("text",{x:ML-7,y:Y(v)+3.5,class:"tick","text-anchor":"end"});t.textContent=v;s.appendChild(t);}
+  for(let e=x0;e<=x1;e++){const xv=Math.pow(10,e);
+    const t=el("text",{x:X(xv),y:H-MB+16,class:"tick","text-anchor":"middle"});
+    t.textContent=xv>=1000?(xv/1000)+"k":xv;s.appendChild(t);}
+  const xl=el("text",{x:(ML+W-MR)/2,y:H-MB+32,class:"tick","text-anchor":"middle"});
+  xl.textContent="EOIs in the group's pool (log scale)";s.appendChild(xl);
+  const yl=el("text",{x:ML-7,y:MT-5,class:"tick","text-anchor":"end"});yl.textContent="pts";s.appendChild(yl);
+  if(pts>=y0&&pts<=y1){
+    s.appendChild(el("line",{x1:ML,y1:Y(pts),x2:W-MR,y2:Y(pts),class:"refl"}));
+    const t=el("text",{x:W-MR,y:Y(pts)-6,class:"reft","text-anchor":"end"});t.textContent="your "+pts+" pts";s.appendChild(t);}
+  const maxA=Math.max(...pts2.map(p=>p.alloc||1));
+  pts2.filter(p=>p.cut!==null).sort((a,b)=>b.pool-a.pool).forEach(p=>{
+    const r=Math.max(3.5,Math.min(13,Math.sqrt((p.alloc||1)/maxA)*15));
+    const on=p.gk===selG;
+    const c=el("circle",{cx:X(p.pool),cy:Y(p.cut),r:r,class:"pt"+(on?" on":""),
+      fill:on?"var(--series)":"var(--series-soft)","fill-opacity":on?1:.85});
+    if(!on)c.setAttribute("fill","var(--series)"),c.setAttribute("fill-opacity",".55");
+    s.appendChild(c);
+    hover(c,"<b>"+p.cut+" points</b><span>"+p.name+"</span><span>"+fmt(p.pool)+" in pool &middot; "+fmt(p.alloc)+" invited</span>");
+    c.addEventListener("click",()=>{const f=OCCS.find(o=>B.occ[o].g===p.gk);
+      if(f){S.occ=f;$("occ").value=f;render();window.scrollTo({top:0,behavior:"smooth"});}});});
+}
+
+
+/* ---------- exact queue table ---------- */
+function queueTable(o,g,pts){
+  const tb=document.querySelector("#qt tbody");tb.innerHTML="";
+  const my=Math.round(pts/5)*5;
+  const keys=new Set([...Object.keys(o.dist).map(Number),...(g?Object.keys(g.dist).map(Number):[])]);
+  const list=[...keys].filter(k=>k>=my).sort((a,b)=>b-a);
+  let run=0;
+  list.forEach(k=>{
+    const oc=o.dist[k]||0, gc=(g&&g.dist[k])||0;
+    run+=gc;
+    const tr=document.createElement("tr");
+    const mine=(k===my); if(mine)tr.className="hl";
+    const cells=[k+(mine?" (you)":""),fmt(oc),fmt(gc),fmt(run),""];
+    cells.forEach((c,i)=>{const td=document.createElement("td");
+      if(i===4){const sp=document.createElement("span");
+        sp.className="pill "+(k>my?"crit":"warn");
+        sp.textContent=k>my?"ahead on points":"ahead on date";
+        td.appendChild(sp);} else td.textContent=c;
+      tr.appendChild(td);});
+    tb.appendChild(tr);});
+  const tr=document.createElement("tr");
+  const td=document.createElement("td");td.colSpan=3;
+  td.innerHTML="<b>Total ahead of you in the unit group</b>";
+  const td2=document.createElement("td");td2.innerHTML="<b>"+fmt(run)+"</b>";
+  const td3=document.createElement("td");
+  const al=g?g.alloc[g.alloc.length-1]:0;
+  const sp=document.createElement("span");sp.className="pill "+(al>=run?"good":"crit");
+  sp.textContent=al>=run?"last round reached "+fmt(al):"last round reached only "+fmt(al);
+  td3.appendChild(sp);
+  tr.appendChild(td);tr.appendChild(td2);tr.appendChild(td3);tb.appendChild(tr);
+  $("h8n").textContent=fmt(run)+" ahead in "+o.g;
+}
+/* ---------- policy table ---------- */
+function policyTable(){
+  const P=B.policy; if(!P) return;
+  const rows=[["Skilled Independent (189)",P.places["2025-26"],P.places["2026-27"]],
+    ["State/Territory Nominated (190)",P.nominated["2025-26"],P.nominated["2026-27"]],
+    ["Regional (491)",P.regional_cut["2025-26"],P.regional_cut["2026-27"]],
+    ["Employer Sponsored",P.employer["2025-26"],P.employer["2026-27"]]];
+  const tb=document.querySelector("#pt tbody");tb.innerHTML="";
+  rows.forEach(([lab,a,b])=>{
+    const pc=(b/a-1)*100, tr=document.createElement("tr");
+    [lab,fmt(a),fmt(b),""].forEach((c,i)=>{const td=document.createElement("td");
+      if(i===3){const sp=document.createElement("span");
+        sp.className="pill "+(pc>1?"good":pc<-1?"crit":"n");
+        sp.textContent=(pc>0?"+":"")+pc.toFixed(0)+"%";td.appendChild(sp);}
+      else td.textContent=c;tr.appendChild(td);});
+    tb.appendChild(tr);});
+  $("pnote").innerHTML="The 189 program grew <b>"+
+    ((P.places["2026-27"]/P.places["2025-26"]-1)*100).toFixed(1)+"%</b>. Across 2025&ndash;26 the Department issued "+
+    "<b>"+P.ratio.toFixed(2)+"</b> invitations per place (not every invitation becomes a visa), so "+
+    fmt(P.places["2026-27"])+" places implies roughly <b>"+fmt(P.projected_invitations)+
+    "</b> invitations in 2026&ndash;27 &mdash; about <b>"+fmt(P.per_round["3"])+
+    "</b> per round at the observed cadence of three rounds a year. That is why 10,000 is the default scenario above. "+
+    "Regional was cut 57%, which this model does not predict but is the clearest route by which the 189 pool could "+
+    "swell faster than it has: it would appear in later snapshots, not in today's forecast.";
+}
+
 /* ---------- render ---------- */
 function render(){
   const o=B.occ[S.occ]; if(!o) return;
@@ -293,6 +502,9 @@ function render(){
   $("h1n").textContent=S.occ; $("h2n").textContent=o.g+" group";
   $("h3n").textContent=fmt(o.pool)+" EOIs"; $("h4n").textContent=o.g+" group";
   chartRounds(o,pts);chartForecast(g,pts);chartPool(o,pts);chartQueue(g,pts);
+  chartMatrix(g,pts);chartLandscape(o.g,pts);chartScatter(o.g,pts);
+  queueTable(o,g,pts);policyTable();
+  $("h5n").textContent=o.g+" group";
   const tb=document.querySelector("#rt tbody");tb.innerHTML="";
   o.rounds.forEach(r=>{const v2=verdictFor(r,pts);const tr=document.createElement("tr");
     const cells=[RL[r.r],r.n?fmt(r.n):"—",r.lc===null?"—":r.lc,r.b===null?"—":r.b,

@@ -22,6 +22,8 @@ Deployment notes (incl. Vercel): [DEPLOY.md](DEPLOY.md).
 | [docs/MODEL.md](docs/MODEL.md) | Model spec, assumptions, and what it cannot do |
 | [docs/VALIDATION.md](docs/VALIDATION.md) | External + internal validation, and open questions |
 | [docs/CONSISTENCY.md](docs/CONSISTENCY.md) | The model run on every occupation in every round |
+| [docs/HYPOTHESES.md](docs/HYPOTHESES.md) | Regime change, occupation bias, quota-vs-demand, sector effects |
+| [docs/POLICY.md](docs/POLICY.md) | Published planning levels and what they imply for round size |
 | [docs/DATA.md](docs/DATA.md) | Source, field dictionary, extraction inventory |
 
 ## Headline results
@@ -56,7 +58,12 @@ P(invited | a round is held) = **40–77%**, stable across round timing. Only th
 has ever received (43, 87) clear rank 32; the three smaller ones (5, 21, 29) do not. The binding uncertainty is
 round *occurrence* and *size*; the downside risk is a policy cut to this stratum, not the applicant's score.
 
-**8. Nearly half the pool re-scores.** 47.3% of 189 EOIs changed score over their life (mean +8.0 points), and
+**8. Policy moved in your favour.** The 2026–27 program lifts Skilled Independent from **16,900 to 21,090
+places (+24.8%)** while cutting Regional 57%. At the 1.54 invitations-per-place ratio observed in 2025–26,
+that implies ~32,500 invitations, or **~10,800 per round** at the observed three-rounds-a-year cadence.
+See [POLICY.md](docs/POLICY.md).
+
+**9. Nearly half the pool re-scores.** 47.3% of 189 EOIs changed score over their life (mean +8.0 points), and
 43% of everyone now at 85+ acquired those points within six months. A points change **resets the date of effect**,
 so upgraders join the back of their new band — which is why a lodged position stops eroding. All 31 EOIs ahead in
 2349 were verified to hold a date of effect before 10 Sep 2026.
