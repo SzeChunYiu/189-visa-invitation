@@ -18,6 +18,7 @@ gname=inv.groupby("G").OccGroup.first()
 val=json.load(open("validation_singleleg.json")); cal=json.load(open("calibration_official.json"))
 mob=json.load(open("mobility.json")); gate=json.load(open("alloc_gate.json"))
 pol=json.load(open("policy.json"))
+unc=json.load(open("uncertainty.json"))
 
 def cutoff(pg,A):
     if A<=0: return None
@@ -56,7 +57,7 @@ for o,x in latest.groupby("Occupation"):
     occ[o]=dict(g=str(o)[:4],rounds=[dict(r=r,lc=None,b=None,s="U",n=0) for r in ROUNDS],
                 pool=int(x.n.sum()),dist={int(r.Score):int(r.n) for _,r in x.iterrows() if r.n>0})
 
-bundle=dict(rounds=ROUNDS,sizes=SIZES,floor=FLOOR,groups=groups,occ=occ,policy=pol,
+bundle=dict(rounds=ROUNDS,sizes=SIZES,floor=FLOOR,groups=groups,occ=occ,policy=pol,unc=unc,
   meta=dict(oos_mae=val["oos"]["mae"],oos_within5=val["oos"]["within5"],oos_bias=val["oos"]["bias"],
             mech_exact=val["mech"]["exact"],cal_exact=round(cal["exact"]/cal["n"],3),cal_n=cal["n"],
             official_total=cal["official_total"],mobility=mob["pct_changed"],alloc_r=gate["pooled_r"],

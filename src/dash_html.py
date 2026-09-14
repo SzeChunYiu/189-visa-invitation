@@ -53,8 +53,9 @@ HTML = r"""<meta charset="utf-8">
     <span class="eyebrow" id="h2n"></span></div>
     <svg id="c2" viewBox="0 0 520 220" role="img" aria-labelledby="c2t"><title id="c2t">Forecast cut-off by round size</title></svg>
     <p class="note">Where the cut-off lands if the next round is this size, using this group's current share of
-    invitations. Out-of-sample error 3.8 points on the most recent round, biased 3.5 points deep &mdash; a forecast
-    of 75 may truly be 78&ndash;79.</p></div>
+    invitations. The shaded band is the 80% prediction interval, taken from the
+    distribution of this method's own errors on held-out rounds &mdash; not an assumption. Hover any point for
+    the interval and the probability it reaches your score.</p></div>
   <div class="card"><div class="chead"><h2>Who you are competing with</h2>
     <span class="eyebrow" id="h3n"></span></div>
     <svg id="c3" viewBox="0 0 520 220" role="img" aria-labelledby="c3t"><title id="c3t">Standing pool by points score</title></svg>
@@ -146,6 +147,13 @@ function verdictFor(rd,pts){
   if(pts>=rd.b) return {k:"warn",t:"date decides"};
   return {k:"crit",t:"not reached"};
 }
+/* Empirical P(actual cut-off <= pts) given a forecast, from held-out residuals. */
+function pClear(fc,pts){
+  if(fc===null||fc===undefined) return null;
+  const R=B.unc.residuals, need=fc-pts;
+  return R.filter(e=>e>=need).length/R.length;
+}
+function pBand(fc){ return fc===null?null:[fc-B.unc.hi80, fc-B.unc.lo80]; }
 function fcVerdict(c,pts){
   if(c===null||c===undefined) return {k:"n",t:"no forecast"};
   if(pts>c) return {k:"good",t:"clears"};
@@ -165,6 +173,14 @@ function hover(node,html){node.addEventListener("pointermove",e=>tipOn(e,html));
   node.addEventListener("focus",e=>{const b=node.getBoundingClientRect();
     tipOn({clientX:b.left+b.width/2,clientY:b.top},html);});node.addEventListener("blur",tipOff);}
 
+function axisTitle(s,W,H,MB,xt,yt){
+  const x=el("text",{x:W/2,y:H-MB+33,class:"tick","text-anchor":"middle","font-weight":"600"});
+  x.textContent=xt;s.appendChild(x);
+  if(yt){const y=el("text",{x:10,y:H/2,class:"tick","text-anchor":"middle","font-weight":"600",
+    transform:"rotate(-90 10 "+(H/2)+")"});y.textContent=yt;s.appendChild(y);}}
+function panel(s,letter){
+  const t=el("text",{x:2,y:11,fill:"var(--ink)","font-size":"12","font-weight":"750"});
+  t.textContent=letter;s.appendChild(t);}
 /* ---------- chart 1: cut-off by round ---------- */
 function chartRounds(o,pts){
   const s=$("c1");clear(s);
@@ -196,7 +212,7 @@ function chartRounds(o,pts){
     hover(h,"<b>"+r.b+" points</b><span>"+RL[r.r]+" &middot; "+fmt(r.n)+" invited &middot; "+
       (cleared?"fully cleared":"rationed by date")+"</span><span>At "+pts+" pts: "+v.t+"</span>");
     s.appendChild(h);});
-  const yl=el("text",{x:ML-7,y:MT-6,class:"tick","text-anchor":"end"});yl.textContent="pts";s.appendChild(yl);
+  axisTitle(s,W,H,MB,"invitation round","minimum points invited");panel(s,"a");
 }
 /* ---------- chart 2: forecast by round size ---------- */
 function chartForecast(g,pts){
@@ -214,6 +230,13 @@ function chartForecast(g,pts){
   if(pts>=lo&&pts<=hi){
     s.appendChild(el("line",{x1:ML,y1:Y(pts),x2:W-MR,y2:Y(pts),class:"refl"}));
     const t=el("text",{x:W-MR,y:Y(pts)-6,class:"reft","text-anchor":"end"});t.textContent="your "+pts+" pts";s.appendChild(t);}
+  const up=[],dn=[];
+  g.fc.forEach((v,i)=>{if(v===null)return;const b=pBand(v);
+    up.push([X(i),Y(Math.min(hi,b[1]))]);dn.push([X(i),Y(Math.max(lo,b[0]))]);});
+  if(up.length>1){
+    let bd="M"+up.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" L")+
+           " L"+dn.reverse().map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" L")+" Z";
+    s.appendChild(el("path",{d:bd,fill:"var(--series)","fill-opacity":".12",stroke:"none"}));}
   let d="";g.fc.forEach((v,i)=>{if(v===null)return;d+=(d?" L":"M")+X(i).toFixed(1)+","+Y(v).toFixed(1);});
   s.appendChild(el("path",{d:d,class:"ln"}));
   g.fc.forEach((v,i)=>{
@@ -224,10 +247,12 @@ function chartForecast(g,pts){
     const lab=el("text",{x:X(i),y:Y(v)-11,class:"vlab","text-anchor":"middle"});lab.textContent=v;s.appendChild(lab);
     const fv=fcVerdict(v,pts);
     const h=el("rect",{x:X(i)-26,y:MT,width:52,height:ph,class:"hit"});
-    hover(h,"<b>cut-off "+v+"</b><span>if the round invites "+fmt(B.sizes[i])+"</span><span>At "+pts+" pts: "+fv.t+"</span>");
+    const bb=pBand(v), pp=pClear(v,pts);
+    hover(h,"<b>cut-off "+v+"</b><span>if the round invites "+fmt(B.sizes[i])+
+      "</span><span>80% interval "+bb[0]+"–"+bb[1]+"</span><span>P(reaches "+pts+" pts) = "+
+      Math.round(pp*100)+"%</span>");
     s.appendChild(h);});
-  const xl=el("text",{x:W/2,y:H-MB+32,class:"tick","text-anchor":"middle"});
-  xl.textContent="assumed size of the next round";s.appendChild(xl);
+  axisTitle(s,W,H,MB,"assumed size of the next round","forecast cut-off (points)");panel(s,"b");
 }
 /* ---------- chart 3: pool by score (emphasis) ---------- */
 function chartPool(o,pts){
@@ -250,7 +275,7 @@ function chartPool(o,pts){
     if(keys.length<=14||i%2===0){
       const t=el("text",{x:x+bw/2,y:H-MB+16,class:"tick","text-anchor":"middle"});t.textContent=k;s.appendChild(t);}
     if(on){const t=el("text",{x:x+bw/2,y:y-6,class:"vlab","text-anchor":"middle"});t.textContent=fmt(n);s.appendChild(t);}});
-  const xl=el("text",{x:W/2,y:H-MB+32,class:"tick","text-anchor":"middle"});xl.textContent="points score";s.appendChild(xl);
+  axisTitle(s,W,H,MB,"points score","EOIs in the pool");panel(s,"c");
 }
 /* ---------- chart 4: queue position ---------- */
 function chartQueue(g,pts){
@@ -301,8 +326,8 @@ function chartMatrix(g,pts){
   const col={good:"var(--good)",warn:"var(--warn)",crit:"var(--crit)",n:"var(--deemph)"};
   B.sizes.forEach((sz,i)=>{const t=el("text",{x:ML+cw*(i+.5),y:MT-9,class:"tick","text-anchor":"middle"});
     t.textContent=(sz/1000)+"k";s.appendChild(t);});
-  const xl=el("text",{x:(ML+W-MR)/2,y:H-MB+24,class:"tick","text-anchor":"middle"});
-  xl.textContent="assumed size of the next round";s.appendChild(xl);
+  const xl=el("text",{x:(ML+W-MR)/2,y:H-MB+24,class:"tick","text-anchor":"middle","font-weight":"600"});
+  xl.textContent="assumed size of the next round";s.appendChild(xl);panel(s,"e");
   SCORES.forEach((sc,r)=>{
     const y=MT+ch*r, mine=(sc===Math.round(pts/5)*5);
     const lt=el("text",{x:ML-8,y:y+ch/2,class:"rowlab"+(mine?" on":""),"text-anchor":"end"});
@@ -315,7 +340,7 @@ function chartMatrix(g,pts){
         (g.fc[c]===null?"—":g.fc[c])+"</span><span>"+v.t+"</span>");
       if(mine){const o=el("rect",{x:ML+cw*c+1,y:y+1,width:cw-2,height:ch-2,rx:3,fill:"none",
         stroke:"var(--ink)","stroke-width":2,"pointer-events":"none"});s.appendChild(o);}});});
-  const yl=el("text",{x:ML-8,y:MT-9,class:"tick","text-anchor":"end"});yl.textContent="pts";s.appendChild(yl);
+  panel(s,"d");
 }
 /* ---------- chart 6: landscape heatmap (group x round) ---------- */
 const RAMP=["#cde2fb","#9ec5f4","#6da7ec","#3987e5","#256abf","#184f95","#0d366b"];
@@ -336,6 +361,7 @@ function chartLandscape(selG,pts){
   const cw=(W-ML-MR)/B.rounds.length;
   B.rounds.forEach((r,i)=>{const t=el("text",{x:ML+cw*(i+.5),y:MT-8,class:"tick","text-anchor":"middle"});
     t.textContent=RL[r];s.appendChild(t);});
+  panel(s,"f");
   keys.forEach((gk,ri)=>{
     const G=B.groups[gk], y=MT+ri*rh, on=(gk===selG);
     const lt=el("text",{x:ML-8,y:y+rh/2,class:"rowlab"+(on?" on":""),"text-anchor":"end"});
@@ -378,9 +404,8 @@ function chartScatter(selG,pts){
   for(let e=x0;e<=x1;e++){const xv=Math.pow(10,e);
     const t=el("text",{x:X(xv),y:H-MB+16,class:"tick","text-anchor":"middle"});
     t.textContent=xv>=1000?(xv/1000)+"k":xv;s.appendChild(t);}
-  const xl=el("text",{x:(ML+W-MR)/2,y:H-MB+32,class:"tick","text-anchor":"middle"});
-  xl.textContent="EOIs in the group's pool (log scale)";s.appendChild(xl);
-  const yl=el("text",{x:ML-7,y:MT-5,class:"tick","text-anchor":"end"});yl.textContent="pts";s.appendChild(yl);
+
+  axisTitle(s,W,H,MB,"EOIs in the group's pool (log scale)","minimum points invited");panel(s,"g");
   if(pts>=y0&&pts<=y1){
     s.appendChild(el("line",{x1:ML,y1:Y(pts),x2:W-MR,y2:Y(pts),class:"refl"}));
     const t=el("text",{x:W-MR,y:Y(pts)-6,class:"reft","text-anchor":"end"});t.textContent="your "+pts+" pts";s.appendChild(t);}
@@ -463,17 +488,18 @@ function render(){
   const last=o.rounds[o.rounds.length-1];
   const fc=g?g.fc[S.szi]:null;
   const v=fcVerdict(fc,pts);
-  $("flag").className="vflag "+(v.k==="n"?"crit":v.k);
-  $("flag").textContent=(v.k==="good"?"✓ ":v.k==="warn"?"! ":"✕ ")+
-    (v.k==="good"?"On track":v.k==="warn"?"On the boundary":v.k==="n"?"No forecast":"Below the cut-off");
-  $("hero").textContent=fc===null?"—":fc+" pts";
-  $("vsub").innerHTML = fc===null
-    ? "This occupation received no invitations in the most recent round, so there is no share to forecast from. The round-by-round record below still applies."
-    : "is the forecast cut-off for <b>"+o.g+" "+(g?g.name.replace(/^\d+\s/,""):"")+"</b> if the next round invites "+
-      fmt(size)+". You are on <b>"+pts+"</b>, which is "+
-      (pts>fc?"<b>above</b> it — you would be invited regardless of your EOI date."
-       :pts===fc?"<b>exactly on</b> it — invitations would be rationed by date of effect, and a newer EOI is last in line."
-       :"<b>below</b> it — the round would not reach you.");
+  const P=pClear(fc,pts), bb=pBand(fc);
+  const band = P===null?null:(P>=.8?"good":P>=.5?"warn":"crit");
+  $("flag").className="vflag "+(band||"crit");
+  $("flag").textContent = P===null ? "✕ No forecast available"
+    : (P>=.8?"✓ Likely invited":P>=.5?"! Could go either way":"✕ Unlikely at this score");
+  $("hero").textContent = P===null ? "—" : Math.round(P*100)+"%";
+  $("vsub").innerHTML = P===null
+    ? "This occupation received no invitations in the most recent round, so there is no allocation share to forecast from. The round-by-round record below still applies."
+    : "is the probability that the cut-off for <b>"+o.g+" "+(g?g.name.replace(/^\d+\s/,""):"")+
+      "</b> reaches <b>"+pts+" points</b> in a round of "+fmt(size)+
+      ", <b>if a round is held</b>. Central forecast <b>"+fc+" points</b> (80% interval "+bb[0]+"–"+bb[1]+
+      "). Calibrated on how wrong this same method was on the two most recent held-out rounds, not on a judgement call.";
   const ge=g?Object.keys(g.dist).map(Number).filter(k=>k>=pts).reduce((a,k)=>a+g.dist[k],0):0;
   const al=g?g.alloc[g.alloc.length-1]:0;
   const ratio=ge>0?al/ge:0;
