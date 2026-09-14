@@ -70,7 +70,8 @@ header a{color:var(--brand);font-size:13px}
 .meter{margin-top:14px}
 .mtrack{height:9px;border-radius:999px;background:var(--deemph);overflow:hidden;position:relative}
 .mfill{height:100%;border-radius:999px;background:var(--series)}
-.mlab{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px}
+.mlab{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:5px}
+.mlab span:last-child{text-align:right}
 dl.kv{display:flex;justify-content:space-between;gap:14px;align-items:baseline;margin:0;font-size:13px}
 dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums}
 /* ---- tiles + charts ---- */
@@ -89,6 +90,22 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .takeaway.crit{background:var(--crit-bg);border-left-color:var(--crit)}
 .note{font-size:11.5px;color:var(--muted);margin:8px 0 0;line-height:1.45}
 svg{width:100%;height:auto;display:block;overflow:visible}
+.chartwrap{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+/* Below this width an SVG scaled to fit would render its 10.5px labels at ~6px.
+   Hold a legible minimum and let the reader scroll sideways instead. */
+@media(max-width:640px){
+  .chartwrap svg{min-width:470px}
+  .hm svg{min-width:470px}
+  .hm{max-height:360px}
+  .hero{font-size:38px}
+  .wrap{padding:18px 14px 56px}
+  .tiles{grid-template-columns:repeat(auto-fit,minmax(132px,1fr))}
+  .chartwrap::after{content:"";display:block;height:2px}
+  .mlab{flex-direction:column;gap:2px}
+  .mlab span:last-child{text-align:left}
+  header{gap:10px}
+  header>div:last-child{text-align:left}
+}
 .gl{stroke:var(--grid);stroke-width:1}
 .ax{stroke:var(--axis);stroke-width:1}
 .tick{fill:var(--muted);font-size:10.5px;font-variant-numeric:tabular-nums}

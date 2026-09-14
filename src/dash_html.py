@@ -46,14 +46,14 @@ HTML = r"""<meta charset="utf-8">
   <div class="card"><div class="chead"><h2>Would you have got in before?</h2>
     <span class="eyebrow" id="h1n"></span></div>
     <p class="takeaway" id="t1"></p>
-    <svg id="c1" viewBox="0 0 520 220" role="img" aria-labelledby="c1t"><title id="c1t">Minimum points invited, by round</title></svg>
+    <div class="chartwrap"><svg id="c1" viewBox="0 0 520 220" role="img" aria-labelledby="c1t"><title id="c1t">Minimum points invited, by round</title></svg></div>
     <p class="note">Each dot is the lowest score that still got an invitation in that round. If the dot sits
     <b>below your red line</b>, you would have been invited. A solid dot means everyone on that score got in; a hollow
     dot means only the earliest applicants on it did.</p></div>
   <div class="card"><div class="chead"><h2>What happens at the next round</h2>
     <span class="eyebrow" id="h2n"></span></div>
     <p class="takeaway" id="t2"></p>
-    <svg id="c2" viewBox="0 0 520 220" role="img" aria-labelledby="c2t"><title id="c2t">Forecast cut-off by round size</title></svg>
+    <div class="chartwrap"><svg id="c2" viewBox="0 0 520 220" role="img" aria-labelledby="c2t"><title id="c2t">Forecast cut-off by round size</title></svg></div>
     <p class="note">Where the cut-off lands if the next round is this size, using this group's current share of
     invitations. The shaded band is the 80% prediction interval, taken from the
     distribution of this method's own errors on held-out rounds &mdash; not an assumption. Hover any point for
@@ -61,13 +61,13 @@ HTML = r"""<meta charset="utf-8">
   <div class="card"><div class="chead"><h2>How many people share your score</h2>
     <span class="eyebrow" id="h3n"></span></div>
     <p class="takeaway" id="t3"></p>
-    <svg id="c3" viewBox="0 0 520 220" role="img" aria-labelledby="c3t"><title id="c3t">Standing pool by points score</title></svg>
+    <div class="chartwrap"><svg id="c3" viewBox="0 0 520 220" role="img" aria-labelledby="c3t"><title id="c3t">Standing pool by points score</title></svg></div>
     <p class="note">Everyone in this occupation currently sitting in the 189 pool, by points. Your bucket is
     highlighted. Hover any column for the count.</p></div>
   <div class="card"><div class="chead"><h2>How many people are ahead of you</h2>
     <span class="eyebrow" id="h4n"></span></div>
     <p class="takeaway" id="t4"></p>
-    <svg id="c4" viewBox="0 0 520 220" role="img" aria-labelledby="c4t"><title id="c4t">Queue position within the unit group</title></svg>
+    <div class="chartwrap"><svg id="c4" viewBox="0 0 520 220" role="img" aria-labelledby="c4t"><title id="c4t">Queue position within the unit group</title></svg></div>
     <p class="note">Walk from the highest score downwards and count people as you go &mdash; that is the blue line.
     The green dashed line is how many invitations the last round handed out. <b>If your red dot sits below the green
     line, the invitations reach you.</b> If it sits above, they run out first.</p></div>
@@ -90,7 +90,7 @@ HTML = r"""<meta charset="utf-8">
 <div class="card"><div class="chead"><h2>What if your score or the round size changed?</h2>
   <span class="eyebrow" id="h5n"></span></div>
   <p class="takeaway" id="t5"></p>
-    <svg id="c5" viewBox="0 0 520 300" role="img" aria-labelledby="c5t"><title id="c5t">Outcome by points score and round size</title></svg>
+    <div class="chartwrap"><svg id="c5" viewBox="0 0 520 300" role="img" aria-labelledby="c5t"><title id="c5t">Outcome by points score and round size</title></svg></div>
   <div class="legend"><span><i style="background:var(--good)"></i>invited regardless of date</span>
     <span><i style="background:var(--warn)"></i>on the boundary, date decides</span>
     <span><i style="background:var(--crit)"></i>not reached</span></div>
@@ -115,7 +115,7 @@ HTML = r"""<meta charset="utf-8">
   <div class="card"><div class="chead"><h2>Why some occupations need more points</h2>
     <span class="eyebrow">Jun 2026 round</span></div>
     <p class="takeaway" id="t7"></p>
-    <svg id="c7" viewBox="0 0 520 312" role="img" aria-labelledby="c7t"><title id="c7t">Pool size against cut-off</title></svg>
+    <div class="chartwrap"><svg id="c7" viewBox="0 0 520 312" role="img" aria-labelledby="c7t"><title id="c7t">Pool size against cut-off</title></svg></div>
     <p class="note">One dot per occupation group. Left&ndash;right is <b>how many people are queuing for each invitation
     that group receives</b> &mdash; the real measure of competition. Up&ndash;down is the score you had to beat. Bigger dots
     are bigger occupations. <b>Yours is the solid ringed dot.</b> The trend is clear: the more people per invitation, the
