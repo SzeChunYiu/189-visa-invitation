@@ -192,6 +192,8 @@ function tipOn(ev,html){const t=$("tip");t.innerHTML=html;t.style.display="block
   const r=12;t.style.left=Math.min(ev.clientX+r,innerWidth-t.offsetWidth-8)+"px";
   t.style.top=Math.max(8,ev.clientY-t.offsetHeight-r)+"px";}
 function tipOff(){$("tip").style.display="none";}
+function on(id,ev,fn){const e=$(id); if(e) e.addEventListener(ev,fn); return !!e;}
+function put(id,prop,val){const e=$(id); if(e) e[prop]=val; return !!e;}
 /* Pointer-only. Marks are deliberately NOT tab stops: making 500+ of them focusable
    traps keyboard users. Every number in these charts is also in a table or the CSV. */
 function hover(node,html){
@@ -209,7 +211,7 @@ function panel(s,letter){
   t.textContent=letter;s.appendChild(t);}
 /* ---------- chart 1: cut-off by round ---------- */
 function chartRounds(o,pts){
-  const s=$("c1");clear(s);
+  const s=$("c1"); if(!s) return; clear(s);
   const W=520,H=230,ML=36,MR=18,MT=22,MB=54,pw=W-ML-MR,ph=H-MT-MB;
   const rs=o.rounds, vals=rs.map(r=>r.b).filter(v=>v!==null);
   const lo=Math.min(60,pts-5,...vals), hi=Math.max(pts+5,...vals,100);
@@ -253,7 +255,7 @@ function chartRounds(o,pts){
 }
 /* ---------- chart 4: the mechanism itself - cumulative queue vs allocation ---------- */
 function chartQueue(g,pts){
-  const s=$("c4");clear(s);
+  const s=$("c4"); if(!s) return; clear(s);
   const W=520,H=220,ML=46,MR=60,MT=16,MB=42,pw=W-ML-MR,ph=H-MT-MB;
   if(!g){const t=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
     t.textContent="No unit-group data.";s.appendChild(t);return;}
@@ -316,8 +318,7 @@ function rampFor(v){ return (v===null||v===undefined)?"var(--deemph)":(RAMP[ramp
 function inkOn(v){ return (v===null||v===undefined)?"var(--muted)":(rampIdx(v)>=3?"#ffffff":"#0b0b0b"); }
 let HMSORT="cut";
 function chartLandscape(selG,pts){
-  RAMP=rampSteps();
-  const s=$("c6");clear(s);
+  const s=$("c6"); if(!s) return; RAMP=rampSteps(); clear(s);
   const keys=Object.keys(B.groups);
   const alloc=g=>{const f=B.groups[g].alloc;return f[f.length-1];};
   const cmp={
@@ -351,7 +352,7 @@ function chartLandscape(selG,pts){
         RL[r]+" &middot; "+fmt(G.alloc[B.rounds.indexOf(r)])+" invited</span>");
       rect.addEventListener("click",()=>{
         const first=OCCS.find(o=>B.occ[o].g===gk);
-        if(first){S.occ=first;$("occ").value=first;render();window.scrollTo({top:0,behavior:"smooth"});}});});
+        if(first){S.occ=first;put("occ","value",first);render();window.scrollTo({top:0,behavior:"smooth"});}});});
     if(on)s.appendChild(el("rect",{x:ML,y:y+1.5,width:W-ML-MR,height:rh-3,rx:2,fill:"none",
       stroke:"var(--ink)","stroke-width":2,"pointer-events":"none"}));});
 }
@@ -364,7 +365,7 @@ function cutOf(gk,round){
 function lastCut(gk){ return cutOf(gk,B.rounds[B.rounds.length-1]); }
 /* ---------- chart 7: competition ratio vs cut-off ---------- */
 function chartScatter(selG,pts){
-  const s=$("c7");clear(s);
+  const s=$("c7"); if(!s) return; clear(s);
   const W=520,H=312,ML=42,MR=18,MT=18,MB=62,pw=W-ML-MR,ph=H-MT-MB;
   const P=[];
   for(const gk in B.groups){
@@ -405,7 +406,7 @@ function chartScatter(selG,pts){
     hover(c,"<b>"+p.ratio.toFixed(1)+" people per invitation</b><span>"+p.name+
       "</span><span>"+fmt(p.pool)+" waiting &middot; "+fmt(p.al)+" invited &middot; cut-off "+p.cut+"</span>");
     c.addEventListener("click",()=>{const f=OCCS.find(o=>B.occ[o].g===p.gk);
-      if(f){S.occ=f;$("occ").value=f;render();window.scrollTo({top:0,behavior:"smooth"});}});});
+      if(f){S.occ=f;put("occ","value",f);render();window.scrollTo({top:0,behavior:"smooth"});}});});
   axisTitle(s,W,H,MB,"people per invitation","lowest score invited");
   panel(s,"g");
   const nt=el("text",{x:(ML+W-MR)/2,y:H-MB+50,class:"tick","text-anchor":"middle","font-style":"italic"});
@@ -441,6 +442,7 @@ function probTakeaway(g,pts){
 }
 /* ---------- every score band ---------- */
 function bandTable(o,g,pts){
+  if(!document.querySelector("#bt tbody")) return;
   const tb=document.querySelector("#bt tbody"); if(!tb||!g) return; tb.innerHTML="";
   const cen=B.policy?B.policy.per_round["3"]:10000, fc=cutoffAt(g,cen);
   const my=Math.round(pts/5)*5;
@@ -491,6 +493,7 @@ function queueTable(o,g,pts){
 }
 /* ---------- policy table ---------- */
 function policyTable(){
+  if(!document.querySelector("#pt tbody")) return;
   const P=B.policy; if(!P) return;
   const tb=document.querySelector("#pt tbody"); if(!tb) return;
   const rows=[["Skilled Independent (189)",P.places["2025-26"],P.places["2026-27"]],
@@ -543,7 +546,7 @@ function pMarginal(g,pts,gk){
   return conditional*(1-skip);
 }
 function chartProb(g,pts){
-  const s=$("c8");clear(s);
+  const s=$("c8"); if(!s) return; clear(s);
   const W=586,H=268,ML=44,MR=66,MT=30,MB=46,pw=W-ML-MR,ph=H-MT-MB;
   if(!g||g.share<=0){const q=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
     q.textContent="No invitations last round, so there is nothing to forecast at any size.";s.appendChild(q);return;}
@@ -664,6 +667,7 @@ function takeaways(o,g,pts,size){
 
 /* ---------- how the cut-off moves between rounds ---------- */
 function moveStrip(){
+  if(!$("mv")) return;
   const box=$("mv"); if(!box||!B.mv) return; box.innerHTML="";
   const M=B.mv, R=M.delta_recent||{};
   const g=k=>R[k]||0;
@@ -693,6 +697,7 @@ function moveStrip(){
 }
 /* ---------- the occupations switched off, and the one that was not ---------- */
 function switchTable(){
+  if(!document.querySelector("#swt tbody")) return;
   const tb=document.querySelector("#swt tbody"); if(!tb||!B.sw) return; tb.innerHTML="";
   const row=(o,cls)=>{
     const tr=document.createElement("tr"); if(cls)tr.className=cls;
@@ -727,6 +732,7 @@ function tierLabel(gk){
 }
 /* ---------- what separates a high-scoring profile ---------- */
 function levers(){
+  if(!$("lev")) return;
   const box=$("lev"); if(!box) return;
   const L=[["Max English (20 pts)",83.6,19.3],["Partner skills (10 pts)",84.4,63.3],["Australian study",82.0,62.7]];
   box.innerHTML="";
@@ -754,14 +760,14 @@ function render(){
   const P=pMarginal(g,pts,o.g), Pc=pClear(fc,pts), bb=pBand(fc);
   chartProb(g,pts);probTakeaway(g,pts);moveStrip();
   const band = P===null?null:(P>=.8?"good":P>=.6?"good":P>=.4?"warn":"crit");
-  $("flag").className="vflag "+(band||"crit");
-  $("flag").textContent = P===null ? "✕ No forecast"
+  if($("flag")){$("flag").className="vflag "+(band||"crit");}
+  if($("flag"))$("flag").textContent = P===null ? "✕ No forecast"
     : P>=.8 ? "✓ Likely invited"
     : P>=.6 ? "✓ Favourable, not certain"
     : P>=.4 ? "! Could go either way"
     : "✕ Unlikely at this score";
-  $("hero").textContent = P===null ? "—" : Math.round(P*100)+"%";
-  $("vsub").innerHTML = P===null
+  if($("hero"))$("hero").textContent = P===null ? "—" : Math.round(P*100)+"%";
+  if($("vsub"))$("vsub").innerHTML = P===null
     ? "This occupation received no invitations in the most recent round, so there is no allocation share to forecast from. The round-by-round record below still applies."
     : "at <b>"+pts+" points</b> in <b>"+o.g+"</b>. Averaged over likely round sizes, less a <b>"+
       Math.round(pZero(o.g)*100)+"%</b> chance this group is skipped. Assumes a round is held &mdash; that is "+
@@ -769,10 +775,10 @@ function render(){
   const ge=g?Object.keys(g.dist).map(Number).filter(k=>k>=pts).reduce((a,k)=>a+g.dist[k],0):0;
   const al=g?g.alloc[g.alloc.length-1]:0;
   const ratio=ge>0?al/ge:0;
-  $("mfill").style.width=Math.max(2,Math.min(100,ratio*50))+"%";
-  $("mleft").textContent="last round allocated "+fmt(al)+" to this group";
-  $("mright").textContent=fmt(ge)+" sit at "+pts+"+ · "+(ge>0?ratio.toFixed(2)+"×":"—");
-  $("vside").innerHTML="";
+  if($("mfill"))$("mfill").style.width=Math.max(2,Math.min(100,ratio*50))+"%";
+  if($("mleft"))$("mleft").textContent="last round allocated "+fmt(al)+" to this group";
+  if($("mright"))$("mright").textContent=fmt(ge)+" sit at "+pts+"+ · "+(ge>0?ratio.toFixed(2)+"×":"—");
+  const vside=$("vside"); if(vside) vside.innerHTML="";
   const rows=[["At likely round size",Pc===null?"—":Math.round(Pc*100)+"%"],
     ["Forecast cut-off",fc===null?"—":fc+" pts (80% "+bb[0]+"–"+bb[1]+")"],
     ["Likely round size",fmt(B.rs.q50)+" ("+fmt(B.rs.q10)+"–"+fmt(B.rs.q90)+")"],
@@ -781,36 +787,37 @@ function render(){
     ["Priority tier",tierLabel(o.g)]];
   rows.forEach(([k,val])=>{const dl=document.createElement("dl");dl.className="kv";
     const dt=document.createElement("dt");dt.textContent=k;const dd=document.createElement("dd");dd.textContent=val;
-    dl.appendChild(dt);dl.appendChild(dd);$("vside").appendChild(dl);});
+    dl.appendChild(dt);dl.appendChild(dd);if(vside)vside.appendChild(dl);});
   const inv=o.rounds.filter(r=>verdictFor(r,pts).k==="good").length;
   const tiles=[[inv+" of 5",'rounds that would have invited you at '+pts+' pts'],
     [fmt(o.rounds.reduce((a,r)=>a+r.n,0)),"invitations to this occupation, all rounds"],
     [last.b===null?"—":last.b,"lowest points invited, most recent round"],
     [g?g.alloc.join(" → "):"—","allocation to your unit group, by round"],
     [B.meta.cal_exact*100+"%","of occupations matched the official table exactly"]];
-  $("tiles").innerHTML="";
+  const tbox=$("tiles"); if(tbox) tbox.innerHTML="";
   tiles.forEach(([v2,l])=>{const c=document.createElement("div");c.className="tile";
     const a=document.createElement("div");a.className="tval";a.textContent=v2;
     const b=document.createElement("div");b.className="tlab";b.textContent=l;
-    c.appendChild(a);c.appendChild(b);$("tiles").appendChild(c);});
-  $("h1n").textContent=S.occ; $("h8n").textContent=""; 
-  $("h4n").textContent="";
+    c.appendChild(a);c.appendChild(b);if(tbox)tbox.appendChild(c);});
+  put("h1n","textContent",S.occ); put("h8n","textContent",""); 
+  put("h4n","textContent","");
   chartRounds(o,pts);chartQueue(g,pts);
   chartLandscape(o.g,pts);chartScatter(o.g,pts);
   takeaways(o,g,pts,size);
   bandTable(o,g,pts);levers();switchTable();policyTable();
   
-  const tb=document.querySelector("#rt tbody");tb.innerHTML="";
+  const tb=document.querySelector("#rt tbody"); if(tb){tb.innerHTML="";
   o.rounds.forEach(r=>{const v2=verdictFor(r,pts);const tr=document.createElement("tr");
     const cells=[RL[r.r],r.n?fmt(r.n):"—",r.lc===null?"—":r.lc,r.b===null?"—":r.b,
       r.b===null?"—":(r.s==="C"?"fully cleared":"rationed by date"),""];
     cells.forEach((c,i)=>{const td=document.createElement("td");
       if(i===5){const sp=document.createElement("span");sp.className="pill "+v2.k;sp.textContent=v2.t;td.appendChild(sp);}
       else td.textContent=c;tr.appendChild(td);});
-    tb.appendChild(tr);});
+    tb.appendChild(tr);});}
   renderAll(pts);
 }
 function renderAll(pts){
+  if(!document.querySelector("#at tbody")) return;
   const tb=document.querySelector("#at tbody");tb.innerHTML="";
   const list=OCCS.map(k=>({k:k,o:B.occ[k]})).sort((a,b)=>b.o.pool-a.o.pool);
   ($(  "allN")||{}).textContent=list.length+" occupations";
@@ -826,12 +833,13 @@ function renderAll(pts){
     const fv=fcVerdict(g?g.fc[S.szi]:null,pts);const td=document.createElement("td");
     const sp=document.createElement("span");sp.className="pill "+fv.k;
     sp.textContent=(g&&g.fc[S.szi]!==null)?g.fc[S.szi]:"—";td.appendChild(sp);tr.appendChild(td);
-    tr.addEventListener("click",()=>{S.occ=k;$("occ").value=k;render();window.scrollTo({top:0,behavior:"smooth"});});
+    tr.addEventListener("click",()=>{S.occ=k;put("occ","value",k);render();window.scrollTo({top:0,behavior:"smooth"});});
     tr.style.cursor="pointer";tb.appendChild(tr);});
 }
 /* ---------- controls ---------- */
 function initCombo(){
   const inp=$("occ"),box=$("opts");
+  if(!inp||!box) return;
   let active=-1;
   inp.setAttribute("role","combobox");
   inp.setAttribute("aria-expanded","false");
@@ -875,10 +883,10 @@ function initCombo(){
   inp.value=S.occ;
 }
 
-$("pts").addEventListener("input",e=>{S.pts=+e.target.value||0;render();});
-$("doe").addEventListener("input",e=>{S.doe=e.target.value||null;render();});
-$("hmsort").addEventListener("change",e=>{HMSORT=e.target.value;render();});
-$("dl").addEventListener("click",()=>{
+on("pts","input",e=>{S.pts=+e.target.value||0;render();});
+on("doe","input",e=>{S.doe=e.target.value||null;render();});
+on("hmsort","change",e=>{HMSORT=e.target.value;render();});
+on("dl","click",()=>{
   const rows=[["occupation","unit_group","pool","at_your_score","your_points",
     ...B.rounds.map(r=>"boundary_"+r),...B.rounds.map(r=>"state_"+r),
     ...B.sizes.map(s=>"forecast_"+s),"assumed_round_size","p_reaches_your_score"]];
@@ -899,16 +907,16 @@ $("dl").addEventListener("click",()=>{
 /* (?) opens a small popover beside the button, not an inline expansion */
 let POPFOR=null;
 function closePop(){
-  $("pop").classList.remove("on"); $("popbd").classList.remove("on");
+  if($("pop"))$("pop").classList.remove("on"); if($("popbd"))$("popbd").classList.remove("on");
   if(POPFOR){POPFOR.setAttribute("aria-expanded","false"); POPFOR.focus(); POPFOR=null;}
 }
 function openPop(btn){
   const src=$(btn.dataset.note); if(!src) return;
   const card=btn.closest(".card"), h2=card?card.querySelector("h2"):null;
-  $("poph").textContent=h2?h2.textContent:"About this panel";
-  $("popb").innerHTML=src.innerHTML;
+  put("poph","textContent",h2?h2.textContent:"About this panel");
+  put("popb","innerHTML",src.innerHTML);
   const pop=$("pop");
-  pop.classList.add("on"); $("popbd").classList.add("on");
+  pop.classList.add("on"); if($("popbd"))$("popbd").classList.add("on");
   const r=btn.getBoundingClientRect(), pr=pop.getBoundingClientRect();
   let left=Math.min(r.right-pr.width, innerWidth-pr.width-10);
   left=Math.max(10,left);
@@ -922,8 +930,8 @@ document.querySelectorAll(".q").forEach(b=>b.addEventListener("click",e=>{
   e.stopPropagation();
   if(POPFOR===b){closePop();return;}
   closePop(); openPop(b);}));
-$("popx").addEventListener("click",closePop);
-$("popbd").addEventListener("click",closePop);
+on("popx","click",closePop);
+on("popbd","click",closePop);
 addEventListener("keydown",e=>{if(e.key==="Escape")closePop();});
 addEventListener("resize",closePop);
 initCombo();render();

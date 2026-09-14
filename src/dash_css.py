@@ -10,17 +10,8 @@ CSS = """
   --r1:#dda288; --r2:#d38867; --r3:#c96e47; --r4:#b25a34; --r5:#91492a; --r6:#703821; --r7:#4f2817;
   --shadow:0 1px 2px rgba(34,29,24,.05), 0 10px 28px -20px rgba(34,29,24,.3);
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#17140f; --card:#211c16; --ink:#f3efe8; --body:#d3cabd; --muted:#9c9084; --line:#302a22;
-  --brand:#6fbfa3; --brand-soft:#1a2f28;
-  --series:#4faed4; --series-soft:rgba(79,174,212,.18); --deemph:#3d362d;
-  --gold:#e8b341; --gold-soft:#332912;
-  --good:#0ca30c; --warn:#fab219; --crit:#e06b6b;
-  --good-bg:#12301a; --warn-bg:#332a14; --crit-bg:#3a1f1f;
-  --grid:#292319; --axis:#3d362d;
-  --r1:#f4e0d7; --r2:#e8c1b0; --r3:#dda288; --r4:#d18361; --r5:#c66339; --r6:#9e502e; --r7:#773c22;
-  --shadow:0 1px 2px rgba(0,0,0,.5), 0 12px 32px -22px rgba(0,0,0,.8);
-}}
+/* Light is the default. Dark is opt-in via the toggle (data-theme="dark"),
+   so an OS dark setting does not override the intended palette. */
 :root[data-theme="dark"]{
   --paper:#17140f; --card:#211c16; --ink:#f3efe8; --body:#d3cabd; --muted:#9c9084; --line:#302a22;
   --brand:#6fbfa3; --brand-soft:#1a2f28;
@@ -74,8 +65,7 @@ select:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-ra
   font-size:12.5px;font-weight:700;letter-spacing:.02em}
 .vflag.good{background:var(--good-bg);color:var(--good)} .vflag.warn{background:var(--warn-bg);color:#8a6412}
 .vflag.crit{background:var(--crit-bg);color:var(--crit)}
-:root[data-theme="dark"] .vflag.warn,
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .vflag.warn{color:var(--warn)}}
+:root[data-theme="dark"] .vflag.warn{color:var(--warn)}
 .hero{font-size:46px;font-weight:750;color:var(--ink);line-height:1.05;margin:12px 0 2px}
 .vsub{font-size:14px;color:var(--body);max-width:60ch}
 .vside{padding:22px 24px;display:flex;flex-direction:column;gap:13px;justify-content:center}
@@ -197,6 +187,14 @@ tbody tr.hl{background:var(--brand-soft)}
 .pt{stroke:var(--card);stroke-width:1.5}
 .pt.on{stroke:var(--ink);stroke-width:2.5}
 .wide{grid-column:1/-1}
+nav.top{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-bottom:2px}
+nav.top a{font-size:12.5px;padding:6px 12px;border-radius:8px;color:var(--body);text-decoration:none;
+  border:1px solid transparent}
+nav.top a:hover{background:var(--brand-soft);color:var(--ink)}
+nav.top a[aria-current="page"]{background:var(--brand);color:#fff;font-weight:600}
+.themebtn{margin-left:auto;appearance:none;border:1px solid var(--line);background:var(--card);color:var(--muted);
+  border-radius:8px;padding:6px 10px;font:inherit;font-size:12px;cursor:pointer}
+.themebtn:hover{color:var(--ink);border-color:var(--brand)}
 footer{border-top:1px solid var(--line);padding-top:16px;font-size:11.5px;color:var(--muted)}
 footer a{color:var(--brand)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

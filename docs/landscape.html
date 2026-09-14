@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Will you be invited? · SkillSelect 189</title>
+<title>All occupations · SkillSelect 189</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <style>
 :root{
@@ -206,7 +206,7 @@ footer a{color:var(--brand)}
 <a class="skip" href="#results">Skip to result</a>
 <a class="skip" href="#results">Skip to result</a>
 <div class="wrap">
-<nav class="top"><a href="index.html" aria-current="page">Your result</a><a href="landscape.html">All occupations</a><a href="policy.html">Policy</a><a href="findings.html">Method</a><button class="themebtn" id="themebtn" type="button" aria-pressed="false">Dark</button></nav>
+<nav class="top"><a href="index.html">Your result</a><a href="landscape.html" aria-current="page">All occupations</a><a href="policy.html">Policy</a><a href="findings.html">Method</a><button class="themebtn" id="themebtn" type="button" aria-pressed="false">Dark</button></nav>
 <header>
   <div>
     <div class="eyebrow">Subclass 189 &middot; Points-Tested Stream</div>
@@ -229,47 +229,32 @@ footer a{color:var(--brand)}
     <input id="doe" type="month" min="2024-07" max="2026-12" aria-label="Month your EOI was submitted or last changed"></div>
 
 </div>
-<div class="verdict" id="results" tabindex="-1">
-  <div class="vmain">
-    <div id="flag" class="vflag good"></div>
-    <div class="hero" id="hero"></div>
-    <p class="vsub" id="vsub"></p>
-    <div class="meter">
-      <div class="mtrack"><div class="mfill" id="mfill"></div></div>
-      <div class="mlab"><span id="mleft"></span><span id="mright"></span></div>
-    </div>
-  </div>
-  <div class="vside" id="vside"></div>
-</div>
-<div class="tiles" id="tiles"></div>
-<div class="card"><div class="chead"><h2>Your chance vs round size</h2>
-  <span class="eyebrow" id="h8n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n1" aria-label="Explain" data-note="n1">?</button></div>
-  <p class="takeaway" id="t8"></p>
-  <div class="movestrip" id="mv"></div>
-  <div class="chartwrap"><svg id="c8" viewBox="0 0 586 268" role="img" aria-labelledby="c8t">
-    <title id="c8t">Chance of an invitation against the size of the next round</title></svg></div>
-  <p class="note" id="n1" hidden>Blue line: your chance at each round size. Faint lines: 5 points above and below. Shaded band: every round size on record. Green ribbon: how likely each size is, from the 2026&ndash;27 planning levels. Dashed line: the size those levels imply. Pool is the Aug-2026 snapshot; each extra month before the round makes this forecast ~0.7 points optimistic, so a December round would sit ~2 points higher than shown.</p></div>
-<div class="card"><div class="chead"><h2>Past rounds</h2>
-    <span class="eyebrow" id="h1n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n2" aria-label="Explain" data-note="n2">?</button></div>
-    <p class="takeaway" id="t1"></p>
-    <div class="chartwrap"><svg id="c1" viewBox="0 0 520 220" role="img" aria-labelledby="c1t"><title id="c1t">Minimum points invited, by round</title></svg></div>
-    <p class="note" id="n2" hidden>Height = lowest score invited. <span style='color:var(--good)'>&#9679;</span> in &middot; <span style='color:var(--warn)'>&#9679;</span> date decides &middot; <span style='color:var(--crit)'>&#9679;</span> not reached. Dot size = invitations to this occupation.</p></div>
-<div class="card"><div class="chead"><h2>Who is ahead</h2>
-    <span class="eyebrow" id="h4n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n3" aria-label="Explain" data-note="n3">?</button></div>
-    <p class="takeaway" id="t4"></p>
-    <div class="chartwrap"><svg id="c4" viewBox="0 0 520 220" role="img" aria-labelledby="c4t"><title id="c4t">Queue position within the unit group</title></svg></div>
-    <p class="note" id="n3" hidden>Blue = people counted from the top score down. Green = invitations last round. <b>Red dot below green &rarr; they reach you.</b></p></div>
-<div class="card"><div class="chead"><h2>Every score band</h2>
-  <span class="eyebrow" id="hbn"></span><button class="q" type="button" aria-expanded="false" aria-controls="n4" aria-label="Explain" data-note="n4">?</button></div>
-  <div class="lev" id="lev"></div>
-  <div class="scroll"><table id="bt"><thead><tr><th>Points</th><th>This occupation</th>
-    <th>Unit group</th><th>Cumulative ahead</th><th>vs you</th>
-    <th>Chance</th></tr></thead><tbody></tbody></table></div>
-  <p class="note" id="n4" hidden>What 5 or 10 more points would buy. Aug-2026 snapshot; order is points, then date of effect. Without a date, your whole band counts as ahead.</p></div>
-<div class="card"><div class="chead"><h2>This occupation, round by round</h2><span class="eyebrow">the record for this occupation</span><button class="q" type="button" aria-expanded="false" aria-controls="n8" aria-label="Explain" data-note="n8">?</button></div>
-  <div class="scroll"><table id="rt"><thead><tr><th>Round</th><th>Invited</th><th>Fully cleared to</th>
-    <th>Boundary score</th><th>Boundary</th><th>Would you have been invited?</th></tr></thead><tbody></tbody></table></div>
-  <p class="note" id="n8" hidden><b>Fully cleared to</b> = the lowest score where every EOI was invited. At or above it you are in regardless of date. On a rationed boundary, your date decides.</p></div>
+<div class="card"><div class="chead"><h2>All occupations &times; all rounds</h2>
+    <select id="hmsort" aria-label="Sort the landscape" style="font:inherit;font-size:11.5px;padding:4px 7px;
+      border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--body)">
+      <option value="cut">by cut-off</option>
+      <option value="alloc">by invitations</option>
+      <option value="name">by code</option></select><button class="q" type="button" aria-expanded="false" aria-controls="n6" aria-label="Explain" data-note="n6">?</button></div>
+    <div class="hm"><svg id="c6" viewBox="0 0 520 1420" role="img" aria-labelledby="c6t"><title id="c6t">Cut-off by unit group and round</title></svg></div>
+    <div class="legend"><span>lowest points invited</span>
+      <span class="ramp"><span style="background:var(--r1)"></span><span style="background:var(--r2)"></span><span style="background:var(--r3)"></span><span style="background:var(--r4)"></span><span style="background:var(--r5)"></span><span style="background:var(--r6)"></span><span style="background:var(--r7)"></span></span>
+      <span>65 &rarr; 100+</span><span><i style="background:var(--deemph)"></i>no invitation</span></div>
+    <p class="note" id="n6" hidden>Darker = higher score needed. A dot = no invitations. Click a row to load that group.</p></div>
+<div class="card"><div class="chead"><h2>Competition drives the score</h2>
+    <span class="eyebrow">Jun 2026 round</span><button class="q" type="button" aria-expanded="false" aria-controls="n7" aria-label="Explain" data-note="n7">?</button></div>
+    <p class="takeaway" id="t7"></p>
+    <div class="chartwrap"><svg id="c7" viewBox="0 0 520 312" role="img" aria-labelledby="c7t"><title id="c7t">Pool size against cut-off</title></svg></div>
+    <p class="note" id="n7" hidden>One dot per group. Right = more people per invitation. Up = higher score needed. Dot size = occupation size. <b>Yours is ringed.</b> Raw size barely matters (r&nbsp;=&nbsp;0.12); people per invitation does (r&nbsp;=&nbsp;0.61).</p></div>
+<div class="card"><div class="chead"><h2>All occupations at your score</h2>
+  <span style="display:flex;gap:12px;align-items:center">
+    <span class="eyebrow" id="allN"></span>
+    <button id="dl" style="font:inherit;font-size:11.5px;padding:5px 10px;border:1px solid var(--line);
+      border-radius:7px;background:var(--paper);color:var(--brand);cursor:pointer">Download CSV</button>
+  </span><button class="q" type="button" aria-expanded="false" aria-controls="n9" aria-label="Explain" data-note="n9">?</button></div>
+  <div class="scroll" style="max-height:420px;overflow-y:auto"><table id="at"><thead><tr><th>Occupation</th>
+    <th>Pool</th><th>At your score</th><th>Sep 24</th><th>Nov 24</th><th>Aug 25</th><th>Nov 25</th><th>Jun 26</th>
+    <th>Forecast</th></tr></thead><tbody></tbody></table></div>
+  <p class="note" id="n9" hidden>Click a row to load it. The CSV holds every figure behind this page, for all 199 occupations at your score.</p></div>
 <footer>
   Built from all 24 monthly SkillSelect EOI snapshots read directly from the Qlik engine behind the Department of
   Employment's public dashboard. Counts are distinct EOIs on a single-leg basis. The model cannot predict whether a

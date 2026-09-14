@@ -79,8 +79,6 @@ DATA=json.dumps(recs,separators=(",",":"))
 CSS=""":root{--paper:#fbfbfc;--card:#ffffff;--ink:#141a24;--body:#39414f;--muted:#6b7589;--line:#e2e5ec;
 --accent:#2f6f5e;--accent-soft:#e8f1ee;--amber:#b8792c;--amber-soft:#fbf1e3;--good:#2f7d5f;--bad:#a8453f;--shadow:0 1px 2px rgba(20,26,36,.06),0 8px 24px -16px rgba(20,26,36,.28)}
 :root:not([data-theme="light"]){}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0e1219;--card:#161c26;--ink:#eef1f6;--body:#c2c9d6;--muted:#8b95a8;--line:#262e3b;
---accent:#63b39b;--accent-soft:#16302a;--amber:#d9a259;--amber-soft:#2e2417;--good:#63b39b;--bad:#d97b74;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -18px rgba(0,0,0,.7)}}
 :root[data-theme="dark"]{--paper:#0e1219;--card:#161c26;--ink:#eef1f6;--body:#c2c9d6;--muted:#8b95a8;--line:#262e3b;
 --accent:#63b39b;--accent-soft:#16302a;--amber:#d9a259;--amber-soft:#2e2417;--good:#63b39b;--bad:#d97b74;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -18px rgba(0,0,0,.7)}
 *{box-sizing:border-box}
@@ -133,6 +131,10 @@ svg{width:100%;height:auto;display:block}
 input[type=search]{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);font:inherit;font-size:14px}
 input[type=search]:focus{outline:2px solid var(--accent);outline-offset:1px}
 .note{font-size:13px;color:var(--muted)}
+nav.top{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+nav.top a{font-size:12.5px;padding:6px 12px;border-radius:8px;color:var(--body);text-decoration:none}
+nav.top a:hover{background:var(--brand-soft);color:var(--ink)}
+nav.top a[aria-current="page"]{background:var(--accent);color:#fff;font-weight:600}
 .theory{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:9px;font-size:14px}
 .theory li{padding-left:4px}
 .theory li::marker{color:var(--accent);font-family:"IBM Plex Mono",monospace;font-weight:700}
@@ -158,7 +160,7 @@ HTML=f"""<meta charset="utf-8">\n<meta name="viewport" content="width=device-wid
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>{CSS}</style>
 <div class="wrap">
-<p style="margin:0"><a href="index.html" style="font-size:13px;color:var(--accent)">&larr; Back to the interactive explorer</a></p>
+<nav class="top"><a href="index.html">Your result</a><a href="landscape.html">All occupations</a><a href="policy.html">Policy</a><a href="findings.html" aria-current="page">Method</a></nav>
 <header>
   <div class="eyebrow">Subclass 189 &middot; Points-Tested Stream</div>
   <h1>Will an 85-point physicist be invited?</h1>
