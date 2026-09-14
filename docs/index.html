@@ -7,7 +7,7 @@
   --paper:#faf8f4; --card:#ffffff; --ink:#221d18; --body:#4a4238; --muted:#6e6459; --line:#e6e0d6;
   --brand:#2f6f5e; --brand-soft:#e7f0ec;
   --series:#1479a8; --series-soft:rgba(20,121,168,.12); --deemph:#cfc6b8;
-  --gold:#b97a0e; --gold-soft:#fbf1dd;
+  --gold:#b97a0e;--c3:#7d4f9c; --gold-soft:#fbf1dd;
   --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
   --good-bg:#e8f6e8; --warn-bg:#fdf3de; --crit-bg:#fbeaea;
   --grid:#ece6dc; --axis:#cfc6b8;
@@ -20,7 +20,7 @@
   --paper:#17140f; --card:#211c16; --ink:#f3efe8; --body:#d3cabd; --muted:#9c9084; --line:#302a22;
   --brand:#6fbfa3; --brand-soft:#1a2f28;
   --series:#4faed4; --series-soft:rgba(79,174,212,.18); --deemph:#3d362d;
-  --gold:#e8b341; --gold-soft:#332912;
+  --gold:#e8b341;--c3:#9d78c8; --gold-soft:#332912;
   --good:#0ca30c; --warn:#fab219; --crit:#e06b6b;
   --good-bg:#12301a; --warn-bg:#332a14; --crit-bg:#3a1f1f;
   --grid:#292319; --axis:#3d362d;
@@ -270,6 +270,20 @@ footer a{color:var(--brand)}
     <p class="takeaway" id="t4"></p>
     <div class="chartwrap"><svg id="c4" viewBox="0 0 520 220" role="img" aria-labelledby="c4t"><title id="c4t">Queue position within the unit group</title></svg></div>
     <p class="note" id="n3" hidden>Blue = people counted from the top score down. Green = invitations last round. <b>Red dot below green &rarr; they reach you.</b></p></div>
+<div class="card"><div class="chead"><h2>What the people at each score hold</h2>
+  <span class="eyebrow" id="h3n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n3c" aria-label="Explain" data-note="n3c">?</button></div>
+  <p class="takeaway" id="t3c"></p>
+  <div class="chartwrap"><svg id="c3" viewBox="0 0 560 250" role="img" aria-labelledby="c3t">
+    <title id="c3t">Share holding each points component, by score</title></svg></div>
+  <p class="note" id="n3c" hidden>For everyone waiting in your unit group, the share at each score who hold superior English (20 points), partner points (10), and an Australian study qualification. This is what the pool is made of, not advice: it shows which components are common among people scoring above you. Faint markers are scores where fewer than ten people are waiting, so the share there is noisy.</p>
+</div>
+<div class="card"><div class="chead"><h2>Your place in the queue</h2>
+  <span class="eyebrow" id="h5n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n5q" aria-label="Explain" data-note="n5q">?</button></div>
+  <p class="takeaway" id="t5q"></p>
+  <div class="chartwrap"><svg id="c5" viewBox="0 0 560 230" role="img" aria-labelledby="c5t">
+    <title id="c5t">Date-of-effect distribution within your score band</title></svg></div>
+  <p class="note" id="n5q" hidden>Within a single score band, invitations go in date-of-effect order, earliest first. The curve is the share of your band dated on or before each month. Set your date of effect above to see where you sit; without one the model assumes you are last in the band, which is the most pessimistic position.</p>
+</div>
 <div class="card"><div class="chead"><h2>Every score band</h2>
   <span class="eyebrow" id="hbn"></span><button class="q" type="button" aria-expanded="false" aria-controls="n4" aria-label="Explain" data-note="n4">?</button></div>
   <div class="lev" id="lev"></div>
@@ -478,6 +492,120 @@ function fcTable(g,pts){
       if(k===3){td.innerHTML='<span class="pill '+v.k+'">'+txt+'</span>';}
       tr.appendChild(td);});
     t.appendChild(tr);});
+}
+
+/* ---------- chart 3: what the pool's points are made of ---------- */
+const COMPS=[["eng","superior English","var(--series)"],
+             ["partner","partner points","var(--gold)"],
+             ["study","Australian study","var(--c3)"]];
+function chartComp(g,gk,pts){
+  const s=$("c3"); if(!s) return; clear(s);
+  const W=560,H=250,ML=44,MR=126,MT=20,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
+  if(!B.comp||!g){return;}
+  const scores=Object.keys(g.dist).map(Number).filter(v=>v>=B.floor).sort((a,b)=>a-b);
+  if(!scores.length) return;
+  const X=v=>ML+pw*(v-scores[0])/Math.max(1,scores[scores.length-1]-scores[0]);
+  const Y=p=>MT+ph*(1-p);
+  for(let q=0;q<=1.0001;q+=0.25){
+    s.appendChild(el("line",{x1:ML,y1:Y(q),x2:ML+pw,y2:Y(q),class:"gl"}));
+    const t=el("text",{x:ML-7,y:Y(q)+3.5,class:"tick","text-anchor":"end"});
+    t.textContent=Math.round(q*100)+"%";s.appendChild(t);}
+  scores.forEach(v=>{if(v%10===0){const t=el("text",{x:X(v),y:H-MB+16,class:"tick","text-anchor":"middle"});
+    t.textContent=v;s.appendChild(t);}});
+  if(pts>=scores[0]&&pts<=scores[scores.length-1]){
+    s.appendChild(el("line",{x1:X(pts),y1:MT,x2:X(pts),y2:MT+ph,class:"refl"}));
+    const t=el("text",{x:X(pts)+4,y:MT+11,class:"reft"});t.textContent="your "+pts;s.appendChild(t);}
+  COMPS.forEach(([key,label,col],ci)=>{
+    const src=B.comp[key]&&B.comp[key][gk]; if(!src) return;
+    let d="",lastv=null;
+    scores.forEach(v=>{const share=src[String(v)];
+      if(share===undefined) return;
+      d+=(d?"L":"M")+X(v).toFixed(1)+","+Y(share).toFixed(1)+" "; lastv=v;});
+    if(d) s.appendChild(el("path",{d:d,fill:"none",stroke:col,"stroke-width":2,
+      "stroke-linejoin":"round","stroke-linecap":"round"}));
+    scores.forEach(v=>{const share=src[String(v)]; if(share===undefined) return;
+      const n=g.dist[v]||0, thin=n<10;
+      const c=el("circle",{cx:X(v),cy:Y(share),r:thin?2.6:4.2,fill:col,
+        stroke:"var(--card)","stroke-width":1.5,opacity:thin?0.42:1});
+      s.appendChild(c);
+      hover(c,"<b>"+Math.round(share*100)+"% hold "+label+"</b><span>at "+v+" points</span>"+
+        "<span>"+fmt(n)+" waiting at this score"+(thin?" &mdash; too few to read much into":"")+"</span>");});
+    /* direct label at the right, so identity never rests on colour alone */
+    if(lastv!==null){
+      const t=el("text",{x:ML+pw+8,y:Y(src[String(lastv)])+3.5,class:"tick",
+        "text-anchor":"start",fill:col,"font-weight":"700"});
+      t.textContent=label;s.appendChild(t);}
+  });
+  axisTitle(s,W,H,MB,"points score","share of people waiting");
+}
+function compTakeaway(g,gk,pts){
+  const e=$("t3c"); if(!e) return;
+  const h=$("h3n"); if(h&&g) h.textContent=g.name;
+  if(!g||!B.comp){e.textContent="";return;}
+  const at=[],above=[];
+  COMPS.forEach(([k,label])=>{
+    const src=B.comp[k]&&B.comp[k][gk]; if(!src) return;
+    const mine=src[String(pts)];
+    let num=0,den=0;
+    Object.keys(g.dist).map(Number).filter(v=>v>pts&&src[String(v)]!==undefined)
+      .forEach(v=>{num+=src[String(v)]*g.dist[v];den+=g.dist[v];});
+    if(mine!==undefined) at.push(label+" "+Math.round(mine*100)+"%");
+    if(den>0) above.push(label+" "+Math.round(100*num/den)+"%");
+  });
+  e.textContent = at.length
+    ? "Among those already at "+pts+" points: "+at.join(", ")+"."+
+      (above.length?" Among everyone scoring above you: "+above.join(", ")+".":"")
+    : "No component breakdown published for this group.";
+}
+/* ---------- chart 5: date of effect inside your own band ---------- */
+function chartDoe(gk,pts){
+  const s=$("c5"); if(!s) return; clear(s);
+  const W=560,H=230,ML=44,MR=20,MT=22,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
+  const band=B.doe_cdf&&B.doe_cdf[gk]&&B.doe_cdf[gk][String(Math.round(pts/5)*5)];
+  const e=$("t5q");
+  if(!band||!band.length){
+    if(e) e.textContent="No date-of-effect record published for this score in this group.";
+    const q=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
+    q.textContent="No date-of-effect data at this score";s.appendChild(q);return;}
+  const M=B.doe_months, i0=band[0][0], i1=band[band.length-1][0];
+  const X=i=>ML+pw*(i-i0)/Math.max(1,i1-i0);
+  const Y=p=>MT+ph*(1-p);
+  for(let q=0;q<=1.0001;q+=0.25){
+    s.appendChild(el("line",{x1:ML,y1:Y(q),x2:ML+pw,y2:Y(q),class:"gl"}));
+    const t=el("text",{x:ML-7,y:Y(q)+3.5,class:"tick","text-anchor":"end"});
+    t.textContent=Math.round(q*100)+"%";s.appendChild(t);}
+  /* a step curve: the share dated on or before each month */
+  let d="",prev=null;
+  band.forEach(([i,c])=>{
+    if(prev===null){d="M"+X(i).toFixed(1)+","+Y(c).toFixed(1)+" ";}
+    else{d+="L"+X(i).toFixed(1)+","+Y(prev).toFixed(1)+" L"+X(i).toFixed(1)+","+Y(c).toFixed(1)+" ";}
+    prev=c;});
+  s.appendChild(el("path",{d:d,fill:"none",stroke:"var(--brand)","stroke-width":2.5}));
+  band.forEach(([i,c])=>{const cc=el("circle",{cx:X(i),cy:Y(c),r:3.6,fill:"var(--brand)",
+    stroke:"var(--card)","stroke-width":1.5});s.appendChild(cc);
+    hover(cc,"<b>"+Math.round(c*100)+"% of your band</b><span>dated on or before "+M[i]+"</span>");});
+  /* the outer labels anchor inward: centred, a 7-character month runs past the edge */
+  [[i0,"start"],[Math.round((i0+i1)/2),"middle"],[i1,"end"]].forEach(([i,a])=>{
+    if(i<i0||i>i1) return;
+    const t=el("text",{x:X(i),y:H-MB+16,class:"tick","text-anchor":a});
+    t.textContent=M[i];s.appendChild(t);});
+  const sh=aheadShare(gk,pts);
+  if(S.doe!==null&&sh!==null){
+    const idx=M.indexOf(S.doe);
+    if(idx>=0){
+      s.appendChild(el("line",{x1:X(idx),y1:MT,x2:X(idx),y2:MT+ph,class:"refl"}));
+      const t=el("text",{x:X(idx)+4,y:MT+11,class:"reft"});t.textContent="you";s.appendChild(t);}
+  }
+  if(e){
+    e.textContent = S.doe===null
+      ? "No date given, so the model places you last in the "+(Math.round(pts/5)*5)+
+        "-point band — the most pessimistic position. Set a date of effect above to see your real place."
+      : Math.round((sh||0)*100)+"% of the "+(Math.round(pts/5)*5)+"-point band is dated ahead of you, so if the cut-off lands on your band you reach the front of it "+
+        Math.round((1-(sh||0))*100)+"% of the time.";}
+  const h=$("h5n"); if(h) h.textContent=(Math.round(pts/5)*5)+"-point band";
+  axisTitle(s,W,H,MB,"date of effect","share of the band dated by then");
 }
 /* ---------- chart 1: cut-off by round ---------- */
 function chartRounds(o,pts){
@@ -1018,6 +1146,7 @@ function render(){
   const P=pMarginal(g,pts,o.g), Pc=pClear(fc,pts), bb=pBand(fc);
   chartProb(g,pts);probTakeaway(g,pts);moveStrip();
   chartForecast(g,pts);fcTable(g,pts);fcTakeaway(g,pts,fc,bb);
+  chartComp(g,o.g,pts);compTakeaway(g,o.g,pts);chartDoe(o.g,pts);
   const band = P===null?null:(P>=.8?"good":P>=.6?"good":P>=.4?"warn":"crit");
   if($("flag")){$("flag").className="vflag "+(band||"crit");}
   if($("flag"))$("flag").textContent = P===null ? "✕ No forecast"

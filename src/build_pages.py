@@ -50,7 +50,9 @@ def pick(*titles):
 PAGES={
  "index.html":   dict(title="Will you be invited? · SkillSelect 189",
                       parts=[filters,verdict]+pick("Your chance vs round size","Forecast cut-off by round size",
-                       "Past rounds","Who is ahead","Every score band",
+                       "Past rounds","Who is ahead",
+                       "What the people at each score hold","Your place in the queue",
+                       "Every score band",
                        "This occupation, round by round")),
  "landscape.html":dict(title="All occupations · SkillSelect 189",
                       parts=[filters]+pick("All occupations &times; all rounds","Competition drives the score",

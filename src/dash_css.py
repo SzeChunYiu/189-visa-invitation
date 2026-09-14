@@ -3,7 +3,7 @@ CSS = """
   --paper:#faf8f4; --card:#ffffff; --ink:#221d18; --body:#4a4238; --muted:#6e6459; --line:#e6e0d6;
   --brand:#2f6f5e; --brand-soft:#e7f0ec;
   --series:#1479a8; --series-soft:rgba(20,121,168,.12); --deemph:#cfc6b8;
-  --gold:#b97a0e; --gold-soft:#fbf1dd;
+  --gold:#b97a0e;--c3:#7d4f9c; --gold-soft:#fbf1dd;
   --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
   --good-bg:#e8f6e8; --warn-bg:#fdf3de; --crit-bg:#fbeaea;
   --grid:#ece6dc; --axis:#cfc6b8;
@@ -16,7 +16,7 @@ CSS = """
   --paper:#17140f; --card:#211c16; --ink:#f3efe8; --body:#d3cabd; --muted:#9c9084; --line:#302a22;
   --brand:#6fbfa3; --brand-soft:#1a2f28;
   --series:#4faed4; --series-soft:rgba(79,174,212,.18); --deemph:#3d362d;
-  --gold:#e8b341; --gold-soft:#332912;
+  --gold:#e8b341;--c3:#9d78c8; --gold-soft:#332912;
   --good:#0ca30c; --warn:#fab219; --crit:#e06b6b;
   --good-bg:#12301a; --warn-bg:#332a14; --crit-bg:#3a1f1f;
   --grid:#292319; --axis:#3d362d;
