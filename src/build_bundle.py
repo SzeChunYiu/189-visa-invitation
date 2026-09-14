@@ -75,7 +75,24 @@ for (g,sc),z in doe.groupby(["G","Score"]):
     c=(z.cumsum()/tot)
     cdf.setdefault(g,{})[int(sc)]=[[MIDX[m],round(float(v),4)] for m,v in c.items()]
 
-bundle=dict(doe_months=MONTHS,doe_cdf=cdf,rounds=ROUNDS,sizes=SIZES,floor=FLOOR,groups=groups,occ=occ,policy=pol,unc=unc,rs=rs,
+# ---- what the competition's points are actually made of, per (group, score):
+# share holding the TOP level of each earnable component. Three numbers per cell, not a full cross-tab.
+def share_of(fn,col,top):
+    d=num(pd.read_csv(fn)); d["n"]=d.n.fillna(0)
+    d["G"]=d.OccGroup.astype(str).str[:4]
+    d[col]=d[col].astype(str)
+    out={}
+    for (g,sc),z in d.groupby(["G","Score"]):
+        tot=z.n.sum()
+        if tot<=0: continue
+        hit=z[z[col].isin(top)].n.sum()
+        out.setdefault(g,{})[int(sc)]=round(float(hit/tot),3)
+    return out
+comp=dict(eng=share_of("atoms_eng.csv","Eng",["20"]),
+          partner=share_of("atoms_partner.csv","Partner",["10"]),
+          study=share_of("atoms_study.csv","AusStudy",["Y"]))
+
+bundle=dict(doe_months=MONTHS,doe_cdf=cdf,comp=comp,rounds=ROUNDS,sizes=SIZES,floor=FLOOR,groups=groups,occ=occ,policy=pol,unc=unc,rs=rs,
   meta=dict(fr=round(FR,6),round_min=6450,round_max=14724,oos_mae=val["oos"]["mae"],oos_within5=val["oos"]["within5"],oos_bias=val["oos"]["bias"],
             mech_exact=val["mech"]["exact"],cal_exact=round(cal["exact"]/cal["n"],3),cal_n=cal["n"],
             official_total=cal["official_total"],mobility=mob["pct_changed"],alloc_r=gate["pooled_r"],
