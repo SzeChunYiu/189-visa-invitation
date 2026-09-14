@@ -18,6 +18,8 @@ _pl=_pl[_pl.OccGroup=="2349 Other Natural and Physical Science Professionals"]
 POOL=[int(_pl[(_pl.AsAt==PRIOR[r])&(_pl.Score>=85)].n.sum()) for r in ROUNDS]  # all-leg, matches ALLOC basis
 gm=json.load(open(D/"global_model.json")); fw=json.load(open(D/"forward_model.json"))
 cal=json.load(open(D/"calibration_official.json"))
+val=json.load(open(D/"validation_singleleg.json"))
+gate=json.load(open(D/"alloc_gate.json"))
 mob=json.load(open(D/"mobility.json"))
 calrows=pd.read_csv(D/"calibration_official.csv")
 SEP=fw["rank_by_date"]["by 30 Sep 2026"]; DEC=fw["rank_by_date"]["by 31 Dec 2026"]
@@ -260,18 +262,46 @@ HTML=f"""<title>189 Invitation Odds</title>
 </section>
 
 <section>
-  <h2>Why trust the mechanism: it predicts other occupations out of sample</h2>
-  <p class="sub">Take each occupation's standing pool and its allocation, walk down the points order, and read off where
-  the invitations run out. Tested against every occupation receiving 5+ invitations in Jun-2026 &mdash; a round the rule
-  was not fitted to.</p>
-  <div class="panel"><div class="statrow">
-    <div class="stat"><span class="sv">49</span><span class="sl">occupations tested</span></div>
-    <div class="stat"><span class="sv">100%</span><span class="sl">within &plusmn;5 points</span></div>
-    <div class="stat"><span class="sv">43%</span><span class="sl">exactly right</span></div>
-    <div class="stat"><span class="sv">0.94</span><span class="sl">correlation r</span></div>
-    <div class="stat"><span class="sv">+2.9</span><span class="sl">bias, pts (conservative)</span></div>
+  <h2>Tested on every occupation, in every round</h2>
+  <p class="sub">The same model run for all 82 unit groups across all five rounds &mdash; 315 group-rounds &mdash;
+  rather than the single round it was first checked on. Predict each group's cut-off by walking its pool from
+  the top until its allocation runs out, then compare with what the round actually did.</p>
+  <div class="panel scroll"><table>
+    <thead><tr><th>Round</th><th>Panel coverage</th><th>Groups</th><th>Exact</th><th>Within &plusmn;5</th><th>MAE (pts)</th></tr></thead>
+    <tbody>
+      <tr><td class="rd">Sep 2024</td><td class="n dim">12%</td><td class="n">63</td><td class="n"><span class="pill no">13%</span></td><td class="n">38%</td><td class="n">9.92</td></tr>
+      <tr><td class="rd">Nov 2024</td><td class="n dim">20%</td><td class="n">73</td><td class="n"><span class="pill no">15%</span></td><td class="n">45%</td><td class="n">8.70</td></tr>
+      <tr><td class="rd">Aug 2025</td><td class="n dim">69%</td><td class="n">56</td><td class="n"><span class="pill ok">88%</span></td><td class="n">96%</td><td class="n">0.80</td></tr>
+      <tr><td class="rd">Nov 2025</td><td class="n dim">81%</td><td class="n">61</td><td class="n"><span class="pill ok">75%</span></td><td class="n">100%</td><td class="n">1.23</td></tr>
+      <tr><td class="rd">Jun 2026</td><td class="n dim">98%</td><td class="n">62</td><td class="n"><span class="pill ok">85%</span></td><td class="n">98%</td><td class="n">0.81</td></tr>
+    </tbody></table></div>
+  <p class="note"><b>The model is not uniformly good, and the pattern is the point.</b> Accuracy tracks how complete
+  the panel was: correlation between panel coverage and error is <b>&minus;0.962</b>. Where the panel is complete the
+  model is <b>83% exact with a mean error of 0.95 points</b>; on the two 2024 rounds, when the dashboard had captured
+  only 12&ndash;20% of the eventual pool, it drops to 14%. The 2024 errors are all negative &mdash; with the pool
+  understated the top-down walk runs out of people too early and dives too deep, which is exactly what
+  under-coverage produces.</p>
+  <div class="panel" style="margin-top:6px"><div class="statrow">
+    <div class="stat"><span class="sv">{val['oos']['n']}</span><span class="sl">group-rounds tested out of sample</span></div>
+    <div class="stat"><span class="sv">91%</span><span class="sl">within &plusmn;5 pts, latest fold</span></div>
+    <div class="stat"><span class="sv">3.84</span><span class="sl">MAE, latest fold</span></div>
+    <div class="stat"><span class="sv">1.1</span><span class="sl">pts &mdash; cost of forecasting allocation</span></div>
+    <div class="stat"><span class="sv">{gate['pooled_r']}</span><span class="sl">allocation autocorrelation</span></div>
   </div></div>
-  <p class="note">The bias is positive: real rounds go <i>deeper</i> than the rule predicts, so applying it to your case understates your odds.</p>
+  <p class="note">Out-of-sample means the allocation is forecast from the previous round only, with round size taken
+  as given. The gap between knowing the allocation (MAE 4.54) and forecasting it (5.64) is just 1.1 points &mdash; the
+  ranking rule is the reliable part; the allocation is the uncertain input.</p>
+  <div class="findings" style="margin-top:14px">
+    <div class="find"><h3>A correction to an earlier figure on this page</h3>
+    <p>The first version reported &ldquo;49 of 49 occupations within &plusmn;5 points&rdquo;. That compared single-leg
+    invitations against an all-leg pool. On a consistent all-leg basis the model collapses, because the all-leg
+    minimum invited score is dragged down <b>7.3 points</b> on average (11.3 in large groups) by EOIs invited for
+    190/491. Everything above is on a consistent <b>single-leg</b> basis, the one that matched the official table.</p></div>
+    <div class="find"><h3>Two caveats about this particular occupation</h3>
+    <p>2349's allocation series is monotone increasing, but only <b>18% of groups</b> are &mdash; it is unusual, so
+    don't read the trend as typical. And its clean-step boundary is significantly associated with having a small pool
+    (p&nbsp;&lt;&nbsp;0.0001), so that favourable property is partly a small-numbers artefact.</p></div>
+  </div>
 </section>
 
 <section>
@@ -351,10 +381,10 @@ HTML=f"""<title>189 Invitation Odds</title>
   <div class="panel">
     <div class="ctl">
       <input type="search" id="q" style="flex:1;min-width:220px" placeholder="Search 181 occupations — try 'physicist', '2613', 'nurse'" aria-label="Search occupations">
-      <label for="pts">Your points</label><input type="number" id="pts" value="85" min="0" max="180" step="5" aria-label="Your points score">
+      <label for="pts">Your points</label><input type="number" id="pts" value="85" min="0" max="180" step="5" aria-label="Your points score"><label for="sz">Next round size</label><select id="sz" aria-label="Assumed size of the next round"><option value="0">5,000</option><option value="1">7,500</option><option value="2" selected>10,000</option><option value="3">12,500</option><option value="4">15,000</option></select>
     </div>
     <div class="scroll" style="margin-top:14px;max-height:440px;overflow-y:auto"><table id="t">
-      <thead><tr><th>Occupation</th>{''.join(f'<th>{LBL[r]}</th>' for r in ROUNDS)}<th>Pool @85</th><th>Pool &gt;85</th></tr></thead>
+      <thead><tr><th>Occupation</th>{''.join(f'<th>{LBL[r]}</th>' for r in ROUNDS)}<th>Next round</th><th>Pool @85</th><th>Pool &gt;85</th></tr></thead>
       <tbody></tbody></table></div>
   </div>
 </section>
@@ -387,7 +417,7 @@ HTML=f"""<title>189 Invitation Odds</title>
 <script>
 const D={DATA},R={json.dumps(ROUNDS)};
 const tb=document.querySelector("#t tbody"),q=document.getElementById("q"),pts=document.getElementById("pts");
-let PTS=85;
+let PTS=85, SZ=2;
 function cell(c){{
   if(!c) return "<td class='n dim'>&mdash;</td>";
   const [cleared,boundary,state,n]=c;
@@ -397,12 +427,19 @@ function cell(c){{
   else {{k="no";lab="out";}}
   const shown = (cleared!==null && PTS>=cleared) ? cleared : boundary;
   return `<td class='n'><span class='pill ${{k}}' title='lowest fully cleared ${{cleared===null?"none":cleared}}, boundary ${{boundary}} (${{state==="C"?"cleared":"rationed"}}), ${{n}} invited'>${{shown}}</span><span class='dim' style='font-size:11px'> ${{lab}}</span></td>`;}}
+function fcell(r){{
+  const v=r.f&&r.f[SZ];
+  if(v===null||v===undefined) return "<td class='n dim' title='no invitation last round, so no share to forecast from'>&mdash;</td>";
+  const k = PTS>v?"ok" : (PTS===v?"mid":"no");
+  const lab = PTS>v?"in" : (PTS===v?"edge":"out");
+  return `<td class='n'><span class='pill ${{k}}'>${{v}}</span><span class='dim' style='font-size:11px'> ${{lab}}</span></td>`;}}
 function render(f){{
   tb.innerHTML=D.filter(r=>r.o.toLowerCase().includes(f)).map(r=>
-    `<tr><td class='rd'>${{r.o}}</td>${{R.map(k=>cell(r[k])).join("")}}<td class='n'>${{r.p85}}</td><td class='n'>${{r.pg}}</td></tr>`).join("")
-    || "<tr><td colspan='8' class='dim' style='padding:18px'>No occupation matches that search.</td></tr>";}}
+    `<tr><td class='rd'>${{r.o}}</td>${{R.map(k=>cell(r[k])).join("")}}${{fcell(r)}}<td class='n'>${{r.p85}}</td><td class='n'>${{r.pg}}</td></tr>`).join("")
+    || "<tr><td colspan='9' class='dim' style='padding:18px'>No occupation matches that search.</td></tr>";}}
 q.addEventListener("input",e=>render(e.target.value.toLowerCase().trim()));
 pts.addEventListener("input",e=>{{PTS=+e.target.value||0;render(q.value.toLowerCase().trim());}});
+document.getElementById("sz").addEventListener("change",e=>{{SZ=+e.target.value;render(q.value.toLowerCase().trim());}});
 q.value="physicist";render("physicist");
 </script>"""
 OUT.parent.mkdir(exist_ok=True); OUT.write_text(HTML)

@@ -17,6 +17,7 @@ built from the complete 24-month panel behind the public SkillSelect EOI dashboa
 | [docs/METHODOLOGY.md](docs/METHODOLOGY.md) | The three data traps and how each was defeated |
 | [docs/MODEL.md](docs/MODEL.md) | Model spec, assumptions, and what it cannot do |
 | [docs/VALIDATION.md](docs/VALIDATION.md) | External + internal validation, and open questions |
+| [docs/CONSISTENCY.md](docs/CONSISTENCY.md) | The model run on every occupation in every round |
 | [docs/DATA.md](docs/DATA.md) | Source, field dictionary, extraction inventory |
 
 ## Headline results
@@ -51,12 +52,18 @@ P(invited | a round is held) = **40–77%**, stable across round timing. Only th
 has ever received (43, 87) clear rank 32; the three smaller ones (5, 21, 29) do not. The binding uncertainty is
 round *occurrence* and *size*; the downside risk is a policy cut to this stratum, not the applicant's score.
 
-**7. Nearly half the pool re-scores.** 47.3% of 189 EOIs changed score over their life (mean +8.0 points), and
+**8. Nearly half the pool re-scores.** 47.3% of 189 EOIs changed score over their life (mean +8.0 points), and
 43% of everyone now at 85+ acquired those points within six months. A points change **resets the date of effect**,
 so upgraders join the back of their new band — which is why a lodged position stops eroding. All 31 EOIs ahead in
 2349 were verified to hold a date of effect before 10 Sep 2026.
 
-**6. Validated against the official round results.** Derived per-occupation cut-offs match the Department's
+**6. Consistent across occupations and time — where the panel is complete.** Run on all 82 unit groups in all
+five rounds (315 group-rounds), the mechanism is **83% exact with MAE 0.95 points** on the three rounds with
+adequate panel coverage, and fails on the two 2024 rounds when only 12–20% of the eventual pool had been
+captured. Correlation between panel coverage and error: **−0.962**. Out of sample (allocation forecast from the
+prior round): **91% within ±5 points, MAE 3.84** on the latest fold. See [CONSISTENCY.md](docs/CONSISTENCY.md).
+
+**7. Validated against the official round results.** Derived per-occupation cut-offs match the Department's
 published 4 June 2026 table on **112 of 124 occupations exactly (90.3%)**, 99.2% within ±5 points, r = 0.9755.
 Physicist: derived 80, official 80. Every disagreement is positive, so the method cannot overstate a
 candidate's odds. Round size: 9,761 derived vs 10,000 official (2.4%). See [VALIDATION.md](docs/VALIDATION.md).
@@ -68,7 +75,8 @@ pip install -r requirements.txt
 python src/step3_core.py && python src/step4.py && python src/step5_occ.py && python src/step6.py
 python src/model.py && python src/model2.py && python src/cutoff_table.py
 python src/global_model.py && python src/calibrate_official.py && python src/forward_model.py
-python src/saturation_model.py && python src/build_database.py
+python src/saturation_model.py && python src/alloc_all.py && python src/universal_validation.py
+python src/forecast_all.py && python src/build_database.py
 python src/build_dashboard.py
 ```
 
@@ -91,6 +99,9 @@ Every hypercube asserts `fetched rows == qSize.qcy`, so silent truncation fails 
 | `src/step10_saturation.py` | Newest/oldest submission date per cell, for the saturation test |
 | `src/saturation_model.py` | Resolves every cell into CLEARED / PARTIAL / UNTOUCHED |
 | `src/build_database.py` | Builds the coherent per-occupation database |
+| `src/alloc_all.py` | Per-group allocation series + the forecastability gate |
+| `src/universal_validation.py` | The model run on every group in every round |
+| `src/forecast_all.py` | Per-occupation forecast cut-off by round size |
 | `src/step11_dateofeffect.py` | Probes the SCD interval columns for the true date of effect |
 | `src/step13_mobility.py` / `mobility_model.py` | Points-upgrade rates and their effect on queue position |
 

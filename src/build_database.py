@@ -53,6 +53,11 @@ for occ,g in db.groupby("occupation"):
     lp=latest[latest.Occupation==occ]
     r["pool"]=int(lp.n.sum()); r["p85"]=int(lp[lp.Score==85].n.sum()); r["pg"]=int(lp[lp.Score>85].n.sum())
     wide.append(r)
+fc=pd.read_csv("forecast_by_occupation.csv"); fc["g"]=fc.g.astype(str).str.zfill(4)
+SIZES=[5000,7500,10000,12500,15000]
+fmap={r.g:[None if pd.isna(r[f"s{S}"]) else int(r[f"s{S}"]) for S in SIZES] for _,r in fc.iterrows()}
+for r in wide:
+    r["f"]=fmap.get(str(r["o"])[:4])
 json.dump(wide,open("occupation_database.json","w"),separators=(",",":"))
 print(f"\n-> occupation_database.csv ({len(db)} rows) and .json ({len(wide)} occupations) written")
 print("\nlegend: [lowest_fully_cleared_score, boundary_score, C|P|U, invited_n]")
