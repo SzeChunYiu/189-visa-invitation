@@ -13,12 +13,22 @@ WORKED_HTML = r"""
       <input id="wpts" type="number" min="65" max="100" step="5" value="85" style="min-width:92px"></div>
     <div><label for="wdoe">Date of effect</label>
       <select id="wdoe"><option value="">not given — assume last in band</option></select></div>
+    <div class="wkbtns">
+      <button id="wgo" class="primary" type="button">Recalculate</button>
+      <button id="wadd" type="button">Add to comparison</button>
+    </div>
   </div>
   <p class="note" style="margin:2px 0 0;font-size:12px;color:var(--muted)">
     Every number below is recomputed by the same functions the result page runs.</p>
 </div>
 <div id="wsteps"></div>
 <div class="wkout" id="wres"></div>
+<section id="cmpwrap" hidden>
+  <h2 class="cmph">Comparison</h2>
+  <div class="tablewrap"><table class="cmp" id="cmptab"></table></div>
+  <p class="note" style="font-size:12.5px;color:var(--muted);margin:8px 0 0">
+    Rows are kept in this browser only. <button id="cmpclear" class="linkish" type="button">Clear all</button></p>
+</section>
 """
 
 WORKED_JS = r"""
@@ -132,6 +142,60 @@ WORKED_JS = r"""
   }
   ["wocc","wpts","wdoe"].forEach(function(i){
     var e=$w(i); if(e){e.addEventListener("input",run); e.addEventListener("change",run);}});
-  run();
+  /* the panel already recalculates as you type; the button is the explicit affordance,
+     and it is what a keyboard user reaches for after typing an occupation name */
+  var go=$w("wgo"); if(go) go.addEventListener("click",function(){run();
+    $w("wsteps").scrollIntoView({behavior:"smooth",block:"start"});});
+  ["wocc","wpts"].forEach(function(i){var e=$w(i); if(e) e.addEventListener("keydown",function(ev){
+    if(ev.key==="Enter"){ev.preventDefault();run();}});});
+
+  /* ---- comparison: several cases side by side ---- */
+  var CK="sk189-cmp";
+  function load(){try{return JSON.parse(localStorage.getItem(CK)||"[]")}catch(e){return []}}
+  function save(v){try{localStorage.setItem(CK,JSON.stringify(v))}catch(e){}}
+  function cell(tr,txt,cls){var td=document.createElement("td");
+    if(cls)td.className=cls; td.innerHTML=txt; tr.appendChild(td); return td;}
+  function drawCmp(){
+    var rows=load(), wrap=$w("cmpwrap"), t=$w("cmptab");
+    if(!wrap||!t) return;
+    wrap.hidden=rows.length===0; t.innerHTML="";
+    if(!rows.length) return;
+    var hd=document.createElement("tr");
+    ["Occupation","Points","Date of effect","Forecast cut-off","Chance",""].forEach(function(h){
+      var th=document.createElement("th"); th.textContent=h; hd.appendChild(th);});
+    t.appendChild(hd);
+    rows.forEach(function(r,i){
+      var o=B.occ[r.occ]; if(!o) return;
+      var g=B.groups[o.g];
+      var keep={occ:S.occ,pts:S.pts,doe:S.doe,cur:CURG};
+      S.occ=r.occ; S.pts=r.pts; S.doe=r.doe||null; CURG=o.g;
+      var fc=g?g.fc[2]:null, P=pMarginal(g,r.pts,o.g);
+      S.occ=keep.occ; S.pts=keep.pts; S.doe=keep.doe; CURG=keep.cur;
+      var tr=document.createElement("tr");
+      cell(tr,r.occ);
+      cell(tr,r.pts,"n");
+      cell(tr,r.doe||"<span style=\"color:var(--muted)\">last in band</span>");
+      cell(tr,fc===null?"—":fc+" pts","n");
+      cell(tr,P===null?"—":"<b>"+Math.round(P*100)+"%</b>","n");
+      var td=cell(tr,'<button class="linkish" data-rm="'+i+'" aria-label="Remove row">remove</button>');
+      t.appendChild(tr);
+    });
+    t.querySelectorAll("[data-rm]").forEach(function(b){
+      b.addEventListener("click",function(){
+        var v=load(); v.splice(+b.dataset.rm,1); save(v); drawCmp();});});
+  }
+  var add=$w("wadd");
+  if(add) add.addEventListener("click",function(){
+    var v=load(), key=$w("wocc").value, pts=Math.round((+$w("wpts").value||65)/5)*5,
+        doe=$w("wdoe").value||null;
+    if(!B.occ[key]) return;
+    if(!v.some(function(r){return r.occ===key&&r.pts===pts&&(r.doe||null)===doe;}))
+      v.push({occ:key,pts:pts,doe:doe});
+    save(v); drawCmp();
+    $w("cmpwrap").scrollIntoView({behavior:"smooth",block:"nearest"});});
+  var clr=$w("cmpclear");
+  if(clr) clr.addEventListener("click",function(){save([]); drawCmp();});
+
+  run(); drawCmp();
 })();
 """

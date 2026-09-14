@@ -53,6 +53,20 @@ figcaption b{color:var(--ink);font-weight:700}
 /* worked example */
 .wk{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px;margin:22px 0}
 .wkin{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px}
+.wkbtns{display:flex;gap:8px;align-items:flex-end;margin-left:auto}
+.wkbtns button{font:inherit;font-size:13px;padding:8px 14px;border-radius:9px;cursor:pointer;
+  border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.wkbtns button:hover{background:var(--brand-soft);border-color:var(--brand)}
+.wkbtns button.primary{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.wkbtns button.primary:hover{filter:brightness(1.08)}
+.wkbtns button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.linkish{background:none;border:0;padding:0;font:inherit;font-size:12.5px;color:var(--brand);
+  text-decoration:underline;cursor:pointer}
+.cmph{font-size:15px;margin:30px 0 10px;letter-spacing:-.005em}
+table.cmp{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
+table.cmp th,table.cmp td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+table.cmp th{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+table.cmp td.n{text-align:right;font-variant-numeric:tabular-nums}
 .wkin label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}
 .wkin input,.wkin select{font:inherit;font-size:13.5px;padding:7px 9px;border:1px solid var(--line);
   border-radius:9px;background:var(--paper);color:var(--ink);min-width:150px}
