@@ -36,7 +36,7 @@ header{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;
   border-bottom:1px solid var(--line);padding-bottom:16px}
 header a{color:var(--brand);font-size:13px}
 /* ---- filter row: one row above everything ---- */
-.filters{display:grid;grid-template-columns:minmax(260px,2.2fr) minmax(110px,.7fr) minmax(150px,1fr);
+.filters{display:grid;grid-template-columns:minmax(220px,2fr) minmax(110px,.7fr) minmax(150px,1fr) minmax(120px,.8fr);
   gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
 @media(max-width:760px){.filters{grid-template-columns:1fr}}
 .f label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600}
@@ -52,6 +52,10 @@ select:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-ra
 /* each control sits between two steppers, so it can be walked as well as typed into */
 .ctl{display:flex;align-items:stretch;gap:6px}
 .ctl input,.ctl select{flex:1 1 auto;min-width:0}
+.dlbtn{width:100%;font:inherit;font-size:12.5px;padding:9px 11px;cursor:pointer;
+  border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--body)}
+.dlbtn:hover{background:var(--brand-soft);color:var(--ink);border-color:var(--brand)}
+.dlbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .stepbtn{flex:0 0 auto;width:34px;display:grid;place-items:center;cursor:pointer;
   border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--body);
   font:inherit;font-size:16px;line-height:1;padding:0;
@@ -101,6 +105,13 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .tlab{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.35}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 17px 12px;box-shadow:var(--shadow)}
+@media (max-width:640px){
+  .chead{flex-wrap:wrap;row-gap:4px}
+  .chead h2{flex:1 1 auto;min-width:0}
+  .chead .eyebrow{order:4;flex:1 0 100%;text-align:left}
+  .stepbadge{order:1}
+  .q{order:3;margin-left:auto}
+}
 .stepbadge{display:inline-flex;flex-direction:column;gap:0;line-height:1.1;margin-right:10px;
   padding:3px 9px 4px;border-radius:7px;background:var(--brand-soft);flex:0 0 auto}
 .stepbadge>i{font-style:normal;font-size:9.5px;color:var(--muted);letter-spacing:.02em}

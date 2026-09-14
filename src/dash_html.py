@@ -31,6 +31,8 @@ HTML = r"""<meta charset="utf-8">
       <button class="stepbtn" id="ptsup" type="button" aria-label="Five points higher">&#43;</button>
     </div>
   </div>
+  <div class="f dlwrap"><label for="dl">Data</label>
+    <button id="dl" class="dlbtn" type="button">Download CSV</button></div>
   <div class="f"><label for="doe">EOI date <span style="opacity:.7">(optional)</span></label>
     <div class="ctl">
       <button class="stepbtn" id="doedn" type="button" aria-label="Earlier month">&#8249;</button>
@@ -80,6 +82,18 @@ HTML = r"""<meta charset="utf-8">
     <li><b>Bars</b> — invitations per 1,000 people waiting, by priority tier</li>
     <li><b>Your tier</b> — filled; the others faint</li>
     <li>Whether a group was invited last round predicts this better than its tier does, so the model uses that; the tier is why</li>
+  </ul></div>
+</div>
+<div class="card" id="nofc" hidden><div class="chead"><span class="stepbadge">Why<i>no forecast for this group</i></span><h2>What happened to this occupation</h2>
+  <span class="eyebrow" id="h14n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n14" aria-label="Explain" data-note="n14">?</button></div>
+  <p class="takeaway" id="t14"></p>
+  <div class="chartwrap"><svg id="c14" viewBox="0 0 560 190" role="img" aria-labelledby="c14t">
+    <title id="c14t">Invitations to this unit group, round by round</title></svg></div>
+  <div class="note" id="n14" hidden><ul class="ptlist">
+    <li><b>Bars</b> — invitations this unit group received in each round</li>
+    <li>A group with none in the most recent round has no share to carry forward, so equation 1 gives nothing to forecast</li>
+    <li>This is the largest single fact about such an occupation, and it is a policy decision rather than a shortage of candidates</li>
+    <li>The <a href="policy.html">Policy page</a> lists every group this happened to; <a href="findings.html#zero">chapter 8</a> tests why</li>
   </ul></div>
 </div>
 <div class="card"><div class="chead"><span class="stepbadge">Step 1<i>how big is the next round</i></span><h2>Invitations in the next round</h2>
@@ -186,9 +200,7 @@ HTML = r"""<meta charset="utf-8">
 <div class="card"><div class="chead"><h2>All occupations at your score</h2>
   <span style="display:flex;gap:12px;align-items:center">
     <span class="eyebrow" id="allN"></span>
-    <button id="dl" style="font:inherit;font-size:11.5px;padding:5px 10px;border:1px solid var(--line);
-      border-radius:7px;background:var(--paper);color:var(--brand);cursor:pointer">Download CSV</button>
-  </span><button class="q" type="button" aria-expanded="false" aria-controls="n9" aria-label="Explain" data-note="n9">?</button></div>
+    </span><button class="q" type="button" aria-expanded="false" aria-controls="n9" aria-label="Explain" data-note="n9">?</button></div>
   <div class="scroll" style="max-height:420px;overflow-y:auto"><table id="at"><thead><tr><th>Occupation</th>
     <th>Pool</th><th>At your score</th><th>Sep 24</th><th>Nov 24</th><th>Aug 25</th><th>Nov 25</th><th>Jun 26</th>
     <th>Forecast</th></tr></thead><tbody></tbody></table></div>
@@ -235,6 +247,13 @@ const NS="http://www.w3.org/2000/svg";
 function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
 function clear(s){while(s.childNodes.length>1)s.removeChild(s.lastChild);}
 /* the code that draws owns the viewBox: a static one in the markup silently clips */
+function noFc(s,W,H,line){
+  const t=el("text",{x:W/2,y:H/2-6,class:"tick","text-anchor":"middle","font-weight":"700",
+    fill:"var(--ink)"});
+  t.textContent="No forecast for this group";s.appendChild(t);
+  const t2=el("text",{x:W/2,y:H/2+10,class:"tick","text-anchor":"middle"});
+  t2.textContent=line||"it received no invitations in the most recent round";s.appendChild(t2);
+}
 function frame(s,W,H){s.setAttribute("viewBox","0 0 "+W+" "+H);}
 /* One legend beats an annotation beside every layer. kind: line | dash | band | dot */
 function legend(s,x,y,items,gap){
@@ -279,8 +298,7 @@ function chartForecast(g,pts){
   frame(s,W,H);
   if(!g||g.share<=0){
     const q=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
-    q.textContent="No forecast: this group took no invitations last round";
-    s.appendChild(q); return;}
+    noFc(s,W,H,"the cut-off cannot be projected without a share");return;}
   const grid=B.rs.grid, lo=B.floor, hi=100;
   const X=N=>ML+pw*(N-grid[0])/(grid[grid.length-1]-grid[0]);
   const Y=v=>MT+ph*(1-(v-lo)/(hi-lo));
@@ -445,7 +463,7 @@ function chartWaterfall(g,gk,pts){
      is now inside every bar. */
   const W=560,H=236,ML=20,MR=20,MT=54,MB=64,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
-  if(!g||g.share<=0) return;
+  if(!g||g.share<=0){noFc(s,W,H,"there is no share to deduct from");return;}
   const res=B.unc.residuals;
   const sh=aheadShare(gk,pts), reach=(sh===null?0:Math.max(0,1-sh));
   const reaches=spread(sz=>{const c=cutoffAt(g,sz); return c===null?null:pLE(c,pts);});
@@ -652,7 +670,7 @@ function chartJoint(g,gk,pts){
   const s=$("c13"); if(!s) return; clear(s);
   const W=560,H=336,ML=44,MR=92,MT=58,MB=52,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
-  if(!g||g.share<=0) return;
+  if(!g||g.share<=0){noFc(s,W,H,"every cell here would be empty");return;}
   const sizes=[], dens=[];
   for(let k=0;k<B.rs.grid.length;k+=3){sizes.push(B.rs.grid[k]);dens.push(B.rs.dens[k]);}
   const scores=[]; for(let v=100;v>=B.floor;v-=5) scores.push(v);
@@ -719,6 +737,47 @@ function chartJoint(g,gk,pts){
     t.textContent=fmt(N);s.appendChild(t);}});
   const h=$("h13n"); if(h) h.textContent=g.name;
   axisTitle(s,W,H,MB,"invitations in the round","your points");
+}
+
+/* ---------- chart 14: why this group has no forecast ---------- */
+function chartNoFc(o,g,gk,pts){
+  const card=$("nofc"); if(!card) return;
+  const none=!g||g.share<=0;
+  card.hidden=!none;
+  if(none===false) return;
+  const s=$("c14"); if(!s) return; clear(s);
+  const W=560,H=190,ML=40,MR=20,MT=26,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  frame(s,W,H);
+  if(!g) {noFc(s,W,H,"this occupation has no unit-group record at all");return;}
+  const al=g.alloc, mx=Math.max(1,...al), bw=pw/al.length;
+  for(const t of [0,mx/2,mx]){
+    s.appendChild(el("line",{x1:ML,y1:MT+ph*(1-t/mx),x2:ML+pw,y2:MT+ph*(1-t/mx),class:"gl"}));
+    const q=el("text",{x:ML-7,y:MT+ph*(1-t/mx)+3.5,class:"tick","text-anchor":"end"});
+    q.textContent=fmt(Math.round(t));s.appendChild(q);}
+  al.forEach((v,i)=>{
+    const x=ML+i*bw+bw*0.22, wd=bw*0.56, hh=ph*v/mx;
+    const r=el("rect",{x:x,y:MT+ph-hh,width:wd,height:Math.max(v?2:0,hh),rx:4,
+      fill:v>0?"var(--brand)":"var(--crit)","fill-opacity":v>0?0.85:0.25});
+    s.appendChild(r);
+    hover(r,"<b>"+fmt(v)+" invitation"+(v===1?"":"s")+"</b><span>"+RL[B.rounds[i]]+"</span>");
+    const t=el("text",{x:x+wd/2,y:MT+ph-hh-6,class:"vlab","text-anchor":"middle",
+      fill:v>0?"var(--ink)":"var(--crit)"});
+    t.textContent=fmt(v);s.appendChild(t);
+    const l=el("text",{x:x+wd/2,y:H-MB+16,class:"tick","text-anchor":"middle"});
+    l.textContent=RL[B.rounds[i]];s.appendChild(l);});
+  const waiting=Object.values(g.dist).reduce((a,b)=>a+b,0);
+  const atOrAbove=Object.keys(g.dist).map(Number).filter(k=>k>=Math.round(pts/5)*5)
+    .reduce((a,k)=>a+g.dist[k],0);
+  const tier=B.tiers&&B.tiers.tier_of?B.tiers.tier_of[gk]:null;
+  const rate=(tier&&B.tiers.by_tier[tier])?B.tiers.by_tier[tier].per_1000:null;
+  say("t14","crit",
+    '<span class="stat"><b>'+fmt(waiting)+'</b><i>waiting in this group</i></span>'+
+    '<span class="stat"><b>'+fmt(atOrAbove)+'</b><i>at '+Math.round(pts/5)*5+' points or more</i></span>'+
+    (tier?'<span class="stat verdict-crit"><b>Tier '+tier+'</b><i>'+
+      (rate!==null?rate.toFixed(0)+" invited per 1,000":"lowest priority")+'</i></span>':'')+
+    '<span class="stat verdict-crit"><b>'+Math.round(pZero(gk)*100)+'%</b><i>chance of nothing again</i></span>');
+  const h=$("h14n"); if(h) h.textContent=g.name;
+  axisTitle(s,W,H,MB,"","invitations to the group");
 }
 /* ---------- chart 1: cut-off by round ---------- */
 function chartRounds(o,pts){
@@ -1283,6 +1342,7 @@ function render(){
   chartForecast(g,pts);fcTable(g,pts);chartWaterfall(g,o.g,pts);
   chartComp(g,o.g,pts);chartDoe(o.g,pts);chartTierRate(g,o.g);
   chartRoundSize();chartGroupShare(g,o.g);chartJoint(g,o.g,pts);
+  chartNoFc(o,g,o.g,pts);
   const band = P===null?null:(P>=.8?"good":P>=.6?"good":P>=.4?"warn":"crit");
   if($("flag")){$("flag").className="vflag "+(band||"crit");}
   if($("flag"))$("flag").textContent = P===null ? "✕ No forecast"

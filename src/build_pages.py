@@ -63,6 +63,7 @@ PAGES={
                        # the cut-off that produces, where you sit, and what it leaves you
                        # the summary first, so the answer is readable without the derivation
                        "From the cut-off to your chance",
+                       "What happened to this occupation",         # shown only when there is no forecast
                        "Invitations in the next round",            # 1 how big is the round
                        "Your unit group&rsquo;s share",            # 2 how many go to your group
                        "Forecast cut-off by round size",           # 3 what cut-off that produces
