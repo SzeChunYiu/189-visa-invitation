@@ -71,7 +71,9 @@ def fig_mechanism(B, gk):
         h = f.ph * n / mx
         taken = cut is not None and s >= cut
         f.rect(x + 1, f.mt + f.ph - h, bw - 3, h, BRAND if taken else DEEMPH, rx=2,
-               stroke=CARD, sw=0.75)
+               stroke=CARD, sw=0.75,
+               tip=f"{n:,} people at {s} points — "
+                   f"{'covered by the allocation' if taken else 'below the cut-off'}")
         if s % 10 == 0:
             f.text(x + bw / 2, f.h - f.mb + 15, s, 10, MUTED)
         cum += n
@@ -156,7 +158,7 @@ def fig_residuals(B):
     """The empirical error distribution that turns a point cut-off into a probability."""
     u = B["unc"]
     res = u["residuals"]
-    f = Fig(560, 230, ml=52, mr=18, mt=20, mb=52)
+    f = Fig(560, 248, ml=52, mr=18, mt=44, mb=52)   # mt reserves a band for the 80% bracket
     vals = sorted(set(res))
     lo, hi = min(vals), max(vals)
     edges = list(range(lo, hi + 6, 5))
@@ -172,14 +174,19 @@ def fig_residuals(B):
         h = f.ph * c / mx
         inside = u["lo80"] <= b <= u["hi80"]
         f.rect(x + 1.5, f.mt + f.ph - h, bw - 3, h, SERIES if inside else DEEMPH, rx=3,
-               stroke=CARD, sw=0.75)
+               stroke=CARD, sw=0.75,
+               tip=f"{c} of {len(res)} rounds were {b:+d} points"
+                   f"{' — inside the central 80%' if inside else ''}")
         if c:
             f.text(x + bw / 2, f.mt + f.ph - h - 5, c, 9.5, MUTED)
         f.text(x + bw / 2, f.h - f.mb + 15, f"{b:+d}", 9.5, MUTED)
     x0 = f.ml + (edges.index(int(u["lo80"])) if int(u["lo80"]) in edges else 0) * bw
     x1 = f.ml + ((edges.index(int(u["hi80"])) if int(u["hi80"]) in edges else len(edges) - 1) + 1) * bw
-    f.line(x0 + 1.5, f.mt + 4, x1 - 1.5, f.mt + 4, SERIES, 2, cap="round")
-    f.text((x0 + x1) / 2, f.mt - 3, f"central 80%: {u['lo80']:+.0f} to {u['hi80']:+.0f} points",
+    by = f.mt - 14                      # above every bar, never across one
+    f.line(x0 + 1.5, by, x1 - 1.5, by, SERIES, 2, cap="round")
+    f.line(x0 + 1.5, by, x0 + 1.5, by + 5, SERIES, 2)
+    f.line(x1 - 1.5, by, x1 - 1.5, by + 5, SERIES, 2)
+    f.text((x0 + x1) / 2, by - 6, f"central 80%: {u['lo80']:+.0f} to {u['hi80']:+.0f} points",
            10, SERIES, "middle", "700")
     f.ylab("rounds (count)")
     f.xlab("prediction minus outcome (points)")
@@ -203,7 +210,9 @@ def fig_surface(B, gk):
             p = p_clear(res, c, s, 0.0)
             x, y = f.ml + i * cw, f.mt + j * ch
             k = 0 if p is None else min(6, int(p * 6.999))
-            f.rect(x, y, cw - 1.5, ch - 1.5, RAMP[k], rx=2)
+            f.rect(x, y, cw - 1.5, ch - 1.5, RAMP[k], rx=2,
+                   tip=(f"{s} points at a round of {N:,}: "
+                        f"{p*100:.0f}% chance" if p is not None else f"{s} points: no forecast"))
             if p is not None and cw > 26 and p > 0.02:
                 f.text(x + cw / 2 - 0.75, y + ch / 2 + 3.2, f"{round(p*100)}",
                        8.5, INK if p < 0.55 else CARD, "middle")
@@ -288,7 +297,9 @@ def fig_calibration(rows, oos):
         err = abs(r["pred"] - r["actual"])
         col = GOOD if err == 0 else (WARN if err <= 5 else CRIT)
         f.circle(X(r["pred"]) + rad * math.cos(ang), Y(r["actual"]) + rad * math.sin(ang),
-                 3.1, col, stroke=CARD, sw=0.9, op=0.85)
+                 3.1, col, stroke=CARD, sw=0.9, op=0.85,
+                 tip=f"predicted {r['pred']}, actual {r['actual']} "
+                     f"({r['pred'] - r['actual']:+d} points)")
     bx, by = f.ml + 10, f.mt + 12
     f.rect(bx - 6, by - 10, 176, 62, CARD, rx=8, stroke=GRID, sw=1)
     f.text(bx, by + 2, f"n = {oos['n']} held-out group-rounds", 9.5, MUTED, "start")
@@ -320,7 +331,9 @@ def fig_tiers(B):
         x = f.ml + i * bw + bw * 0.2
         w = bw * 0.6
         h = f.ph * r["per_1000"] / mx
-        f.rect(x, f.mt + f.ph - h, w, h, [RAMP[5], RAMP[4], RAMP[2], DEEMPH][i], rx=4)
+        f.rect(x, f.mt + f.ph - h, w, h, [RAMP[5], RAMP[4], RAMP[2], DEEMPH][i], rx=4,
+               tip=f"Tier {k}: {r['per_1000']:.1f} invitations per 1,000 — "
+                   f"{r['groups']} groups, {r['pool']:,} waiting")
         f.text(x + w / 2, f.mt + f.ph - h - 7, f"{r['per_1000']:.0f}", 12, INK, "middle", "700")
         f.text(x + w / 2, f.h - f.mb + 16, f"Tier {k}", 11, INK, "middle", "700")
         f.text(x + w / 2, f.h - f.mb + 30, f"{r['groups']} groups", 9.5, MUTED)
@@ -350,7 +363,10 @@ def fig_folds(B):
         w = bw * 0.4
         h = f.ph * x["mae"] / mx
         used = x["round"] in keep
-        f.rect(bx, f.mt + f.ph - h, w, h, BRAND if used else DEEMPH, rx=4)
+        f.rect(bx, f.mt + f.ph - h, w, h, BRAND if used else DEEMPH, rx=4,
+               tip=f"{x['round']} forecast from {x['trained_on']}: MAE {x['mae']:.2f}, "
+                   f"exact {x['exact']*100:.0f}%, n {x['n']}"
+                   f"{' — kept for the residual model' if used else ''}")
         f.text(bx + w / 2, f.mt + f.ph - h - 7, f"{x['mae']:.2f}", 10.5, INK, "middle", "700")
         f.text(f.ml + i * bw + bw / 2, f.h - f.mb + 16, x["round"], 10.5, INK, "middle", "700")
         f.text(f.ml + i * bw + bw / 2, f.h - f.mb + 29, f"from {x['trained_on']}", 9, MUTED)
@@ -402,7 +418,8 @@ def fig_official(B):
         ang, rad = k * 2.399, (0 if k == 0 else 2.0 * math.sqrt(k))
         col = GOOD if pr == ac else (WARN if abs(pr - ac) <= 5 else CRIT)
         f.circle(X(pr) + rad * math.cos(ang), Y(ac) + rad * math.sin(ang), 3.2, col,
-                 stroke=CARD, sw=0.9, op=0.85)
+                 stroke=CARD, sw=0.9, op=0.85,
+                 tip=f"derived {pr}, published {ac} ({pr - ac:+d} points)")
     bx, by = f.ml + 10, f.mt + 12
     f.rect(bx - 6, by - 10, 186, 48, CARD, rx=8, stroke=GRID, sw=1)
     f.text(bx, by + 2, f"n = {st['n']} occupations", 9.5, MUTED, "start")

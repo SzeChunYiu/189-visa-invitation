@@ -15,6 +15,11 @@ DEEMPH, CARD, GOLD = "var(--deemph)", "var(--card)", "var(--gold)"
 RAMP = [f"var(--r{i})" for i in range(1, 8)]
 
 
+def _tip(t):
+    """A tooltip baked onto a mark. The figure stays static SVG; the page adds one listener."""
+    return f' class="tipd" data-tip="{esc(t)}"' if t else ""
+
+
 def esc(t):
     return (str(t).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
 
@@ -42,17 +47,18 @@ class Fig:
         return self.add(f'<line x1="{x1:.2f}" y1="{y1:.2f}" x2="{x2:.2f}" y2="{y2:.2f}" '
                         f'stroke="{stroke}" stroke-width="{w}"{d}{c}/>')
 
-    def rect(self, x, y, w, h, fill, rx=0, stroke=None, sw=1):
+    def rect(self, x, y, w, h, fill, rx=0, stroke=None, sw=1, tip=None):
         if w <= 0 or h <= 0:
             return self
         s = f' stroke="{stroke}" stroke-width="{sw}"' if stroke else ""
         return self.add(f'<rect x="{x:.2f}" y="{y:.2f}" width="{w:.2f}" height="{h:.2f}" '
-                        f'rx="{rx}" fill="{fill}"{s}/>')
+                        f'rx="{rx}" fill="{fill}"{s}{_tip(tip)}/>')
 
-    def circle(self, cx, cy, r, fill, stroke=None, sw=2, op=None):
+    def circle(self, cx, cy, r, fill, stroke=None, sw=2, op=None, tip=None):
         s = f' stroke="{stroke}" stroke-width="{sw}"' if stroke else ""
         o = f' opacity="{op}"' if op is not None else ""
-        return self.add(f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r:.2f}" fill="{fill}"{s}{o}/>')
+        return self.add(f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r:.2f}" fill="{fill}"'
+                        f'{s}{o}{_tip(tip)}/>')
 
     def path(self, d, stroke=SERIES, w=2, fill="none", op=None):
         o = f' opacity="{op}"' if op is not None else ""

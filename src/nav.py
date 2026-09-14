@@ -8,6 +8,7 @@ Both now call nav_html() here, so a page added or renamed changes one list.
 
 NAV = [
     ("index.html", "Your result"),
+    ("worked.html", "Step by step"),
     ("landscape.html", "All occupations"),
     ("policy.html", "Policy"),
     ("findings.html", "Method"),

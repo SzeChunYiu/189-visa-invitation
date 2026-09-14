@@ -19,14 +19,29 @@ HTML = r"""<meta charset="utf-8">
 <div class="filters">
   <div class="f combo">
     <label for="occ">Occupation</label>
-    <input id="occ" type="text" autocomplete="off" placeholder="Search 199 occupations" aria-label="Occupation">
+    <div class="ctl">
+      <button class="stepbtn" id="occprev" type="button" aria-label="Previous occupation" title="Previous occupation (Alt + \u2190)">&#8249;</button>
+      <input id="occ" type="text" autocomplete="off" spellcheck="false" placeholder="Type to search, or step with \u2039 \u203a" aria-label="Occupation">
+      <button class="stepbtn" id="occnext" type="button" aria-label="Next occupation" title="Next occupation (Alt + \u2192)">&#8250;</button>
+    </div>
     <div class="opts" id="opts" role="listbox"></div>
   </div>
   <div class="f"><label for="pts">Your points</label>
-    <input id="pts" type="number" value="85" min="0" max="180" step="5" aria-label="Your points score"></div>
+    <div class="ctl">
+      <button class="stepbtn" id="ptsdn" type="button" aria-label="Five points lower">&#8722;</button>
+      <input id="pts" type="number" value="85" min="65" max="130" step="5" aria-label="Your points score">
+      <button class="stepbtn" id="ptsup" type="button" aria-label="Five points higher">&#43;</button>
+    </div>
+  </div>
   <div class="f"><label for="doe">EOI date <span style="opacity:.7">(optional)</span></label>
-    <input id="doe" type="month" min="2024-07" max="2026-12" aria-label="Month your EOI was submitted or last changed"></div>
-
+    <div class="ctl">
+      <button class="stepbtn" id="doedn" type="button" aria-label="Earlier month">&#8249;</button>
+      <select id="doe" aria-label="Month your EOI was submitted or last changed">
+        <option value="">Not given &mdash; assume last in band</option>
+      </select>
+      <button class="stepbtn" id="doeup" type="button" aria-label="Later month">&#8250;</button>
+    </div>
+  </div>
 </div>
 
 <div class="verdict" id="results" tabindex="-1">
@@ -46,7 +61,7 @@ HTML = r"""<meta charset="utf-8">
   <span class="eyebrow" id="h8n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n1" aria-label="Explain" data-note="n1">?</button></div>
   <p class="takeaway" id="t8"></p>
   <div class="movestrip" id="mv"></div>
-  <div class="chartwrap"><svg id="c8" viewBox="0 0 586 268" role="img" aria-labelledby="c8t">
+  <div class="chartwrap"><svg id="c8" viewBox="0 0 560 268" role="img" aria-labelledby="c8t">
     <title id="c8t">Chance of an invitation against the size of the next round</title></svg></div>
   <p class="note" id="n1" hidden>Blue line: your chance at each round size. Faint lines: 5 points above and below. Shaded band: every round size on record. Green ribbon: how likely each size is, from the 2026&ndash;27 planning levels. Dashed line: the size those levels imply. Pool is the Aug-2026 snapshot; each extra month before the round makes this forecast ~0.7 points optimistic, so a December round would sit ~2 points higher than shown.</p></div>
 
@@ -57,18 +72,18 @@ HTML = r"""<meta charset="utf-8">
   <p class="takeaway" id="t2f"></p>
   <div class="chartwrap"><svg id="c2" viewBox="0 0 560 250" role="img" aria-labelledby="c2t">
     <title id="c2t">Forecast cut-off against round size, with its 80% interval</title></svg></div>
-  <p class="note" id="n2f" hidden>The line is the cut-off the model predicts for your occupation group at each possible round size. The shaded band is the 80% interval on that prediction, taken from how wrong the same method was on rounds it had not seen. Your score is the horizontal line: where it sits above the band, the forecast clears you comfortably; inside the band, the round could go either way.</p>
+  <p class="note" id="n2f" hidden>Predicted cut-off at each round size, with its 80% interval. Above the band you clear comfortably; inside it, the round could go either way.</p>
   <div class="tablewrap"><table id="fctab"><caption class="sr-only">Forecast cut-off at each round size</caption></table></div>
 </div>
 <div class="card"><div class="chead"><h2>Past rounds</h2>
     <span class="eyebrow" id="h1n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n2" aria-label="Explain" data-note="n2">?</button></div>
     <p class="takeaway" id="t1"></p>
-    <div class="chartwrap"><svg id="c1" viewBox="0 0 520 220" role="img" aria-labelledby="c1t"><title id="c1t">Minimum points invited, by round</title></svg></div>
+    <div class="chartwrap"><svg id="c1" viewBox="0 0 560 220" role="img" aria-labelledby="c1t"><title id="c1t">Minimum points invited, by round</title></svg></div>
     <p class="note" id="n2" hidden>Height = lowest score invited. <span style='color:var(--good)'>&#9679;</span> in &middot; <span style='color:var(--warn)'>&#9679;</span> date decides &middot; <span style='color:var(--crit)'>&#9679;</span> not reached. Dot size = invitations to this occupation.</p></div>
       <div class="card"><div class="chead"><h2>Who is ahead</h2>
     <span class="eyebrow" id="h4n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n3" aria-label="Explain" data-note="n3">?</button></div>
     <p class="takeaway" id="t4"></p>
-    <div class="chartwrap"><svg id="c4" viewBox="0 0 520 220" role="img" aria-labelledby="c4t"><title id="c4t">Queue position within the unit group</title></svg></div>
+    <div class="chartwrap"><svg id="c4" viewBox="0 0 560 220" role="img" aria-labelledby="c4t"><title id="c4t">Queue position within the unit group</title></svg></div>
     <p class="note" id="n3" hidden>Blue = people counted from the top score down. Green = invitations last round. <b>Red dot below green &rarr; they reach you.</b></p></div>
 </div>
 
@@ -77,14 +92,14 @@ HTML = r"""<meta charset="utf-8">
   <p class="takeaway" id="t3c"></p>
   <div class="chartwrap"><svg id="c3" viewBox="0 0 560 250" role="img" aria-labelledby="c3t">
     <title id="c3t">Share holding each points component, by score</title></svg></div>
-  <p class="note" id="n3c" hidden>For everyone waiting in your unit group, the share at each score who hold superior English (20 points), partner points (10), and an Australian study qualification. This is what the pool is made of, not advice: it shows which components are common among people scoring above you. Faint markers are scores where fewer than ten people are waiting, so the share there is noisy.</p>
+  <p class="note" id="n3c" hidden>Share of people at each score who hold each component, for your unit group. Faint bars are scores with fewer than ten people waiting, where the share is noise.</p>
 </div>
 <div class="card"><div class="chead"><h2>Your place in the queue</h2>
   <span class="eyebrow" id="h5n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n5q" aria-label="Explain" data-note="n5q">?</button></div>
   <p class="takeaway" id="t5q"></p>
   <div class="chartwrap"><svg id="c5" viewBox="0 0 560 230" role="img" aria-labelledby="c5t">
     <title id="c5t">Date-of-effect distribution within your score band</title></svg></div>
-  <p class="note" id="n5q" hidden>Within a single score band, invitations go in date-of-effect order, earliest first. The curve is the share of your band dated on or before each month. Set your date of effect above to see where you sit; without one the model assumes you are last in the band, which is the most pessimistic position.</p>
+  <p class="note" id="n5q" hidden>Inside one score band, invitations go in date-of-effect order, earliest first. The curve is the share of your band dated by each month. With no date set, the model assumes you are last.</p>
 </div>
 <div class="card"><div class="chead"><h2>Every score band</h2>
   <span class="eyebrow" id="hbn"></span><button class="q" type="button" aria-expanded="false" aria-controls="n4" aria-label="Explain" data-note="n4">?</button></div>
@@ -113,7 +128,7 @@ HTML = r"""<meta charset="utf-8">
       <option value="cut">by cut-off</option>
       <option value="alloc">by invitations</option>
       <option value="name">by code</option></select><button class="q" type="button" aria-expanded="false" aria-controls="n6" aria-label="Explain" data-note="n6">?</button></div>
-    <div class="hm"><svg id="c6" viewBox="0 0 520 1420" role="img" aria-labelledby="c6t"><title id="c6t">Cut-off by unit group and round</title></svg></div>
+    <div class="hm"><svg id="c6" viewBox="0 0 560 1420" role="img" aria-labelledby="c6t"><title id="c6t">Cut-off by unit group and round</title></svg></div>
     <div class="legend"><span>lowest points invited</span>
       <span class="ramp"><span style="background:var(--r1)"></span><span style="background:var(--r2)"></span><span style="background:var(--r3)"></span><span style="background:var(--r4)"></span><span style="background:var(--r5)"></span><span style="background:var(--r6)"></span><span style="background:var(--r7)"></span></span>
       <span>65 &rarr; 100+</span><span><i style="background:var(--deemph)"></i>no invitation</span></div>
@@ -121,7 +136,7 @@ HTML = r"""<meta charset="utf-8">
   <div class="card"><div class="chead"><h2>Competition drives the score</h2>
     <span class="eyebrow">Jun 2026 round</span><button class="q" type="button" aria-expanded="false" aria-controls="n7" aria-label="Explain" data-note="n7">?</button></div>
     <p class="takeaway" id="t7"></p>
-    <div class="chartwrap"><svg id="c7" viewBox="0 0 520 312" role="img" aria-labelledby="c7t"><title id="c7t">Pool size against cut-off</title></svg></div>
+    <div class="chartwrap"><svg id="c7" viewBox="0 0 560 312" role="img" aria-labelledby="c7t"><title id="c7t">Pool size against cut-off</title></svg></div>
     <p class="note" id="n7" hidden>One dot per group. Right = more people per invitation. Up = higher score needed. Dot size = occupation size. <b>Yours is ringed.</b> Raw size barely matters (r&nbsp;=&nbsp;0.12); people per invitation does (r&nbsp;=&nbsp;0.61).</p></div>
 </div>
 
@@ -235,7 +250,8 @@ function chartForecast(g,pts){
   /* your score */
   if(pts>=lo&&pts<=hi){
     s.appendChild(el("line",{x1:ML,y1:Y(pts),x2:W-MR,y2:Y(pts),class:"refl"}));
-    const q=el("text",{x:ML+2,y:Y(pts)-6,class:"reft"});q.textContent="your "+pts;s.appendChild(q);}
+    const q=el("text",{x:W-MR-3,y:Y(pts)-7,class:"reft","text-anchor":"end"});
+    q.textContent="your "+pts;s.appendChild(q);}
   /* the likely-round-size window, so the reader knows which part of the x-axis matters */
   s.appendChild(el("rect",{x:X(B.rs.q10),y:MT,width:Math.max(1,X(B.rs.q90)-X(B.rs.q10)),
     height:ph,fill:"var(--gold)",opacity:"0.10"}));
@@ -280,63 +296,57 @@ const COMPS=[["eng","superior English","var(--series)"],
              ["study","Australian study","var(--c3)"]];
 function chartComp(g,gk,pts){
   const s=$("c3"); if(!s) return; clear(s);
-  const W=560,H=250,ML=44,MR=126,MT=20,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  /* Three overlapping lines crossed each other repeatedly wherever the cells are small.
+     Small multiples: one row per component, bars, nothing can overlap anything. */
+  const W=560,ROW=64,ML=104,MR=16,MT=8,GAP=8,MB=34;
+  const H=MT+COMPS.length*(ROW+GAP)-GAP+MB;
   frame(s,W,H);
-  if(!B.comp||!g){return;}
+  if(!B.comp||!g) return;
   const scores=Object.keys(g.dist).map(Number).filter(v=>v>=B.floor).sort((a,b)=>a-b);
   if(!scores.length) return;
-  const X=v=>ML+pw*(v-scores[0])/Math.max(1,scores[scores.length-1]-scores[0]);
-  const Y=p=>MT+ph*(1-p);
-  for(let q=0;q<=1.0001;q+=0.25){
-    s.appendChild(el("line",{x1:ML,y1:Y(q),x2:ML+pw,y2:Y(q),class:"gl"}));
-    const t=el("text",{x:ML-7,y:Y(q)+3.5,class:"tick","text-anchor":"end"});
-    t.textContent=Math.round(q*100)+"%";s.appendChild(t);}
-  scores.forEach(v=>{if(v%10===0){const t=el("text",{x:X(v),y:H-MB+16,class:"tick","text-anchor":"middle"});
-    t.textContent=v;s.appendChild(t);}});
-  if(pts>=scores[0]&&pts<=scores[scores.length-1]){
-    s.appendChild(el("line",{x1:X(pts),y1:MT,x2:X(pts),y2:MT+ph,class:"refl"}));
-    const t=el("text",{x:X(pts)+4,y:MT+11,class:"reft"});t.textContent="your "+pts;s.appendChild(t);}
+  const pw=W-ML-MR, bw=pw/scores.length;
+  const X=i=>ML+i*bw;
   COMPS.forEach(([key,label,col],ci)=>{
-    const src=B.comp[key]&&B.comp[key][gk]; if(!src) return;
-    let d="",lastv=null;
-    scores.forEach(v=>{const share=src[String(v)];
-      if(share===undefined) return;
-      d+=(d?"L":"M")+X(v).toFixed(1)+","+Y(share).toFixed(1)+" "; lastv=v;});
-    if(d) s.appendChild(el("path",{d:d,fill:"none",stroke:col,"stroke-width":2,
-      "stroke-linejoin":"round","stroke-linecap":"round"}));
-    scores.forEach(v=>{const share=src[String(v)]; if(share===undefined) return;
+    const top=MT+ci*(ROW+GAP), base=top+ROW;
+    const src=(B.comp[key]||{})[gk]||{};
+    s.appendChild(el("line",{x1:ML,y1:base,x2:ML+pw,y2:base,stroke:"var(--line)","stroke-width":1}));
+    [0.5,1].forEach(q=>s.appendChild(el("line",{x1:ML,y1:base-ROW*q,x2:ML+pw,y2:base-ROW*q,class:"gl"})));
+    const nm=el("text",{x:ML-10,y:top+ROW/2-2,class:"tick","text-anchor":"end",
+      "font-weight":"700",fill:col});
+    nm.textContent=label;s.appendChild(nm);
+    const sub=el("text",{x:ML-10,y:top+ROW/2+11,class:"tick","text-anchor":"end"});
+    sub.textContent="0–100%";s.appendChild(sub);
+    scores.forEach((v,i)=>{
+      const share=src[String(v)]; if(share===undefined) return;
       const n=g.dist[v]||0, thin=n<10;
-      const c=el("circle",{cx:X(v),cy:Y(share),r:thin?2.6:4.2,fill:col,
-        stroke:"var(--card)","stroke-width":1.5,opacity:thin?0.42:1});
-      s.appendChild(c);
-      hover(c,"<b>"+Math.round(share*100)+"% hold "+label+"</b><span>at "+v+" points</span>"+
-        "<span>"+fmt(n)+" waiting at this score"+(thin?" &mdash; too few to read much into":"")+"</span>");});
-    /* direct label at the right, so identity never rests on colour alone */
-    if(lastv!==null){
-      const t=el("text",{x:ML+pw+8,y:Y(src[String(lastv)])+3.5,class:"tick",
-        "text-anchor":"start",fill:col,"font-weight":"700"});
-      t.textContent=label;s.appendChild(t);}
+      const h=Math.max(share>0?1.5:0,ROW*share);
+      const r=el("rect",{x:X(i)+1,y:base-h,width:Math.max(1,bw-2),height:h,
+        fill:col,opacity:thin?0.3:0.92,rx:2});
+      s.appendChild(r);
+      hover(r,"<b>"+Math.round(share*100)+"% hold "+label+"</b><span>at "+v+" points</span>"+
+        "<span>"+fmt(n)+" waiting here"+(thin?" — too few to read much into":"")+"</span>");
+    });
+    if(pts>=scores[0]&&pts<=scores[scores.length-1]){
+      const i=scores.indexOf(Math.round(pts/5)*5);
+      if(i>=0) s.appendChild(el("line",{x1:X(i)+bw/2,y1:top-2,x2:X(i)+bw/2,y2:base+2,class:"refl"}));}
   });
-  axisTitle(s,W,H,MB,"points score","share of people waiting");
+  const base=MT+COMPS.length*(ROW+GAP)-GAP;
+  scores.forEach((v,i)=>{if(v%10===0){
+    const t=el("text",{x:X(i)+bw/2,y:base+15,class:"tick","text-anchor":"middle"});
+    t.textContent=v;s.appendChild(t);}});
+  const i=scores.indexOf(Math.round(pts/5)*5);
+  if(i>=0){const t=el("text",{x:X(i)+bw/2,y:base+27,class:"reft","text-anchor":"middle"});
+    t.textContent="you";s.appendChild(t);}
 }
 function compTakeaway(g,gk,pts){
   const e=$("t3c"); if(!e) return;
   const h=$("h3n"); if(h&&g) h.textContent=g.name;
   if(!g||!B.comp){e.textContent="";return;}
-  const at=[],above=[];
-  COMPS.forEach(([k,label])=>{
-    const src=B.comp[k]&&B.comp[k][gk]; if(!src) return;
-    const mine=src[String(pts)];
-    let num=0,den=0;
-    Object.keys(g.dist).map(Number).filter(v=>v>pts&&src[String(v)]!==undefined)
-      .forEach(v=>{num+=src[String(v)]*g.dist[v];den+=g.dist[v];});
-    if(mine!==undefined) at.push(label+" "+Math.round(mine*100)+"%");
-    if(den>0) above.push(label+" "+Math.round(100*num/den)+"%");
-  });
-  e.textContent = at.length
-    ? "Among those already at "+pts+" points: "+at.join(", ")+"."+
-      (above.length?" Among everyone scoring above you: "+above.join(", ")+".":"")
-    : "No component breakdown published for this group.";
+  const at=COMPS.map(([k,label])=>{
+    const v=((B.comp[k]||{})[gk]||{})[String(Math.round(pts/5)*5)];
+    return v===undefined?null:label.replace("superior ","").replace("Australian ","")+" "+Math.round(v*100)+"%";
+  }).filter(Boolean);
+  e.textContent = at.length ? "At "+pts+" points: "+at.join(" · ") : "Not published for this group.";
 }
 /* ---------- chart 5: date of effect inside your own band ---------- */
 function chartDoe(gk,pts){
@@ -380,17 +390,15 @@ function chartDoe(gk,pts){
   }
   if(e){
     e.textContent = S.doe===null
-      ? "No date given, so the model places you last in the "+(Math.round(pts/5)*5)+
-        "-point band — the most pessimistic position. Set a date of effect above to see your real place."
-      : Math.round((sh||0)*100)+"% of the "+(Math.round(pts/5)*5)+"-point band is dated ahead of you, so if the cut-off lands on your band you reach the front of it "+
-        Math.round((1-(sh||0))*100)+"% of the time.";}
+      ? "No date set — you are assumed last in your band."
+      : Math.round((sh||0)*100)+"% of your band is dated ahead of you.";}
   const h=$("h5n"); if(h) h.textContent=(Math.round(pts/5)*5)+"-point band";
   axisTitle(s,W,H,MB,"date of effect","share of the band dated by then");
 }
 /* ---------- chart 1: cut-off by round ---------- */
 function chartRounds(o,pts){
   const s=$("c1"); if(!s) return; clear(s);
-  const W=520,H=230,ML=36,MR=18,MT=22,MB=54,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=230,ML=36,MR=18,MT=22,MB=54,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   const rs=o.rounds, vals=rs.map(r=>r.b).filter(v=>v!==null);
   const lo=Math.min(60,pts-5,...vals), hi=Math.max(pts+5,...vals,100);
@@ -435,7 +443,7 @@ function chartRounds(o,pts){
 /* ---------- chart 4: the mechanism itself - cumulative queue vs allocation ---------- */
 function chartQueue(g,pts){
   const s=$("c4"); if(!s) return; clear(s);
-  const W=520,H=220,ML=46,MR=60,MT=16,MB=42,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=220,ML=46,MR=60,MT=16,MB=42,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   if(!g){const t=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
     t.textContent="No unit-group data.";s.appendChild(t);return;}
@@ -546,7 +554,7 @@ function lastCut(gk){ return cutOf(gk,B.rounds[B.rounds.length-1]); }
 /* ---------- chart 7: competition ratio vs cut-off ---------- */
 function chartScatter(selG,pts){
   const s=$("c7"); if(!s) return; clear(s);
-  const W=520,H=312,ML=42,MR=18,MT=18,MB=62,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=312,ML=42,MR=18,MT=18,MB=62,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   const P=[];
   for(const gk in B.groups){
@@ -615,9 +623,8 @@ function fcTakeaway(g,pts,fc,bb){
   const e=$("t2f"); if(!e) return;
   if(!g||g.share<=0||fc===null){e.textContent="This group received no invitations last round, so it has no forecast.";return;}
   const clears=B.sizes.filter((N,i)=>g.fc[i]!==null&&g.fc[i]<pts).length;
-  e.textContent="At a likely round the model puts the cut-off at "+fc+" points (80% of the time "+
-    bb[0]+"\u2013"+bb[1]+"). Your "+pts+" clears it in "+clears+" of the "+B.sizes.length+
-    " round sizes shown.";
+  e.textContent="Cut-off "+fc+" points (80%: "+bb[0]+"\u2013"+bb[1]+"). Your "+pts+
+    " clears it at "+clears+" of "+B.sizes.length+" round sizes.";
   const h=$("h2n"); if(h) h.textContent=g.name;
 }
 function probTakeaway(g,pts){
@@ -712,7 +719,7 @@ function policyTable(){
 
 function chartProb(g,pts){
   const s=$("c8"); if(!s) return; clear(s);
-  const W=586,H=268,ML=44,MR=66,MT=30,MB=46,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=268,ML=44,MR=66,MT=40,MB=46,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   if(!g||g.share<=0){const q=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
     q.textContent="No invitations last round, so there is nothing to forecast at any size.";s.appendChild(q);return;}
@@ -724,8 +731,8 @@ function chartProb(g,pts){
   /* the range of round sizes actually observed - context for what is plausible */
   const bx0=X(B.meta.round_min), bx1=X(B.meta.round_max);
   s.appendChild(el("rect",{x:bx0,y:MT,width:bx1-bx0,height:ph,fill:"var(--series)","fill-opacity":".07"}));
-  const bl=el("text",{x:(bx0+bx1)/2,y:MT-5,class:"tick","text-anchor":"middle"});
-  bl.textContent="observed range";s.appendChild(bl);
+  const bl=el("text",{x:(bx0+bx1)/2,y:MT-22,class:"tick","text-anchor":"middle"});
+  bl.textContent="round sizes seen so far";s.appendChild(bl);
   /* context: the same curve 5 points below and above, so the value of more points is visible */
   const curve=sc=>{const a=[];for(let v=S0;v<=S1;v+=200){const p=pClear(cutoffAt(g,v),sc);
     if(p!==null)a.push([v,p]);}return a;};
@@ -743,7 +750,7 @@ function chartProb(g,pts){
   for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<13) ends[i].y=ends[i-1].y+13;
   const shift=Math.max(0,ends[ends.length-1].y-(MT+ph));
   ends.forEach(e=>{
-    const q=el("text",{x:W-MR+5,y:e.y-shift+3.5,fill:e.col,"font-size":e.main?"11":"10",
+    const q=el("text",{x:W-MR+5,y:e.y-shift+3.5,fill:e.col,"font-size":"9.5",
       "font-weight":e.main?"700":"600","text-anchor":"start"});
     q.textContent=e.lab;s.appendChild(q);});
   /* how likely each round size is, as a ribbon under the curve - same panel, no extra chart */
@@ -755,18 +762,20 @@ function chartProb(g,pts){
     dd+=" L"+X(Math.min(S1,B.rs.grid[B.rs.grid.length-1])).toFixed(1)+","+(MT+ph).toFixed(1)+" Z";
     s.appendChild(el("path",{d:dd,fill:"var(--brand)","fill-opacity":".16",stroke:"var(--brand)",
       "stroke-width":1,"stroke-opacity":".45"}));
-    const dl=el("text",{x:ML+4,y:MT+ph-hband-6,class:"tick","text-anchor":"start",fill:"var(--brand)"});
-    dl.textContent="likely round sizes";s.appendChild(dl);}
+    const dl=el("text",{x:W-MR-4,y:MT+ph-4,class:"tick","text-anchor":"end",fill:"var(--brand)"});
+    dl.textContent="how likely each size is";s.appendChild(dl);}
   /* the policy-implied central case */
   const cen=B.policy?B.policy.per_round["3"]:10000;
   const cp=pClear(cutoffAt(g,cen),pts);
   s.appendChild(el("line",{x1:X(cen),y1:MT,x2:X(cen),y2:MT+ph,stroke:"var(--brand)","stroke-width":1.5,"stroke-dasharray":"5 4"}));
   if(cp!==null){
     s.appendChild(el("circle",{cx:X(cen),cy:Y(cp),r:6,fill:"var(--brand)",stroke:"var(--card)","stroke-width":2}));
-    const lab=el("text",{x:X(cen)+9,y:Y(cp)-9,fill:"var(--brand)","font-size":"12","font-weight":"700"});
+    const hi=Y(cp)<MT+34;            /* near the top? drop the label below the dot instead */
+    const lab=el("text",{x:X(cen)+13,y:Y(cp)+(hi?19:-13),fill:"var(--brand)",
+      "font-size":"10","font-weight":"700","text-anchor":"start"});
     lab.textContent=Math.round(cp*100)+"%";s.appendChild(lab);}
-  const cl=el("text",{x:X(cen)-7,y:MT+10,fill:"var(--brand)","font-size":"10","font-weight":"650",
-    "text-anchor":"end"});
+  const cl=el("text",{x:X(cen),y:MT-8,fill:"var(--brand)","font-size":"9.5","font-weight":"650",
+    "text-anchor":"middle"});
   cl.textContent="planning levels";s.appendChild(cl);
   [2000,5000,8000,11000,14000,17000,20000].forEach(v=>{
     const q=el("text",{x:X(v),y:H-MB+15,class:"tick","text-anchor":"middle"});
@@ -994,6 +1003,48 @@ function renderAll(pts){
     tr.addEventListener("click",()=>{S.occ=k;put("occ","value",k);render();window.scrollTo({top:0,behavior:"smooth"});});
     tr.style.cursor="pointer";tb.appendChild(tr);});
 }
+
+/* ---------- steppers: every box is walkable without typing ---------- */
+function initDoe(){
+  const sel=$("doe"); if(!sel||!B.doe_months) return;
+  B.doe_months.forEach(m=>{const o=document.createElement("option");
+    o.value=m; o.textContent=m; sel.appendChild(o);});
+  /* a native <input type="month"> renders in the browser's own locale, which showed
+     as ----年--月; the months on record are a short known list, so offer exactly those */
+}
+function stepPts(d){
+  const e=$("pts"); if(!e) return;
+  const lo=+e.min||65, hi=+e.max||130;
+  S.pts=Math.max(lo,Math.min(hi,(+e.value||lo)+d*5));
+  e.value=S.pts; render(); if(window.__saveState)__saveState();
+}
+function stepDoe(d){
+  const sel=$("doe"); if(!sel) return;
+  const i=Math.max(0,Math.min(sel.options.length-1,sel.selectedIndex+d));
+  sel.selectedIndex=i; S.doe=sel.value||null; render(); if(window.__saveState)__saveState();
+}
+function stepOcc(d){
+  const keys=OCCS, i=keys.indexOf(S.occ);
+  const j=Math.max(0,Math.min(keys.length-1,(i<0?0:i)+d));
+  S.occ=keys[j]; put("occ","value",S.occ); render(); if(window.__saveState)__saveState();
+}
+function initSteppers(){
+  on("ptsdn","click",()=>stepPts(-1));  on("ptsup","click",()=>stepPts(1));
+  on("doedn","click",()=>stepDoe(-1));  on("doeup","click",()=>stepDoe(1));
+  on("occprev","click",()=>stepOcc(-1));on("occnext","click",()=>stepOcc(1));
+  /* Alt + arrows step the occupation from anywhere, so the list does not have to be open */
+  addEventListener("keydown",e=>{
+    if(!e.altKey||e.metaKey||e.ctrlKey) return;
+    if(e.key==="ArrowLeft"){e.preventDefault();stepOcc(-1);}
+    else if(e.key==="ArrowRight"){e.preventDefault();stepOcc(1);}});
+  /* the points box already steps by 5 on Up/Down because of step="5"; mirror that on
+     the month select, which otherwise only moves one option at a time on focus */
+  const sel=$("doe");
+  if(sel) sel.addEventListener("keydown",e=>{
+    if(e.key==="Home"){e.preventDefault();sel.selectedIndex=0;sel.dispatchEvent(new Event("input"));}
+    else if(e.key==="End"){e.preventDefault();sel.selectedIndex=sel.options.length-1;
+      sel.dispatchEvent(new Event("input"));}});
+}
 /* ---------- controls ---------- */
 function initCombo(){
   const inp=$("occ"),box=$("opts");
@@ -1043,6 +1094,7 @@ function initCombo(){
 
 on("pts","input",e=>{S.pts=+e.target.value||0;render();});
 on("doe","input",e=>{S.doe=e.target.value||null;render();});
+on("doe","change",e=>{S.doe=e.target.value||null;render();});
 on("hmsort","change",e=>{HMSORT=e.target.value;render();});
 on("dl","click",()=>{
   const rows=[["occupation","unit_group","pool","at_your_score","your_points",
@@ -1092,6 +1144,6 @@ on("popx","click",closePop);
 on("popbd","click",closePop);
 addEventListener("keydown",e=>{if(e.key==="Escape")closePop();});
 addEventListener("resize",closePop);
-initCombo();render();
+initDoe();initSteppers();initCombo();render();
 </script>
 """

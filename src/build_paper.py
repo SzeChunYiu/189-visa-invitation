@@ -13,7 +13,6 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from dash_css import CSS
 from paper_css import PAPER_CSS
 from model_js import MODEL_JS
-from paper_worked import WORKED_HTML, WORKED_JS
 import paper_figs as F
 from nav import nav_html
 
@@ -356,14 +355,17 @@ chapter("worked", "Worked example", "Chapter 9", f"""
 <p class="lede">The whole calculation, run on any occupation and score you choose, with the
 arithmetic shown at each step.</p>
 
-<p>This is not a re-implementation. The panel calls the same functions as the result page,
-from the same source file, so the numbers below are the numbers behind the headline.</p>
+<p>That panel now has its own page, because it is something a reader uses rather than reads:
+<a href="worked.html"><b>Step by step &rarr;</b></a></p>
 
-{WORKED_HTML}
+<p>It is not a re-implementation. The panel calls the same functions as the result page, from
+the same source file, so the numbers it shows are the numbers behind the headline. The steps
+map onto this paper as: allocation (chapter 3), cut-off (chapter 4), uncertainty (chapter 5),
+boundary band (chapter 6), round size (chapter 7), exclusion (chapter 8).</p>
 
-<p style="margin-top:22px">If the result reads &ldquo;no forecast&rdquo;, the group took no
-invitations in the most recent round: it has no share to apply, and chapter 8 is the
-relevant reading rather than chapters 3 to 7.</p>
+<p>If the result reads &ldquo;no forecast&rdquo;, the group took no invitations in the most
+recent round: it has no share to apply, and chapter 8 is the relevant reading rather than
+chapters 3 to 7.</p>
 """)
 
 # ------------------------------------------------------------------ 10
@@ -598,7 +600,6 @@ page = f"""<!doctype html>
 const B={(R / "data" / "bundle.json").read_text()};
 const S={{occ:null,pts:85,doe:null,szi:2}};
 {MODEL_JS}
-{WORKED_JS}
 {ROUTER}
 {KATEX_JS}
 {THEME}

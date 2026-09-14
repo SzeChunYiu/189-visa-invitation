@@ -49,6 +49,19 @@ select:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-ra
 .skip{position:absolute;left:-9999px;top:0;background:var(--card);color:var(--ink);padding:9px 14px;
   border:1px solid var(--brand);border-radius:0 0 8px 0;z-index:99}
 .skip:focus{left:0}
+/* each control sits between two steppers, so it can be walked as well as typed into */
+.ctl{display:flex;align-items:stretch;gap:6px}
+.ctl input,.ctl select{flex:1 1 auto;min-width:0}
+.stepbtn{flex:0 0 auto;width:34px;display:grid;place-items:center;cursor:pointer;
+  border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--body);
+  font:inherit;font-size:16px;line-height:1;padding:0;
+  transition:background .12s ease,color .12s ease,border-color .12s ease}
+.stepbtn:hover{background:var(--brand-soft);color:var(--ink);border-color:var(--brand)}
+.stepbtn:active{transform:translateY(1px)}
+.stepbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.stepbtn[disabled]{opacity:.35;cursor:default}
+.stepbtn[disabled]:hover{background:var(--card);color:var(--body);border-color:var(--line)}
+@media (max-width:640px){ .stepbtn{width:42px;font-size:18px} }
 .combo{position:relative}
 .opts{position:absolute;z-index:40;top:100%;left:0;right:0;max-height:300px;overflow-y:auto;margin-top:4px;
   background:var(--card);border:1px solid var(--line);border-radius:9px;box-shadow:var(--shadow);display:none}
@@ -132,6 +145,10 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .chead{align-items:center}
 .note{font-size:11.5px;color:var(--muted);margin:8px 0 0;line-height:1.45}
 svg{width:100%;height:auto;display:block;overflow:visible}
+.chartwrap>svg{max-width:780px;margin:0 auto}
+.chartwrap svg text{paint-order:stroke;stroke:var(--card);stroke-width:2.5px;
+  stroke-linejoin:round;stroke-linecap:round}
+.chartwrap.wide>svg{max-width:none}
 .chartwrap{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
 /* Below this width an SVG scaled to fit would render its 10.5px labels at ~6px.
    Hold a legible minimum and let the reader scroll sideways instead. */
@@ -150,14 +167,14 @@ svg{width:100%;height:auto;display:block;overflow:visible}
 }
 .gl{stroke:var(--grid);stroke-width:1}
 .ax{stroke:var(--axis);stroke-width:1}
-.tick{fill:var(--muted);font-size:10.5px;font-variant-numeric:tabular-nums}
+.tick{fill:var(--muted);font-size:9.5px;font-variant-numeric:tabular-nums}
 .ttl{fill:var(--ink);font-size:11px;font-weight:650}
 .ln{fill:none;stroke:var(--series);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .dot{fill:var(--series);stroke:var(--card);stroke-width:2}
 .bar{fill:var(--deemph)} .bar.on{fill:var(--series)}
 .refl{stroke:var(--crit);stroke-width:1.5;stroke-dasharray:0}
-.reft{fill:var(--crit);font-size:10.5px;font-weight:650}
-.vlab{fill:var(--ink);font-size:10.5px;font-weight:650;font-variant-numeric:tabular-nums}
+.reft{fill:var(--crit);font-size:9.5px;font-weight:650}
+.vlab{fill:var(--ink);font-size:9.5px;font-weight:650;font-variant-numeric:tabular-nums}
 .hit{fill:transparent;cursor:pointer}
 #tip{position:fixed;z-index:90;pointer-events:none;display:none;background:var(--card);color:var(--ink);
   border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12px;box-shadow:var(--shadow);max-width:240px}

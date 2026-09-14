@@ -92,7 +92,7 @@ def _code(html):
     """JS with the embedded data literal removed - occupation names parse as calls otherwise."""
     js="\n".join(_re.findall(r"<script>(.*?)</script>", html, _re.S))
     return _re.sub(r"const B=\{.*?\};", "const B={};", js, flags=_re.S)
-PAGES=["index.html","landscape.html","policy.html","findings.html"]
+from nav import PAGES   # one list, so a new page cannot escape the audit
 SITE_IDS=set()
 SITE_REFS={}
 for page in PAGES:
@@ -200,9 +200,23 @@ _bad=[n for n in _bad if not (1<=n<=_nch)]
 chk("paper cross-references point at chapters that exist",len(_bad)==0,
     f"out of range {_bad} (paper has {_nch})" if _bad else f"all within 1-{_nch}")
 
+# The method page loads BOTH stylesheets. A class defined in each, unscoped, silently
+# takes properties from the other - .step meant "stepper button" in one and "worked
+# example row" in the other, and width:34px crushed every step on the paper.
+_a=pathlib.Path("../src/dash_css.py").read_text()
+_b=pathlib.Path("../src/paper_css.py").read_text()
+def _sels(t):
+    return set(_re.findall(r'(?:^|[,}\n])\s*(\.[a-zA-Z][\w-]*)\s*[{,:]', t, _re.M))
+_clash=sorted(_sels(_a) & _sels(_b))
+chk("no unscoped class is defined in both stylesheets",len(_clash)==0,
+    f"defined in both: {_clash}" if _clash else f"{len(_sels(_a))} + {len(_sels(_b))} selectors, disjoint")
+_ctl=sorted((_sels(_a)|{".__planted__"}) & (_sels(_b)|{".__planted__"}))
+chk("  (control) the stylesheet-clash check catches a planted shared class",
+    _ctl==[".__planted__"], f"control saw {_ctl}")
+
 allrefs=set().union(*SITE_REFS.values())
 orphans=sorted(allrefs-SITE_IDS)
-chk("no JS reference is orphaned across all four pages",len(orphans)==0,
+chk(f"no JS reference is orphaned across all {len(PAGES)} pages",len(orphans)==0,
     f"orphaned {orphans}" if orphans else f"{len(allrefs)} refs, all defined on some page")
 # the check is only worth its PASS if it can fail: plant an id no page defines
 _ctl=sorted((allrefs|{"__planted_missing_id__"})-SITE_IDS)
