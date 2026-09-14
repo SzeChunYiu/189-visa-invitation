@@ -11,6 +11,7 @@ SRC = pathlib.Path(__file__).resolve().parent
 STEPS = [
     ("bundle",     "build_bundle.py"),       # writes data/bundle.json
     ("validation", "validation_detail.py"),  # adds bundle["val"] - must follow the bundle
+    ("aggregate",  "aggregate_trend.py"),  # adds bundle["agg"] - after validation
     ("explorer",   "build_dash.py"),
     ("pages",      "build_pages.py"),
     ("worked",     "build_worked.py"),

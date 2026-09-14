@@ -61,7 +61,7 @@ def pct(path, dp=0):
     return _rec(f"{cur*100:.{dp}f}%")
 
 
-FIG_ORDER = ["pool_shape", "shares", "mechanism", "cutoff_curves", "residuals",
+FIG_ORDER = ["pool_shape", "shares", "mechanism", "aggregate", "cutoff_curves", "residuals",
              "doe_bands", "policy", "quota_chain", "roundsize", "surface", "tiers",
              "calibration", "folds", "official", "horizon", "movement"]
 FIGN = {k: i + 1 for i, k in enumerate(FIG_ORDER)}
@@ -223,6 +223,28 @@ rather than continuing downward.</p>
      f"({B['rs']['q50']:,}). Shaded bars are covered by "
      "the allocation; the dashed line is where it stops. The cut-off is a property of the "
      "pool's shape, which is why two groups with the same share can have different cut-offs.")}
+
+<h3>Why the model never fits round size to cut-off</h3>
+
+<p>There is an obvious shortcut: regress the observed cut-off on the observed round size
+and use the slope. It gives the wrong answer, and the record says so directly. Averaged
+over every occupation invited, the relationship across the {num('agg.n')} rounds on record
+is <b>r&nbsp;=&nbsp;{num('agg.r_wmean', '{:+.3f}')}</b> — positive, meaning bigger rounds
+went with slightly <em>higher</em> cut-offs.</p>
+
+{fig("aggregate", F.fig_aggregate(B),
+     f"Each point is one round, averaged across every occupation that received invitations, "
+     f"weighted by how many. The fitted direction is drawn only to show which way it points.")}
+
+<p>Nothing about that is causal. Each round invites a different mix of occupations, and the
+pool is strengthening underneath (chapter 11), so the aggregate mixes a composition change
+with a mechanism. With {num('agg.n')} rounds the interval on that correlation spans almost
+the whole range anyway.</p>
+
+<p>Equation 2 avoids the trap by never aggregating: the cut-off is derived per group from
+that group's own pool, and round size enters through the allocation rather than through a
+fitted slope. {figref("cutoff_curves")} is the same relationship done correctly — within a
+group it is monotone, every time.</p>
 
 <h3>Is the mechanism band-based or number-based?</h3>
 

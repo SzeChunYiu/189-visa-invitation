@@ -12,7 +12,6 @@ HTML = r"""<meta charset="utf-8">
   </div>
   <div style="text-align:right">
     <div class="eyebrow">Pool snapshot Aug 2026 &middot; 5 rounds</div>
-    <a href="findings.html">How this model works, and how it was validated &rarr;</a>
   </div>
 </header>
 
@@ -49,10 +48,6 @@ HTML = r"""<meta charset="utf-8">
     <div id="flag" class="vflag good"></div>
     <div class="hero" id="hero"></div>
     <p class="vsub" id="vsub"></p>
-    <div class="meter">
-      <div class="mtrack"><div class="mfill" id="mfill"></div></div>
-      <div class="mlab"><span id="mleft"></span><span id="mright"></span></div>
-    </div>
   </div>
   <div class="vside" id="vside"></div>
 </div>
@@ -60,7 +55,6 @@ HTML = r"""<meta charset="utf-8">
 <div class="card"><div class="chead"><h2>Your chance vs round size</h2>
   <span class="eyebrow" id="h8n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n1" aria-label="Explain" data-note="n1">?</button></div>
   <p class="takeaway" id="t8"></p>
-  <div class="movestrip" id="mv"></div>
   <div class="chartwrap"><svg id="c8" viewBox="0 0 560 268" role="img" aria-labelledby="c8t">
     <title id="c8t">Chance of an invitation against the size of the next round</title></svg></div>
   <p class="note" id="n1" hidden>Blue line: your chance at each round size. Faint lines: 5 points above and below. Shaded band: every round size on record. Green ribbon: how likely each size is, from the 2026&ndash;27 planning levels. Dashed line: the size those levels imply. Pool is the Aug-2026 snapshot; each extra month before the round makes this forecast ~0.7 points optimistic, so a December round would sit ~2 points higher than shown.</p></div>
@@ -454,6 +448,18 @@ function chartRounds(o,pts){
   const pj=X(rs.length), fcN=(typeof CURG!=="undefined"&&B.groups[CURG])?B.groups[CURG].fc[S.szi]:null;
   s.appendChild(el("line",{x1:pj-0.5,y1:MT-6,x2:pj-0.5,y2:H-MB+6,stroke:"var(--line)",
     "stroke-width":1,"stroke-dasharray":"2 3"}));
+  /* the fan: from the last cut-off actually observed, widening to the 80% interval
+     on the next one. A forecast track, not a separate bar to decode. */
+  const lastObs=[...rs].reverse().find(r=>r.b!==null);
+  if(lastObs&&fcN!==null&&fcN!==undefined){
+    const li=rs.lastIndexOf(lastObs), lx=X(li), ly=Y(lastObs.b);
+    const hiY=Y(Math.min(hi,fcN-B.unc.lo80)), loY=Y(Math.max(lo,fcN-B.unc.hi80));
+    s.appendChild(el("path",{d:"M"+lx.toFixed(1)+","+ly.toFixed(1)+" L"+pj.toFixed(1)+","+
+      hiY.toFixed(1)+" L"+pj.toFixed(1)+","+loY.toFixed(1)+" Z",
+      fill:"var(--brand)","fill-opacity":".12",stroke:"none"}));
+    s.appendChild(el("line",{x1:lx,y1:ly,x2:pj,y2:Y(fcN),stroke:"var(--brand)",
+      "stroke-width":1.5,"stroke-dasharray":"4 3"}));
+  }
   if(fcN!==null&&fcN!==undefined){
     /* the forecast is a distribution, not a point: every held-out error, applied */
     const R=B.unc.residuals, cnt={};
@@ -915,35 +921,6 @@ function takeaways(o,g,pts,size){
 }
 
 /* ---------- how the cut-off moves between rounds ---------- */
-function moveStrip(){
-  if(!$("mv")) return;
-  const box=$("mv"); if(!box||!B.mv) return; box.innerHTML="";
-  const M=B.mv, R=M.delta_recent||{};
-  const g=k=>R[k]||0;
-  const segs=[["cut-off falls 10 or more",g("-25")+g("-15")+g("-10"),"var(--good)"],
-              ["cut-off falls 5",g("-5"),"var(--good)"],
-              ["no change",g("0"),"var(--deemph)"],
-              ["rises 5",g("5"),"var(--warn)"],
-              ["rises 10 or more",g("10")+g("15")+g("20")+g("25"),"var(--crit)"]];
-  const tot=segs.reduce((a,x)=>a+x[1],0)||1;
-  const bar=document.createElement("div");bar.className="mbar";
-  segs.forEach(([lab,n,col],i)=>{
-    if(!n) return;
-    const d=document.createElement("div");
-    d.style.cssText="flex:"+n+" 0 0;background:"+col+(i===0||i===1?";color:#fff":"");
-    d.title=lab+" — "+Math.round(100*n/tot)+"% of round-to-round moves";
-    if(n/tot>0.11) d.textContent=Math.round(100*n/tot)+"%";
-    bar.appendChild(d);});
-  box.appendChild(bar);
-  const key=document.createElement("div");key.className="mkey";
-  key.innerHTML='<span><i style="background:var(--good)"></i>falls</span>'+
-    '<span><i style="background:var(--deemph)"></i>unchanged</span>'+
-    '<span><i style="background:var(--warn)"></i>rises 5</span>'+
-    '<span><i style="background:var(--crit)"></i>rises 10+ ('+Math.round(M.p_move10*100)+'%)</span>'+
-    '<span style="margin-left:auto">'+Math.round((1-M.boundary_cleared)*100)+
-    '% of boundary bands leave someone behind</span>';
-  box.appendChild(key);
-}
 /* ---------- the occupations switched off, and the one that was not ---------- */
 function switchTable(){
   if(!document.querySelector("#swt tbody")) return;
@@ -1007,7 +984,7 @@ function render(){
   const fc=g?g.fc[S.szi]:null;
   const v=fcVerdict(fc,pts);
   const P=pMarginal(g,pts,o.g), Pc=pClear(fc,pts), bb=pBand(fc);
-  chartProb(g,pts);probTakeaway(g,pts);moveStrip();
+  chartProb(g,pts);probTakeaway(g,pts);
   chartForecast(g,pts);fcTable(g,pts);fcTakeaway(g,pts,fc,bb);
   chartComp(g,o.g,pts);compTakeaway(g,o.g,pts);chartDoe(o.g,pts);
   const band = P===null?null:(P>=.8?"good":P>=.6?"good":P>=.4?"warn":"crit");
@@ -1020,15 +997,11 @@ function render(){
   if($("hero"))$("hero").textContent = P===null ? "—" : Math.round(P*100)+"%";
   if($("vsub"))$("vsub").innerHTML = P===null
     ? "This occupation received no invitations in the most recent round, so there is no allocation share to forecast from. The round-by-round record below still applies."
-    : "at <b>"+pts+" points</b> in <b>"+o.g+"</b>. Averaged over likely round sizes, less a <b>"+
-      Math.round(pZero(o.g)*100)+"%</b> chance this group is skipped. Assumes a round is held &mdash; that is "+
-      "the one thing no model can predict.";
+    : "at <b>"+pts+" points</b> in <b>"+o.g+"</b>, averaged over likely round sizes. "+
+      "Assumes a round is held &mdash; the one thing no model can predict.";
   const ge=g?Object.keys(g.dist).map(Number).filter(k=>k>=pts).reduce((a,k)=>a+g.dist[k],0):0;
   const al=g?g.alloc[g.alloc.length-1]:0;
   const ratio=ge>0?al/ge:0;
-  if($("mfill"))$("mfill").style.width=Math.max(2,Math.min(100,ratio*50))+"%";
-  if($("mleft"))$("mleft").textContent="last round allocated "+fmt(al)+" to this group";
-  if($("mright"))$("mright").textContent=fmt(ge)+" sit at "+pts+"+ · "+(ge>0?ratio.toFixed(2)+"×":"—");
   const vside=$("vside"); if(vside) vside.innerHTML="";
   /* "Your chance vs round size" already plots the chance and the size range,
      and "Who is ahead" plots the queue - only what no chart shows survives here */

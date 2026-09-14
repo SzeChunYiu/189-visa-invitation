@@ -82,11 +82,6 @@ select:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-ra
 .hero{font-size:46px;font-weight:750;color:var(--ink);line-height:1.05;margin:12px 0 2px}
 .vsub{font-size:14px;color:var(--body);max-width:60ch}
 .vside{padding:22px 24px;display:flex;flex-direction:column;gap:13px;justify-content:center}
-.meter{margin-top:14px}
-.mtrack{height:9px;border-radius:999px;background:var(--deemph);overflow:hidden;position:relative}
-.mfill{height:100%;border-radius:999px;background:var(--series)}
-.mlab{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:5px}
-.mlab span:last-child{text-align:right}
 dl.kv{display:flex;justify-content:space-between;gap:14px;align-items:baseline;margin:0;font-size:13px}
 dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums}
 /* ---- tiles + charts ---- */
@@ -116,9 +111,6 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .lval{font-size:10.5px;color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
 .lval.dim{color:var(--muted)}
 @media(max-width:640px){.lrow{grid-template-columns:110px 1fr 34px}.lrow .lbar.dim,.lrow .lval.dim{display:none}}
-.movestrip{margin:0 0 12px}
-.mbar{display:flex;height:16px;border-radius:5px;overflow:hidden;gap:2px}
-.mbar>div{display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;color:#fff}
 .mkey{display:flex;gap:13px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);margin-top:6px;align-items:center}
 .mkey i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:-1px}
 .takeaway{margin:0 0 10px;font-size:13px;line-height:1.45;color:var(--ink);

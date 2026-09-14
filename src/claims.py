@@ -25,12 +25,22 @@ QUOTED_HISTORICAL = {"49", "0.941"}
 
 STRUCTURAL = {
     "189", "190", "491", "80", "50",           # visa subclasses, interval widths
-    "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",   # chapter/equation/figure
-    "12", "13", "14", "15", "16",
     "2024", "2025", "2026", "2027", "20", "25", "26", "27",     # years and year halves
     "1000", "100", "0",
     "65", "70", "75", "85", "90", "95",     # points bands named as thresholds
 }
+
+
+def structural(html):
+    """Document furniture, counted from the document rather than hardcoded.
+
+    A literal range went stale the moment the paper grew a seventeenth figure, and the
+    check reported "Figure 17" as an unverified empirical claim.
+    """
+    nfig = len(re.findall(r"<figcaption><b>Figure (\d+)", html))
+    nchap = html.count('<article class="chap"')
+    neq = len(re.findall(r'<span class="eqn">\((\d+)\)', html))
+    return STRUCTURAL | {str(i) for i in range(0, max(nfig, nchap, neq) + 1)}
 
 
 def known_values():
@@ -73,13 +83,14 @@ def main():
     html = (R / "docs" / "findings.html").read_text()
     text = prose(html)
     known = known_values()
+    struct = structural(html)
     # scientific notation is one number: 6.8e-05 was being split into 6.8 and 05
     text = re.sub(r"(?<![\w.])\d+(?:\.\d+)?e[+-]?\d+", " SCI ", text)
     toks = re.findall(r"(?<![\w.])(\d[\d,]*(?:\.\d+)?)(?![\w])", text)
     untraceable, seen = [], set()
     for t in toks:
         bare = t.replace(",", "")
-        if t in STRUCTURAL or bare in STRUCTURAL or t in QUOTED_HISTORICAL or t in seen:
+        if t in struct or bare in struct or t in QUOTED_HISTORICAL or t in seen:
             continue
         seen.add(t)
         if t in known or bare in known:

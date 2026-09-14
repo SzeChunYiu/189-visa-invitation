@@ -689,3 +689,51 @@ def fig_quota_chain(B):
                  "The quota sets the scale of a round through one measured quantity: how many "
                  "invitations the Department issues per place. That ratio comes from the single "
                  "programme year where both numbers are known.")
+
+
+# ---------------------------------------------------------------- Figure: the trap
+def fig_aggregate(B):
+    """The aggregate relationship, which runs the wrong way."""
+    a = B["agg"]
+    rows = a["rows"]
+    f = Fig(560, 250, ml=54, mr=96, mt=44, mb=56)
+    xs = [r["size"] for r in rows]
+    lo, hi = min(xs) * 0.88, max(xs) * 1.06
+    ylo, yhi = 70, 90
+    X = lambda v: f.ml + f.pw * (v - lo) / (hi - lo)
+    Y = lambda v: f.mt + f.ph * (1 - (v - ylo) / (yhi - ylo))
+    for t in range(ylo, yhi + 1, 5):
+        f.line(f.ml, Y(t), f.ml + f.pw, Y(t), GRID)
+        f.text(f.ml - 8, Y(t) + 3.5, t, 10, MUTED, "end")
+    for t in nice_ticks(lo, hi, 4):
+        f.text(X(t), f.h - f.mb + 16, kfmt(t), 10, MUTED)
+    # the fitted direction, drawn only to show which way it points
+    n = len(rows)
+    mx = sum(xs) / n
+    my = sum(r["wmean"] for r in rows) / n
+    sxy = sum((r["size"] - mx) * (r["wmean"] - my) for r in rows)
+    sxx = sum((r["size"] - mx) ** 2 for r in rows)
+    if sxx:
+        b = sxy / sxx
+        f.path(f"M{X(lo):.1f},{Y(my + b*(lo-mx)):.1f} L{X(hi):.1f},{Y(my + b*(hi-mx)):.1f} ",
+               CRIT, 2)
+    for r in rows:
+        f.circle(X(r["size"]), Y(r["wmean"]), 6, SERIES, stroke=CARD, sw=2,
+                 tip=f"{r['round']}: {r['size']:,} invitations, weighted mean cut-off "
+                     f"{r['wmean']:.1f} across {r['n']} occupations")
+        f.text(X(r["size"]), Y(r["wmean"]) - 12, r["round"][2:], 9, MUTED)
+    f.text(f.ml, f.mt - 28,
+           f"r = {a['r_wmean']:+.3f} on n = {a['n']} rounds — and the sign is wrong",
+           11, CRIT, "start", "700")
+    f.text(f.ml, f.mt - 13,
+           "bigger rounds go with slightly HIGHER aggregate cut-offs", 10, MUTED, "start")
+    f.text(f.ml + f.pw + 8, f.mt + 12, "each point", 9.5, MUTED, "start", "700")
+    f.text(f.ml + f.pw + 8, f.mt + 25, "is one round,", 9, MUTED, "start")
+    f.text(f.ml + f.pw + 8, f.mt + 37, "averaged over", 9, MUTED, "start")
+    f.text(f.ml + f.pw + 8, f.mt + 49, "every occupation", 9, MUTED, "start")
+    f.ylab("mean cut-off, weighted by invitations")
+    f.xlab("invitations issued in the round")
+    return f.svg("The aggregate relationship between round size and cut-off",
+                 "Across rounds the relationship points the opposite way to the mechanism. "
+                 "Each round invites a different mix of occupations from a pool that is "
+                 "itself strengthening, and the aggregate mixes both effects.")

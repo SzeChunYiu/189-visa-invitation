@@ -6,9 +6,12 @@ arithmetic shown here is by construction the arithmetic that produced the headli
 WORKED_HTML = r"""
 <div class="wk">
   <div class="wkin">
-    <div><label for="wocc">Occupation</label>
-      <input id="wocc" list="wopts" autocomplete="off" spellcheck="false"></div>
-    <datalist id="wopts"></datalist>
+    <div style="flex:1 1 320px"><label for="wocc">Occupation</label>
+      <div class="ctl">
+        <button class="stepbtn" id="wprev" type="button" aria-label="Previous occupation">&#8249;</button>
+        <select id="wocc" aria-label="Occupation"></select>
+        <button class="stepbtn" id="wnext" type="button" aria-label="Next occupation">&#8250;</button>
+      </div></div>
     <div><label for="wpts">Points</label>
       <input id="wpts" type="number" min="65" max="100" step="5" value="85" style="min-width:92px"></div>
     <div><label for="wdoe">Date of effect</label>
@@ -36,11 +39,21 @@ WORKED_JS = r"""
   var $w=function(i){return document.getElementById(i)};
   if(!$w("wsteps")) return;
   var OCCS=Object.keys(B.occ).sort();
-  var dl=$w("wopts");
-  OCCS.forEach(function(k){var o=document.createElement("option");o.value=k;dl.appendChild(o);});
+  /* grouped by unit group, because the unit group is what actually competes */
+  var sel0=$w("wocc"), byG={};
+  OCCS.forEach(function(k){(byG[B.occ[k].g]=byG[B.occ[k].g]||[]).push(k);});
+  Object.keys(byG).sort().forEach(function(gk){
+    var og=document.createElement("optgroup");
+    og.label=(B.groups[gk]?B.groups[gk].name:gk)+
+      (B.groups[gk]&&B.groups[gk].share<=0?"  (no forecast)":"");
+    byG[gk].forEach(function(k){var o=document.createElement("option");
+      o.value=k; o.textContent=k; og.appendChild(o);});
+    sel0.appendChild(og);});
   var sel=$w("wdoe");
   (B.doe_months||[]).forEach(function(m){var o=document.createElement("option");o.value=m;o.textContent=m;sel.appendChild(o);});
   $w("wocc").value = OCCS.indexOf("234914 Physicist")>=0 ? "234914 Physicist" : OCCS[0];
+  function stepOcc(d){var e=$w("wocc"); var i=Math.max(0,Math.min(e.options.length-1,e.selectedIndex+d));
+    e.selectedIndex=i; run(); if(window.__saveState)__saveState();}
 
   function fmt(n){return Number(n).toLocaleString("en-AU")}
   function pc(x){return (x*100).toFixed(1)+"%"}
@@ -144,6 +157,8 @@ WORKED_JS = r"""
     var e=$w(i); if(e){e.addEventListener("input",run); e.addEventListener("change",run);}});
   /* the panel already recalculates as you type; the button is the explicit affordance,
      and it is what a keyboard user reaches for after typing an occupation name */
+  var pv=$w("wprev"); if(pv) pv.addEventListener("click",function(){stepOcc(-1);});
+  var nx=$w("wnext"); if(nx) nx.addEventListener("click",function(){stepOcc(1);});
   var go=$w("wgo"); if(go) go.addEventListener("click",function(){run();
     $w("wsteps").scrollIntoView({behavior:"smooth",block:"start"});});
   ["wocc","wpts"].forEach(function(i){var e=$w(i); if(e) e.addEventListener("keydown",function(ev){
