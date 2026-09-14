@@ -37,6 +37,33 @@ lumpy (43% exactly zero), which a Gaussian interval would misrepresent.
 
 At the policy-implied round size (~10,800, see [POLICY.md](POLICY.md)) the figure is **94%**.
 
+## Two loopholes tested and closed
+
+**Does the interval need to widen for small groups?** No. Residual variance across pool-size buckets:
+
+| Pool size | n | mean | sd | P(\|err\| ≤ 5) |
+|---|---|---|---|---|
+| <25 | 21 | −1.19 | 7.89 | 81% |
+| 25–100 | 24 | −1.25 | 7.84 | 79% |
+| 100–400 | 41 | +0.00 | 8.44 | 88% |
+| >400 | 23 | +0.65 | 4.07 | 96% |
+
+Levene test for equal variance: **W = 0.83, p = 0.478** — no significant difference, so one pooled interval is
+justified. Caveat stated honestly: the largest bucket does show a visibly tighter spread (sd 4.07 against ~8),
+and with n = 23 the test has limited power to detect it. The pooled interval is therefore mildly
+*conservative* for large groups rather than anti-conservative for small ones.
+
+**Is allocation-share error double-counted if added separately?** Yes, so it is not added. The out-of-sample
+procedure forecasts each group's share from the previous round *before* deriving the cut-off, so share error is
+already inside these residuals:
+
+| residual set | n | MAE | sd |
+|---|---|---|---|
+| mechanism (allocation known) | 123 | 1.02 | 2.16 |
+| out-of-sample (allocation forecast) | 109 | 4.40 | 7.41 |
+
+The 3.4-point MAE gap **is** the share-forecast error. A separate share-uncertainty layer would count it twice.
+
 ## What this probability does and does not cover
 
 **Covers:** error in locating the cut-off — allocation-share forecasting, pool measurement, the 5-point score

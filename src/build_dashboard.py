@@ -22,6 +22,12 @@ val=json.load(open(D/"validation_singleleg.json"))
 gate=json.load(open(D/"alloc_gate.json"))
 rec=json.load(open(D/"reconcile.json"))
 hr=json.load(open(D/"headroom.json"))
+unc=json.load(open(D/"uncertainty.json"))
+pol=json.load(open(D/"policy.json"))
+import numpy as _np
+_R=_np.array(unc["residuals"])
+def _p(fc,pts): return float((_R>=(fc-pts)).mean())
+P94=_p(75,85); P5k=_p(85,85); P75k=_p(80,85)
 mob=json.load(open(D/"mobility.json"))
 calrows=pd.read_csv(D/"calibration_official.csv")
 SEP=fw["rank_by_date"]["by 30 Sep 2026"]; DEC=fw["rank_by_date"]["by 31 Dec 2026"]
@@ -163,28 +169,31 @@ HTML=f"""<meta charset="utf-8">\n<meta name="viewport" content="width=device-wid
 <div class="verdict">
  <div class="vtop">
   <div class="vmain">
-    <div class="eyebrow">Verdict &middot; conditional on a round being held</div>
-    <div class="big">1.6&times;</div>
-    <p class="sub" style="margin-top:8px">headroom over the threshold that clears 85 points. The last round gave
-    ANZSCO 2349 <b>{rec['alloc_single'][-1]} invitations</b> against an 85-and-above stock of <b>{hr['ge']}</b> &mdash; so the
-    cut-off had to fall below 85, and it did (actual 80). Re-run at <b>every one of the five historical round sizes</b>
-    using today's allocation share, an 85-point physicist <b>clears outright in all five</b>.</p>
+    <div class="eyebrow">Probability &middot; conditional on a round being held</div>
+    <div class="big">{P94:.0%}</div>
+    <p class="sub" style="margin-top:8px">that the cut-off for ANZSCO 2349 reaches <b>85 points</b> in a round of
+    10,000 &mdash; the size implied by the 2026&ndash;27 planning levels. Central forecast <b>75 points</b>,
+    80% interval <b>70&ndash;81</b>. At a 5,000 round it falls to <b>{P5k:.0%}</b>; at 7,500, <b>{P75k:.0%}</b>.</p>
+    <p class="note" style="margin-top:10px">Calibrated on this method's own errors across held-out rounds, not on a
+    judgement call. <a href="index.html">Run it for your own occupation and score &rarr;</a></p>
   </div>
   <div class="vside">
+    <dl class="kv" style="margin:0"><dt>Central forecast, 10k round</dt><dd>75 pts</dd></dl>
+    <dl class="kv" style="margin:0"><dt>80% prediction interval</dt><dd>70&ndash;81</dd></dl>
     <dl class="kv" style="margin:0"><dt>Allocation that clears 85</dt><dd>&ge; {hr['ge']}</dd></dl>
     <dl class="kv" style="margin:0"><dt>Last round's allocation</dt><dd>{rec['alloc_single'][-1]}</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Round size needed, today's share</dt><dd>~{hr['round_needed']:,}</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Smallest round in the record</dt><dd>6,450</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Share could fall by</dt><dd>37%</dd></dl>
+    <dl class="kv" style="margin:0"><dt>189 places, 2026&ndash;27</dt><dd>{pol['places']['2026-27']:,}</dd></dl>
   </div>
  </div>
- <div class="caveat"><b>The one way this fails.</b> 2349's share of the round would have to revert to roughly its 2024
- level &mdash; it was 0.07% and 0.13% then, is 0.67% now, and would need to drop 37% to put 85 back on the boundary.
- That is a policy decision, not a queue-position problem: not your score, not competitor growth, not your date of
- effect. The other open question remains whether a round is held at all.</div>
+ <div class="caveat"><b>What the probability does not cover.</b> Whether a round is held at all, and whether this
+ group's share of it holds. Both are policy, and neither appears in the residuals the interval is built from &mdash;
+ so every figure here is explicitly conditional on a round happening. The 189 program did grow
+ <b>+{100*(pol['places']['2026-27']/pol['places']['2025-26']-1):.1f}%</b> for 2026&ndash;27, which is the
+ favourable half of that uncertainty.</div>
 </div>
 
 <section>
+  <h2>An earlier figure on this page said 40&ndash;77%<section>
   <h2>An earlier figure on this page said 40&ndash;77%. Here is why it was wrong</h2>
   <p class="sub">That number came from asking how many of the five historical allocations would have covered your
   queue rank. Three of those five are not plausible draws for the next round &mdash; they come from a regime when
@@ -200,8 +209,12 @@ HTML=f"""<meta charset="utf-8">\n<meta name="viewport" content="width=device-wid
     </tbody></table></div>
   <p class="note">Treating a 0.07% share from September 2024 as an equally likely outcome for the next round is what
   produced the pessimistic figure. Share autocorrelation on the recent transitions is <b>0.92&ndash;0.96</b>, so the
-  recent share is the forecastable quantity and the 2024 values are a different regime. The corrected reading is the
-  verdict above. This page previously showed the old number; it is retired rather than quietly amended.</p>
+  recent share is the forecastable quantity and the 2024 values are a different regime.</p>
+  <p class="note">A later revision also retired the interim &ldquo;1.6&times; headroom&rdquo; framing that replaced it.
+  Headroom is a ratio, not a probability, and it could not say how likely the cut-off was to land where the model
+  said. The verdict above is now a <b>calibrated</b> probability taken from the distribution of this method's own
+  out-of-sample errors &mdash; see <a href="UNCERTAINTY.md">UNCERTAINTY.md</a>. Both superseded numbers are recorded
+  here rather than quietly amended.</p>
 </section>
 
 <section>

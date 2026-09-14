@@ -191,9 +191,10 @@ footer a{color:var(--brand)}
   <div class="card"><div class="chead"><h2>Your position in the queue</h2>
     <span class="eyebrow" id="h4n"></span></div>
     <svg id="c4" viewBox="0 0 520 220" role="img" aria-labelledby="c4t"><title id="c4t">Queue position within the unit group</title></svg>
-    <p class="note">Within your ANZSCO unit group, which sets the allocation. Invitations run strictly by points,
-    then by date of effect &mdash; so everyone above your score, plus everyone on your score with an earlier date,
-    sits ahead of you.</p></div>
+    <p class="note">This is the mechanism itself. The curve is the cumulative number of EOIs at or above each score
+    in your unit group; the dashed line is how many the last round actually invited. <b>Where they cross is the
+    cut-off.</b> Your position is marked &mdash; if the dashed line sits above your marker, a round of that size
+    reaches you.</p></div>
 </div>
 
 <div class="card wide"><div class="chead"><h2>Exactly who is ahead of you</h2>
@@ -404,43 +405,56 @@ function chartPool(o,pts){
     if(on){const t=el("text",{x:x+bw/2,y:y-6,class:"vlab","text-anchor":"middle"});t.textContent=fmt(n);s.appendChild(t);}});
   axisTitle(s,W,H,MB,"points score","EOIs in the pool");panel(s,"c");
 }
-/* ---------- chart 4: queue position ---------- */
+/* ---------- chart 4: the mechanism itself - cumulative queue vs allocation ---------- */
 function chartQueue(g,pts){
   const s=$("c4");clear(s);
-  const W=520,H=220,ML=14,MR=14,MT=40;
+  const W=520,H=220,ML=46,MR=60,MT=16,MB=42,pw=W-ML-MR,ph=H-MT-MB;
   if(!g){const t=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
     t.textContent="No unit-group data.";s.appendChild(t);return;}
-  const d=g.dist, keys=Object.keys(d).map(Number);
-  const above=keys.filter(k=>k>pts).reduce((a,k)=>a+d[k],0);
-  const same=keys.filter(k=>k===Math.round(pts/5)*5).reduce((a,k)=>a+d[k],0);
-  const below=keys.filter(k=>k<pts&&k!==Math.round(pts/5)*5).reduce((a,k)=>a+d[k],0);
-  const tot=above+same+below||1, bw=W-ML-MR, y=MT+24, bh=38;
-  const segs=[["above your score",above,"var(--crit)"],["on your score",same,"var(--series)"],["below you",below,"var(--deemph)"]];
-  let x=ML;
-  segs.forEach(([lab,n,col],i)=>{
-    const w=bw*n/tot; if(w<=0) return;
-    const gap=i<segs.length-1?2:0;
-    const r=el("rect",{x:x,y:y,width:Math.max(0,w-gap),height:bh,rx:i===0||i===segs.length-1?4:0,fill:col});
-    s.appendChild(r);
-    hover(r,"<b>"+fmt(n)+"</b><span>"+lab+"</span>");
-    if(w>44){const t=el("text",{x:x+(w-gap)/2,y:y+bh/2+4,"text-anchor":"middle",
-      fill:i===2?"var(--ink)":"#fff","font-size":"12","font-weight":"650"});t.textContent=fmt(n);s.appendChild(t);}
-    x+=w;});
-  const cap=el("text",{x:ML,y:MT-14,class:"ttl"});
-  cap.textContent=g.name.slice(0,52);s.appendChild(cap);
-  const lg=[["above your score","var(--crit)"],["on your score","var(--series)"],["below you","var(--deemph)"]];
-  let lx=ML;
-  lg.forEach(([t,c])=>{s.appendChild(el("rect",{x:lx,y:y+bh+16,width:9,height:9,rx:2,fill:c}));
-    const q=el("text",{x:lx+14,y:y+bh+24.5,class:"tick"});q.textContent=t;s.appendChild(q);lx+=t.length*5.6+30;});
-  const ahead=above+same;
-  const q=el("text",{x:ML,y:y+bh+52,class:"vlab"});
-  q.textContent="Roughly "+fmt(ahead)+" ahead of you — the round must allocate at least that many to reach you.";
-  s.appendChild(q);
-  const q2=el("text",{x:ML,y:y+bh+70,class:"tick"});
-  q2.textContent="Everyone on your score in the Aug-2026 snapshot is dated before a new EOI, so counts as ahead.";
-  s.appendChild(q2);
+  const keys=Object.keys(g.dist).map(Number).sort((a,b)=>b-a).filter(k=>k>=B.floor);
+  if(!keys.length){const t=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
+    t.textContent="No EOIs at or above the 65-point floor.";s.appendChild(t);return;}
+  let cum=0; const step=keys.map(k=>{cum+=g.dist[k];return {sc:k,cum:cum};});
+  const alloc=g.alloc[g.alloc.length-1];
+  const fc=g.fc[S.szi];
+  const yMax=Math.max(cum,alloc)*1.08;
+  const X=i=>ML+pw*i/Math.max(1,keys.length-1), Y=v=>MT+ph*(1-v/yMax);
+  for(let i=0;i<=4;i++){const v=yMax*i/4,y=MT+ph*(1-i/4);
+    s.appendChild(el("line",{x1:ML,y1:y,x2:W-MR,y2:y,class:"gl"}));
+    const q=el("text",{x:ML-7,y:y+3.5,class:"tick","text-anchor":"end"});q.textContent=Math.round(v);s.appendChild(q);}
+  /* step curve: cumulative EOIs at or above each score */
+  let d="";
+  step.forEach((p,i)=>{const x=X(i),y=Y(p.cum);
+    if(i===0){d+="M"+ML.toFixed(1)+","+Y(0).toFixed(1)+" L"+ML.toFixed(1)+","+y.toFixed(1);}
+    else {d+=" L"+x.toFixed(1)+","+Y(step[i-1].cum).toFixed(1)+" L"+x.toFixed(1)+","+y.toFixed(1);}});
+  d+=" L"+X(keys.length-1).toFixed(1)+","+Y(step[step.length-1].cum).toFixed(1);
+  s.appendChild(el("path",{d:d,class:"ln"}));
+  /* allocation reference: where the last round stopped */
+  const ay=Y(alloc);
+  s.appendChild(el("line",{x1:ML,y1:ay,x2:W-MR,y2:ay,stroke:"var(--good)","stroke-width":1.5,"stroke-dasharray":"5 4"}));
+  const at=el("text",{x:W-MR+4,y:ay+3.5,fill:"var(--good)","font-size":"10.5","font-weight":"650"});
+  at.textContent=fmt(alloc)+" invited";s.appendChild(at);
+  /* the reader's position */
+  const my=Math.round(pts/5)*5, mi=keys.indexOf(my);
+  const aboveAll = my>keys[0];
+  if(mi>=0 || aboveAll){
+    const idx = aboveAll?0:mi;
+    const ahead = aboveAll?0:step[mi].cum;
+    const mx = aboveAll?ML:X(mi);
+    s.appendChild(el("line",{x1:mx,y1:MT,x2:mx,y2:MT+ph,class:"refl"}));
+    const c=el("circle",{cx:mx,cy:Y(ahead),r:6,fill:"var(--crit)",stroke:"var(--card)","stroke-width":2});
+    s.appendChild(c);
+    hover(c,"<b>"+fmt(ahead)+" ahead of you</b><span>everyone at "+my+" points or above</span><span>"+
+      (alloc>=ahead?"last round reached past you":"last round stopped short of you")+"</span>");
+    const lt=el("text",{x:mx,y:Math.max(MT+11,Y(ahead)-12),class:"reft","text-anchor":aboveAll?"start":"middle"});
+    lt.textContent=aboveAll?"nobody ahead":fmt(ahead)+" ahead";s.appendChild(lt);}
+  keys.forEach((k,i)=>{
+    if(keys.length<=12||i%2===0){
+      const q=el("text",{x:X(i),y:H-MB+15,class:"tick","text-anchor":"middle"});q.textContent=k;s.appendChild(q);}
+    const hit=el("rect",{x:X(i)-8,y:MT,width:16,height:ph,class:"hit"});
+    hover(hit,"<b>"+fmt(step[i].cum)+"</b><span>EOIs at "+k+" points or above</span>");s.appendChild(hit);});
+  axisTitle(s,W,H,MB,"points score (descending)","cumulative EOIs at or above");panel(s,"d");
 }
-
 /* ---------- chart 5: forecast matrix (score x round size) ---------- */
 const SCORES=[120,115,110,105,100,95,90,85,80,75,70,65];
 function chartMatrix(g,pts){
@@ -467,7 +481,6 @@ function chartMatrix(g,pts){
         (g.fc[c]===null?"—":g.fc[c])+"</span><span>"+v.t+"</span>");
       if(mine){const o=el("rect",{x:ML+cw*c+1,y:y+1,width:cw-2,height:ch-2,rx:3,fill:"none",
         stroke:"var(--ink)","stroke-width":2,"pointer-events":"none"});s.appendChild(o);}});});
-  panel(s,"d");
 }
 /* ---------- chart 6: landscape heatmap (group x round) ---------- */
 const RAMP=["#cde2fb","#9ec5f4","#6da7ec","#3987e5","#256abf","#184f95","#0d366b"];
