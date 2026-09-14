@@ -24,6 +24,7 @@ Deployment notes (incl. Vercel): [DEPLOY.md](DEPLOY.md).
 | [docs/CONSISTENCY.md](docs/CONSISTENCY.md) | The model run on every occupation in every round |
 | [docs/HYPOTHESES.md](docs/HYPOTHESES.md) | Regime change, occupation bias, quota-vs-demand, sector effects |
 | [docs/POLICY.md](docs/POLICY.md) | Published planning levels and what they imply for round size |
+| [docs/ROUNDSIZE.md](docs/ROUNDSIZE.md) | A distribution over the next round's size, and marginalising over it |
 | [docs/DATA.md](docs/DATA.md) | Source, field dictionary, extraction inventory |
 
 ## Headline results
