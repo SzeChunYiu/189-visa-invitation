@@ -1,0 +1,190 @@
+{
+ "switched_off": [
+  {
+   "g": "2613",
+   "name": "2613 Software and Applications Programmers",
+   "pool": 25865,
+   "hist": [
+    166,
+    743,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "2611",
+   "name": "2611 ICT Business and Systems Analysts",
+   "pool": 13069,
+   "hist": [
+    52,
+    339,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "2211",
+   "name": "2211 Accountants",
+   "pool": 11173,
+   "hist": [
+    150,
+    450,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "2332",
+   "name": "2332 Civil Engineering Professionals",
+   "pool": 11073,
+   "hist": [
+    490,
+    622,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "3513",
+   "name": "3513 Chefs",
+   "pool": 10982,
+   "hist": [
+    4,
+    56,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "2335",
+   "name": "2335 Industrial, Mechanical and Production Engineers",
+   "pool": 9076,
+   "hist": [
+    118,
+    380,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "2339",
+   "name": "2339 Other Engineering Professionals",
+   "pool": 8782,
+   "hist": [
+    109,
+    271,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "2333",
+   "name": "2333 Electrical Engineers",
+   "pool": 4366,
+   "hist": [
+    50,
+    133,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "2212",
+   "name": "2212 Auditors, Company Secretaries and Corporate Treasurers",
+   "pool": 4101,
+   "hist": [
+    112,
+    339,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "2631",
+   "name": "2631 Computer Network Professionals",
+   "pool": 3738,
+   "hist": [
+    19,
+    100,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "3212",
+   "name": "3212 Motor Mechanics",
+   "pool": 3242,
+   "hist": [
+    4,
+    10,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "2621",
+   "name": "2621 Database and Systems Administrators, and ICT Security Specialists",
+   "pool": 3154,
+   "hist": [
+    8,
+    170,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "2519",
+   "name": "2519 Other Health Diagnostic and Promotion Professionals",
+   "pool": 14,
+   "hist": [
+    1,
+    1,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "g": "3222",
+   "name": "3222 Sheetmetal Trades Workers",
+   "pool": 13,
+   "hist": [
+    0,
+    1,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "still_invited_large": [
+  {
+   "g": "2544",
+   "name": "2544 Registered Nurses",
+   "pool": 14453
+  },
+  {
+   "g": "2414",
+   "name": "2414 Secondary School Teachers",
+   "pool": 2647
+  },
+  {
+   "g": "1331",
+   "name": "1331 Construction Managers",
+   "pool": 2280
+  }
+ ],
+ "people_affected": 108648
+}

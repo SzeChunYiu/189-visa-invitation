@@ -16,6 +16,7 @@ Deployment notes (incl. Vercel): [DEPLOY.md](DEPLOY.md).
 | File | What it holds |
 |---|---|
 | **README.md** (this file) | Headline results and how to reproduce |
+| [docs/MECHANISM.md](docs/MECHANISM.md) | Band or number? Why groups get zero? Tested, not assumed |
 | [docs/THEORY.md](docs/THEORY.md) | The one mechanism that explains every observation |
 | [docs/MOBILITY.md](docs/MOBILITY.md) | Points upgrades, date of effect, and queue position |
 | [docs/METHODOLOGY.md](docs/METHODOLOGY.md) | The three data traps and how each was defeated |

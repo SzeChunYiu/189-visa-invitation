@@ -77,6 +77,13 @@ HTML = r"""<meta charset="utf-8">
   <p class="note" id="n4" hidden>What another 5 or 10 points would buy. Chance uses the same definition as the headline.
   &ldquo;Reaches it&rdquo; is judged at the likely round size.</p></div>
 
+<div class="card"><div class="chead"><h2>Why some occupations get nothing at all</h2>
+  <span class="eyebrow" id="hswn"></span></div>
+  <p class="takeaway" id="tsw"></p>
+  <div class="scroll"><table id="swt"><thead><tr><th>Occupation group</th><th>Waiting</th>
+    <th>Sep 24</th><th>Nov 24</th><th>Aug 25</th><th>Nov 25</th><th>Jun 26</th></tr></thead><tbody></tbody></table></div>
+  </div>
+
 <div class="card"><div class="chead"><h2>Policy: the 2026&ndash;27 program</h2>
   <span class="eyebrow">published planning levels</span><button class="q" type="button" aria-expanded="false" aria-controls="n5" aria-label="Explain this panel" data-note="n5">?</button></div>
   <div class="scroll"><table id="pt"><thead><tr><th>Category</th><th>2025&ndash;26</th><th>2026&ndash;27</th><th>Change</th></tr></thead><tbody></tbody></table></div>
@@ -695,6 +702,32 @@ function moveStrip(){
     '% of boundary bands leave someone behind</span>';
   box.appendChild(key);
 }
+/* ---------- the occupations switched off, and the one that was not ---------- */
+function switchTable(){
+  const tb=document.querySelector("#swt tbody"); if(!tb||!B.sw) return; tb.innerHTML="";
+  const row=(o,cls)=>{
+    const tr=document.createElement("tr"); if(cls)tr.className=cls;
+    const td=document.createElement("td");td.textContent=o.name;tr.appendChild(td);
+    const p=document.createElement("td");p.textContent=fmt(o.pool);tr.appendChild(p);
+    (o.hist||[]).forEach(n=>{const c=document.createElement("td");
+      const sp=document.createElement("span");sp.className="pill "+(n>0?"good":"crit");
+      sp.textContent=n>0?fmt(n):"0";c.appendChild(sp);tr.appendChild(c);});
+    tb.appendChild(tr);};
+  B.sw.switched_off.slice(0,8).forEach(o=>row(o));
+  const keep=B.sw.still_invited_large&&B.sw.still_invited_large[0];
+  if(keep){
+    const tr=document.createElement("tr");
+    const td=document.createElement("td");td.colSpan=7;
+    td.innerHTML="<b>Contrast &mdash; "+keep.name+"</b> holds "+fmt(keep.pool)+
+      " people and kept being invited throughout, so this is not about pool size.";
+    td.style.cssText="padding-top:10px;color:var(--body)";
+    tr.appendChild(td);tb.appendChild(tr);}
+  const hs=$("hswn"); if(hs) hs.textContent=B.sw.switched_off.length+" groups, "+fmt(B.sw.people_affected)+" people";
+  say("tsw","crit",
+    "<b>"+B.sw.switched_off.length+" occupation groups</b> holding <b>"+fmt(B.sw.people_affected)+
+    "</b> people &mdash; <b>60% of the whole 189 pool</b> &mdash; were switched off at the 2025&ndash;26 program year "+
+    "and have had nothing since. Not a ceiling: a ceiling caps, this is a switch.");
+}
 /* ---------- render ---------- */
 function render(){
   const o=B.occ[S.occ]; if(!o) return;
@@ -746,7 +779,7 @@ function render(){
   chartRounds(o,pts);chartQueue(g,pts);
   chartLandscape(o.g,pts);chartScatter(o.g,pts);
   takeaways(o,g,pts,size);
-  bandTable(o,g,pts);policyTable();
+  bandTable(o,g,pts);switchTable();policyTable();
   
   const tb=document.querySelector("#rt tbody");tb.innerHTML="";
   o.rounds.forEach(r=>{const v2=verdictFor(r,pts);const tr=document.createElement("tr");

@@ -1,0 +1,22 @@
+{
+ "above_full": 0.945,
+ "lowest_full": 0.288,
+ "median_lowest_frac": 0.812,
+ "boundary_hits": 0.246,
+ "always_skipped": [
+  "2613 Software and Applications Programmers",
+  "2611 ICT Business and Systems Analysts",
+  "2211 Accountants",
+  "2332 Civil Engineering Professionals",
+  "3513 Chefs",
+  "2335 Industrial, Mechanical and Production Engineers",
+  "2339 Other Engineering Professionals",
+  "2333 Electrical Engineers",
+  "2212 Auditors, Company Secretaries and Corporate Treasurers",
+  "2631 Computer Network Professionals",
+  "3212 Motor Mechanics",
+  "2621 Database and Systems Administrators, and ICT Security Specialists",
+  "2519 Other Health Diagnostic and Promotion Professionals",
+  "3222 Sheetmetal Trades Workers"
+ ]
+}
