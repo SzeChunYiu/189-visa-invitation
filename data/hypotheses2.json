@@ -1,0 +1,11 @@
+{
+ "partial_past": 0.275,
+ "partial_pool": -0.083,
+ "sector_p": 0.005,
+ "sector_means": {
+  "Managers": -1.79,
+  "Professionals": -0.47,
+  "Trades": -1.52,
+  "Community/Personal": 0.0
+ }
+}

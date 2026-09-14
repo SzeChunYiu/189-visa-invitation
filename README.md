@@ -3,7 +3,11 @@
 A quantitative queue model for **Australian subclass 189 (Skilled Independent)** invitation rounds,
 built from the complete 24-month panel behind the public SkillSelect EOI dashboard.
 
-**Live dashboard → [SzeChunYiu.github.io/189-visa-invitation](https://SzeChunYiu.github.io/189-visa-invitation/)**
+**Interactive explorer → [SzeChunYiu.github.io/189-visa-invitation](https://SzeChunYiu.github.io/189-visa-invitation/)**
+Pick any of 199 occupations, enter your points, and see your position, the round-by-round record, and a
+forecast for the next round on one page. The written analysis lives at
+[findings.html](https://szechunyiu.github.io/189-visa-invitation/findings.html).
+Deployment notes (incl. Vercel): [DEPLOY.md](DEPLOY.md).
 
 ---
 

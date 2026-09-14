@@ -1,0 +1,346 @@
+HTML = r"""<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SkillSelect 189 Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>__CSS__</style>
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">Subclass 189 &middot; Points-Tested Stream</div>
+    <h1>Where do you stand in the 189 queue?</h1>
+  </div>
+  <div style="text-align:right">
+    <div class="eyebrow">Pool snapshot Aug 2026 &middot; 5 rounds</div>
+    <a href="findings.html">How this model works, and how it was validated &rarr;</a>
+  </div>
+</header>
+
+<div class="filters">
+  <div class="f combo">
+    <label for="occ">Your occupation (ANZSCO)</label>
+    <input id="occ" type="text" autocomplete="off" placeholder="Type to search 199 occupations&hellip;" aria-label="Occupation">
+    <div class="opts" id="opts" role="listbox"></div>
+  </div>
+  <div class="f"><label for="pts">Your points</label>
+    <input id="pts" type="number" value="85" min="0" max="180" step="5" aria-label="Your points score"></div>
+  <div class="f"><label for="sz">Assume next round size</label>
+    <select id="sz" aria-label="Assumed round size"></select></div>
+</div>
+
+<div class="verdict">
+  <div class="vmain">
+    <div id="flag" class="vflag good"></div>
+    <div class="hero" id="hero"></div>
+    <p class="vsub" id="vsub"></p>
+    <div class="meter">
+      <div class="mtrack"><div class="mfill" id="mfill"></div></div>
+      <div class="mlab"><span id="mleft"></span><span id="mright"></span></div>
+    </div>
+  </div>
+  <div class="vside" id="vside"></div>
+</div>
+
+<div class="tiles" id="tiles"></div>
+
+<div class="grid2">
+  <div class="card"><div class="chead"><h2>What this occupation actually reached</h2>
+    <span class="eyebrow" id="h1n"></span></div>
+    <svg id="c1" viewBox="0 0 520 220" role="img" aria-labelledby="c1t"><title id="c1t">Minimum points invited, by round</title></svg>
+    <p class="note">Lowest points invited in each of the five real rounds. A filled marker means that score was
+    fully exhausted, so everyone at it was invited; a hollow marker means it was rationed by date of effect.
+    The red rule is your score.</p></div>
+  <div class="card"><div class="chead"><h2>Forecast for the next round</h2>
+    <span class="eyebrow" id="h2n"></span></div>
+    <svg id="c2" viewBox="0 0 520 220" role="img" aria-labelledby="c2t"><title id="c2t">Forecast cut-off by round size</title></svg>
+    <p class="note">Where the cut-off lands if the next round is this size, using this group's current share of
+    invitations. Out-of-sample error 3.8 points on the most recent round, biased 3.5 points deep &mdash; a forecast
+    of 75 may truly be 78&ndash;79.</p></div>
+  <div class="card"><div class="chead"><h2>Who you are competing with</h2>
+    <span class="eyebrow" id="h3n"></span></div>
+    <svg id="c3" viewBox="0 0 520 220" role="img" aria-labelledby="c3t"><title id="c3t">Standing pool by points score</title></svg>
+    <p class="note">Everyone in this occupation currently sitting in the 189 pool, by points. Your bucket is
+    highlighted. Hover any column for the count.</p></div>
+  <div class="card"><div class="chead"><h2>Your position in the queue</h2>
+    <span class="eyebrow" id="h4n"></span></div>
+    <svg id="c4" viewBox="0 0 520 220" role="img" aria-labelledby="c4t"><title id="c4t">Queue position within the unit group</title></svg>
+    <p class="note">Within your ANZSCO unit group, which sets the allocation. Invitations run strictly by points,
+    then by date of effect &mdash; so everyone above your score, plus everyone on your score with an earlier date,
+    sits ahead of you.</p></div>
+</div>
+
+<div class="card"><div class="chead"><h2>Round by round</h2><span class="eyebrow">the record for this occupation</span></div>
+  <div class="scroll"><table id="rt"><thead><tr><th>Round</th><th>Invited</th><th>Fully cleared to</th>
+    <th>Boundary score</th><th>Boundary</th><th>Would you have been invited?</th></tr></thead><tbody></tbody></table></div>
+  <p class="note"><b>Fully cleared to</b> is the lowest score at which every single EOI was invited. At or above it
+  you are in regardless of date. On a rationed boundary, your date of effect decides.</p></div>
+
+<div class="card"><div class="chead"><h2>Every occupation at your score</h2>
+  <span class="eyebrow" id="allN"></span></div>
+  <div class="scroll" style="max-height:420px;overflow-y:auto"><table id="at"><thead><tr><th>Occupation</th>
+    <th>Pool</th><th>At your score</th><th>Sep 24</th><th>Nov 24</th><th>Aug 25</th><th>Nov 25</th><th>Jun 26</th>
+    <th>Next round</th></tr></thead><tbody></tbody></table></div>
+  <p class="note">Sorted by pool size. Click a row to load that occupation above.</p></div>
+
+<footer>
+  Built from all 24 monthly SkillSelect EOI snapshots read directly from the Qlik engine behind the Department of
+  Employment's public dashboard. Counts are distinct EOIs on a single-leg basis. The model cannot predict whether a
+  round is held or how large it is &mdash; both are set by migration planning levels. Not migration advice.
+  <a href="https://github.com/SzeChunYiu/189-visa-invitation">Code, data and method</a> &middot;
+  <a href="findings.html">Full findings</a>
+</footer>
+</div>
+<div id="tip" role="status"></div>
+<script>
+const B=__BUNDLE__;
+const S={occ:"234914 Physicist",pts:85,szi:2};
+const $=id=>document.getElementById(id);
+const RL={"2024-09":"Sep 24","2024-11":"Nov 24","2025-08":"Aug 25","2025-11":"Nov 25","2026-06":"Jun 26"};
+const OCCS=Object.keys(B.occ).sort();
+const fmt=n=>n.toLocaleString();
+
+/* ---------- verdict logic: one definition used everywhere ---------- */
+function verdictFor(rd,pts){
+  if(rd.b===null) return {k:"n",t:"no invitations"};
+  if(rd.lc!==null && pts>=rd.lc) return {k:"good",t:"invited"};
+  if(pts>=rd.b) return {k:"warn",t:"date decides"};
+  return {k:"crit",t:"not reached"};
+}
+function fcVerdict(c,pts){
+  if(c===null||c===undefined) return {k:"n",t:"no forecast"};
+  if(pts>c) return {k:"good",t:"clears"};
+  if(pts===c) return {k:"warn",t:"on the boundary"};
+  return {k:"crit",t:"not reached"};
+}
+/* ---------- svg helpers ---------- */
+const NS="http://www.w3.org/2000/svg";
+function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function clear(s){while(s.childNodes.length>1)s.removeChild(s.lastChild);}
+function tipOn(ev,html){const t=$("tip");t.innerHTML=html;t.style.display="block";
+  const r=12;t.style.left=Math.min(ev.clientX+r,innerWidth-t.offsetWidth-8)+"px";
+  t.style.top=Math.max(8,ev.clientY-t.offsetHeight-r)+"px";}
+function tipOff(){$("tip").style.display="none";}
+function hover(node,html){node.addEventListener("pointermove",e=>tipOn(e,html));
+  node.addEventListener("pointerleave",tipOff);node.setAttribute("tabindex","0");
+  node.addEventListener("focus",e=>{const b=node.getBoundingClientRect();
+    tipOn({clientX:b.left+b.width/2,clientY:b.top},html);});node.addEventListener("blur",tipOff);}
+
+/* ---------- chart 1: cut-off by round ---------- */
+function chartRounds(o,pts){
+  const s=$("c1");clear(s);
+  const W=520,H=220,ML=34,MR=18,MT=18,MB=40,pw=W-ML-MR,ph=H-MT-MB;
+  const rs=o.rounds, vals=rs.map(r=>r.b).filter(v=>v!==null);
+  const lo=Math.min(60,pts-5,...vals), hi=Math.max(pts+5,...vals,100);
+  const X=i=>ML+(rs.length===1?pw/2:pw*i/(rs.length-1));
+  const Y=v=>MT+ph*(1-(v-lo)/(hi-lo));
+  for(let v=Math.ceil(lo/5)*5;v<=hi;v+=5){ if((v%10)!==0) continue;
+    s.appendChild(el("line",{x1:ML,y1:Y(v),x2:W-MR,y2:Y(v),class:"gl"}));
+    const t=el("text",{x:ML-7,y:Y(v)+3.5,class:"tick","text-anchor":"end"});t.textContent=v;s.appendChild(t);}
+  if(pts>=lo&&pts<=hi){
+    s.appendChild(el("line",{x1:ML,y1:Y(pts),x2:W-MR,y2:Y(pts),class:"refl"}));
+    const t=el("text",{x:W-MR,y:Y(pts)-6,class:"reft","text-anchor":"end"});t.textContent="your "+pts+" pts";s.appendChild(t);}
+  const pts2=rs.map((r,i)=>r.b===null?null:[X(i),Y(r.b)]);
+  let d="",started=false;
+  pts2.forEach(p=>{if(!p){started=false;return;} d+=(started?" L":"M")+p[0].toFixed(1)+","+p[1].toFixed(1);started=true;});
+  if(d) s.appendChild(el("path",{d:d,class:"ln"}));
+  rs.forEach((r,i)=>{
+    const t=el("text",{x:X(i),y:H-MB+16,class:"tick","text-anchor":"middle"});t.textContent=RL[r.r];s.appendChild(t);
+    if(r.b===null){const q=el("text",{x:X(i),y:MT+ph/2,class:"tick","text-anchor":"middle"});q.textContent="—";s.appendChild(q);return;}
+    const cleared=r.s==="C";
+    const c=el("circle",{cx:X(i),cy:Y(r.b),r:5.5,class:"dot"});
+    if(!cleared){c.setAttribute("fill","var(--card)");c.setAttribute("stroke","var(--series)");}
+    s.appendChild(c);
+    const lab=el("text",{x:X(i),y:Y(r.b)-11,class:"vlab","text-anchor":"middle"});lab.textContent=r.b;s.appendChild(lab);
+    const v=verdictFor(r,pts);
+    const h=el("rect",{x:X(i)-24,y:MT,width:48,height:ph,class:"hit"});
+    hover(h,"<b>"+r.b+" points</b><span>"+RL[r.r]+" &middot; "+fmt(r.n)+" invited &middot; "+
+      (cleared?"fully cleared":"rationed by date")+"</span><span>At "+pts+" pts: "+v.t+"</span>");
+    s.appendChild(h);});
+  const yl=el("text",{x:ML-7,y:MT-6,class:"tick","text-anchor":"end"});yl.textContent="pts";s.appendChild(yl);
+}
+/* ---------- chart 2: forecast by round size ---------- */
+function chartForecast(g,pts){
+  const s=$("c2");clear(s);
+  const W=520,H=220,ML=34,MR=18,MT=18,MB=40,pw=W-ML-MR,ph=H-MT-MB;
+  if(!g||!g.fc||g.fc.every(v=>v===null)){
+    const t=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
+    t.textContent="No invitations last round, so no share to forecast from.";s.appendChild(t);return;}
+  const vals=g.fc.filter(v=>v!==null);
+  const lo=Math.min(60,pts-5,...vals), hi=Math.max(pts+5,...vals,95);
+  const X=i=>ML+pw*i/(B.sizes.length-1), Y=v=>MT+ph*(1-(v-lo)/(hi-lo));
+  for(let v=Math.ceil(lo/10)*10;v<=hi;v+=10){
+    s.appendChild(el("line",{x1:ML,y1:Y(v),x2:W-MR,y2:Y(v),class:"gl"}));
+    const t=el("text",{x:ML-7,y:Y(v)+3.5,class:"tick","text-anchor":"end"});t.textContent=v;s.appendChild(t);}
+  if(pts>=lo&&pts<=hi){
+    s.appendChild(el("line",{x1:ML,y1:Y(pts),x2:W-MR,y2:Y(pts),class:"refl"}));
+    const t=el("text",{x:W-MR,y:Y(pts)-6,class:"reft","text-anchor":"end"});t.textContent="your "+pts+" pts";s.appendChild(t);}
+  let d="";g.fc.forEach((v,i)=>{if(v===null)return;d+=(d?" L":"M")+X(i).toFixed(1)+","+Y(v).toFixed(1);});
+  s.appendChild(el("path",{d:d,class:"ln"}));
+  g.fc.forEach((v,i)=>{
+    const t=el("text",{x:X(i),y:H-MB+16,class:"tick","text-anchor":"middle"});
+    t.textContent=(B.sizes[i]/1000)+"k";s.appendChild(t);
+    if(v===null)return;
+    s.appendChild(el("circle",{cx:X(i),cy:Y(v),r:i===S.szi?6.5:5,class:"dot"}));
+    const lab=el("text",{x:X(i),y:Y(v)-11,class:"vlab","text-anchor":"middle"});lab.textContent=v;s.appendChild(lab);
+    const fv=fcVerdict(v,pts);
+    const h=el("rect",{x:X(i)-26,y:MT,width:52,height:ph,class:"hit"});
+    hover(h,"<b>cut-off "+v+"</b><span>if the round invites "+fmt(B.sizes[i])+"</span><span>At "+pts+" pts: "+fv.t+"</span>");
+    s.appendChild(h);});
+  const xl=el("text",{x:W/2,y:H-MB+32,class:"tick","text-anchor":"middle"});
+  xl.textContent="assumed size of the next round";s.appendChild(xl);
+}
+/* ---------- chart 3: pool by score (emphasis) ---------- */
+function chartPool(o,pts){
+  const s=$("c3");clear(s);
+  const W=520,H=220,ML=34,MR=14,MT=18,MB=40,pw=W-ML-MR,ph=H-MT-MB;
+  const keys=Object.keys(o.dist).map(Number).sort((a,b)=>a-b);
+  if(!keys.length){const t=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
+    t.textContent="No EOIs in the pool for this occupation.";s.appendChild(t);return;}
+  const max=Math.max(...keys.map(k=>o.dist[k]));
+  const band=pw/keys.length, bw=Math.min(24,band-2);
+  for(let i=0;i<=4;i++){const v=max*i/4,y=MT+ph*(1-i/4);
+    s.appendChild(el("line",{x1:ML,y1:y,x2:W-MR,y2:y,class:"gl"}));
+    const t=el("text",{x:ML-7,y:y+3.5,class:"tick","text-anchor":"end"});t.textContent=Math.round(v);s.appendChild(t);}
+  keys.forEach((k,i)=>{
+    const n=o.dist[k], h=Math.max(2,ph*n/max), x=ML+band*i+(band-bw)/2, y=MT+ph-h;
+    const on=(k===Math.round(pts/5)*5);
+    const r=el("rect",{x:x,y:y,width:bw,height:h,rx:4,class:"bar"+(on?" on":"")});
+    s.appendChild(r);
+    hover(r,"<b>"+fmt(n)+"</b><span>EOIs at "+k+" points</span>");
+    if(keys.length<=14||i%2===0){
+      const t=el("text",{x:x+bw/2,y:H-MB+16,class:"tick","text-anchor":"middle"});t.textContent=k;s.appendChild(t);}
+    if(on){const t=el("text",{x:x+bw/2,y:y-6,class:"vlab","text-anchor":"middle"});t.textContent=fmt(n);s.appendChild(t);}});
+  const xl=el("text",{x:W/2,y:H-MB+32,class:"tick","text-anchor":"middle"});xl.textContent="points score";s.appendChild(xl);
+}
+/* ---------- chart 4: queue position ---------- */
+function chartQueue(g,pts){
+  const s=$("c4");clear(s);
+  const W=520,H=220,ML=14,MR=14,MT=40;
+  if(!g){const t=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
+    t.textContent="No unit-group data.";s.appendChild(t);return;}
+  const d=g.dist, keys=Object.keys(d).map(Number);
+  const above=keys.filter(k=>k>pts).reduce((a,k)=>a+d[k],0);
+  const same=keys.filter(k=>k===Math.round(pts/5)*5).reduce((a,k)=>a+d[k],0);
+  const below=keys.filter(k=>k<pts&&k!==Math.round(pts/5)*5).reduce((a,k)=>a+d[k],0);
+  const tot=above+same+below||1, bw=W-ML-MR, y=MT+24, bh=38;
+  const segs=[["above your score",above,"var(--crit)"],["on your score",same,"var(--series)"],["below you",below,"var(--deemph)"]];
+  let x=ML;
+  segs.forEach(([lab,n,col],i)=>{
+    const w=bw*n/tot; if(w<=0) return;
+    const gap=i<segs.length-1?2:0;
+    const r=el("rect",{x:x,y:y,width:Math.max(0,w-gap),height:bh,rx:i===0||i===segs.length-1?4:0,fill:col});
+    s.appendChild(r);
+    hover(r,"<b>"+fmt(n)+"</b><span>"+lab+"</span>");
+    if(w>44){const t=el("text",{x:x+(w-gap)/2,y:y+bh/2+4,"text-anchor":"middle",
+      fill:i===2?"var(--ink)":"#fff","font-size":"12","font-weight":"650"});t.textContent=fmt(n);s.appendChild(t);}
+    x+=w;});
+  const cap=el("text",{x:ML,y:MT-14,class:"ttl"});
+  cap.textContent=g.name.slice(0,52);s.appendChild(cap);
+  const lg=[["above your score","var(--crit)"],["on your score","var(--series)"],["below you","var(--deemph)"]];
+  let lx=ML;
+  lg.forEach(([t,c])=>{s.appendChild(el("rect",{x:lx,y:y+bh+16,width:9,height:9,rx:2,fill:c}));
+    const q=el("text",{x:lx+14,y:y+bh+24.5,class:"tick"});q.textContent=t;s.appendChild(q);lx+=t.length*5.6+30;});
+  const ahead=above+same;
+  const q=el("text",{x:ML,y:y+bh+52,class:"vlab"});
+  q.textContent="Roughly "+fmt(ahead)+" ahead of you — the round must allocate at least that many to reach you.";
+  s.appendChild(q);
+  const q2=el("text",{x:ML,y:y+bh+70,class:"tick"});
+  q2.textContent="Everyone on your score in the Aug-2026 snapshot is dated before a new EOI, so counts as ahead.";
+  s.appendChild(q2);
+}
+/* ---------- render ---------- */
+function render(){
+  const o=B.occ[S.occ]; if(!o) return;
+  const g=B.groups[o.g]; const pts=S.pts; const size=B.sizes[S.szi];
+  const last=o.rounds[o.rounds.length-1];
+  const fc=g?g.fc[S.szi]:null;
+  const v=fcVerdict(fc,pts);
+  $("flag").className="vflag "+(v.k==="n"?"crit":v.k);
+  $("flag").textContent=(v.k==="good"?"✓ ":v.k==="warn"?"! ":"✕ ")+
+    (v.k==="good"?"On track":v.k==="warn"?"On the boundary":v.k==="n"?"No forecast":"Below the cut-off");
+  $("hero").textContent=fc===null?"—":fc+" pts";
+  $("vsub").innerHTML = fc===null
+    ? "This occupation received no invitations in the most recent round, so there is no share to forecast from. The round-by-round record below still applies."
+    : "is the forecast cut-off for <b>"+o.g+" "+(g?g.name.replace(/^\d+\s/,""):"")+"</b> if the next round invites "+
+      fmt(size)+". You are on <b>"+pts+"</b>, which is "+
+      (pts>fc?"<b>above</b> it — you would be invited regardless of your EOI date."
+       :pts===fc?"<b>exactly on</b> it — invitations would be rationed by date of effect, and a newer EOI is last in line."
+       :"<b>below</b> it — the round would not reach you.");
+  const ge=g?Object.keys(g.dist).map(Number).filter(k=>k>=pts).reduce((a,k)=>a+g.dist[k],0):0;
+  const al=g?g.alloc[g.alloc.length-1]:0;
+  const ratio=ge>0?al/ge:0;
+  $("mfill").style.width=Math.max(2,Math.min(100,ratio*50))+"%";
+  $("mleft").textContent="last round allocated "+fmt(al)+" to this group";
+  $("mright").textContent=fmt(ge)+" sit at "+pts+"+ · "+(ge>0?ratio.toFixed(2)+"×":"—");
+  $("vside").innerHTML="";
+  const rows=[["Pool in this occupation",fmt(o.pool)],
+    ["At your score",fmt(o.dist[Math.round(pts/5)*5]||0)],
+    ["Unit group",o.g],["Group allocation last round",fmt(al)],
+    ["Ahead of you in the group",fmt(ge)]];
+  rows.forEach(([k,val])=>{const dl=document.createElement("dl");dl.className="kv";
+    const dt=document.createElement("dt");dt.textContent=k;const dd=document.createElement("dd");dd.textContent=val;
+    dl.appendChild(dt);dl.appendChild(dd);$("vside").appendChild(dl);});
+  const inv=o.rounds.filter(r=>verdictFor(r,pts).k==="good").length;
+  const tiles=[[inv+" of 5",'rounds that would have invited you at '+pts+' pts'],
+    [fmt(o.rounds.reduce((a,r)=>a+r.n,0)),"invitations to this occupation, all rounds"],
+    [last.b===null?"—":last.b,"lowest points invited, most recent round"],
+    [g?g.alloc.join(" → "):"—","allocation to your unit group, by round"],
+    [B.meta.cal_exact*100+"%","of occupations matched the official table exactly"]];
+  $("tiles").innerHTML="";
+  tiles.forEach(([v2,l])=>{const c=document.createElement("div");c.className="tile";
+    const a=document.createElement("div");a.className="tval";a.textContent=v2;
+    const b=document.createElement("div");b.className="tlab";b.textContent=l;
+    c.appendChild(a);c.appendChild(b);$("tiles").appendChild(c);});
+  $("h1n").textContent=S.occ; $("h2n").textContent=o.g+" group";
+  $("h3n").textContent=fmt(o.pool)+" EOIs"; $("h4n").textContent=o.g+" group";
+  chartRounds(o,pts);chartForecast(g,pts);chartPool(o,pts);chartQueue(g,pts);
+  const tb=document.querySelector("#rt tbody");tb.innerHTML="";
+  o.rounds.forEach(r=>{const v2=verdictFor(r,pts);const tr=document.createElement("tr");
+    const cells=[RL[r.r],r.n?fmt(r.n):"—",r.lc===null?"—":r.lc,r.b===null?"—":r.b,
+      r.b===null?"—":(r.s==="C"?"fully cleared":"rationed by date"),""];
+    cells.forEach((c,i)=>{const td=document.createElement("td");
+      if(i===5){const sp=document.createElement("span");sp.className="pill "+v2.k;sp.textContent=v2.t;td.appendChild(sp);}
+      else td.textContent=c;tr.appendChild(td);});
+    tb.appendChild(tr);});
+  renderAll(pts);
+}
+function renderAll(pts){
+  const tb=document.querySelector("#at tbody");tb.innerHTML="";
+  const list=OCCS.map(k=>({k:k,o:B.occ[k]})).sort((a,b)=>b.o.pool-a.o.pool);
+  $("allN").textContent=list.length+" occupations";
+  list.forEach(({k,o})=>{
+    const g=B.groups[o.g];const tr=document.createElement("tr");
+    if(k===S.occ)tr.className="hl";
+    const td0=document.createElement("td");td0.textContent=k;tr.appendChild(td0);
+    [fmt(o.pool),fmt(o.dist[Math.round(pts/5)*5]||0)].forEach(x=>{
+      const td=document.createElement("td");td.textContent=x;tr.appendChild(td);});
+    o.rounds.forEach(r=>{const v=verdictFor(r,pts);const td=document.createElement("td");
+      const sp=document.createElement("span");sp.className="pill "+v.k;
+      sp.textContent=r.b===null?"—":r.b;td.appendChild(sp);tr.appendChild(td);});
+    const fv=fcVerdict(g?g.fc[S.szi]:null,pts);const td=document.createElement("td");
+    const sp=document.createElement("span");sp.className="pill "+fv.k;
+    sp.textContent=(g&&g.fc[S.szi]!==null)?g.fc[S.szi]:"—";td.appendChild(sp);tr.appendChild(td);
+    tr.addEventListener("click",()=>{S.occ=k;$("occ").value=k;render();window.scrollTo({top:0,behavior:"smooth"});});
+    tr.style.cursor="pointer";tb.appendChild(tr);});
+}
+/* ---------- controls ---------- */
+function initCombo(){
+  const inp=$("occ"),box=$("opts");
+  function show(f){box.innerHTML="";
+    const m=OCCS.filter(o=>o.toLowerCase().includes(f.toLowerCase())).slice(0,60);
+    m.forEach(o=>{const d=document.createElement("div");d.textContent=o;d.setAttribute("role","option");
+      if(o===S.occ)d.className="sel";
+      d.addEventListener("mousedown",e=>{e.preventDefault();S.occ=o;inp.value=o;box.classList.remove("on");render();});
+      box.appendChild(d);});
+    box.classList.toggle("on",m.length>0);}
+  inp.addEventListener("focus",()=>show(""));
+  inp.addEventListener("input",()=>show(inp.value));
+  inp.addEventListener("blur",()=>setTimeout(()=>box.classList.remove("on"),120));
+  inp.value=S.occ;
+}
+B.sizes.forEach((s,i)=>{const o=document.createElement("option");o.value=i;o.textContent=s.toLocaleString();
+  if(i===2)o.selected=true;$("sz").appendChild(o);});
+$("pts").addEventListener("input",e=>{S.pts=+e.target.value||0;render();});
+$("sz").addEventListener("change",e=>{S.szi=+e.target.value;render();});
+initCombo();render();
+</script>
+"""

@@ -1,0 +1,396 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>189 Invitation Odds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>:root{--paper:#fbfbfc;--card:#ffffff;--ink:#141a24;--body:#39414f;--muted:#6b7589;--line:#e2e5ec;
+--accent:#2f6f5e;--accent-soft:#e8f1ee;--amber:#b8792c;--amber-soft:#fbf1e3;--good:#2f7d5f;--bad:#a8453f;--shadow:0 1px 2px rgba(20,26,36,.06),0 8px 24px -16px rgba(20,26,36,.28)}
+:root:not([data-theme="light"]){}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0e1219;--card:#161c26;--ink:#eef1f6;--body:#c2c9d6;--muted:#8b95a8;--line:#262e3b;
+--accent:#63b39b;--accent-soft:#16302a;--amber:#d9a259;--amber-soft:#2e2417;--good:#63b39b;--bad:#d97b74;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -18px rgba(0,0,0,.7)}}
+:root[data-theme="dark"]{--paper:#0e1219;--card:#161c26;--ink:#eef1f6;--body:#c2c9d6;--muted:#8b95a8;--line:#262e3b;
+--accent:#63b39b;--accent-soft:#16302a;--amber:#d9a259;--amber-soft:#2e2417;--good:#63b39b;--bad:#d97b74;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -18px rgba(0,0,0,.7)}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--body);font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;line-height:1.6;margin:0;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 22px 80px;display:flex;flex-direction:column;gap:34px}
+h1,h2,h3{font-family:Archivo,ui-sans-serif,system-ui,sans-serif;color:var(--ink);margin:0;text-wrap:balance;letter-spacing:-.015em}
+h1{font-size:clamp(28px,4.4vw,42px);font-weight:800;line-height:1.1}
+h2{font-size:20px;font-weight:700}
+h3{font-size:15px;font-weight:700}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.sub{color:var(--muted);font-size:15px;max-width:66ch}
+header{display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line);padding-bottom:26px}
+.verdict{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.vtop{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0}
+@media(max-width:720px){.vtop{grid-template-columns:1fr}}
+.vmain{padding:26px 28px;border-right:1px solid var(--line)}
+@media(max-width:720px){.vmain{border-right:0;border-bottom:1px solid var(--line)}}
+.big{font-family:Archivo,sans-serif;font-size:62px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.vside{padding:26px 28px;display:flex;flex-direction:column;gap:14px;justify-content:center}
+.kv{display:flex;justify-content:space-between;gap:16px;align-items:baseline;font-size:14px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-family:"IBM Plex Mono",monospace;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.caveat{background:var(--amber-soft);border-top:1px solid var(--line);padding:14px 28px;font-size:13.5px;color:var(--body)}
+.caveat b{color:var(--amber)}
+section{display:flex;flex-direction:column;gap:14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:var(--shadow)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:right;padding:0 10px 9px;border-bottom:1px solid var(--line)}
+th:first-child{text-align:left}
+td{padding:9px 10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
+.n{text-align:right;font-family:"IBM Plex Mono",monospace}
+.rd{font-weight:600;color:var(--ink)}
+.dim{color:var(--muted)}
+.pill{display:inline-block;min-width:38px;padding:2px 9px;border-radius:999px;font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12.5px}
+.pill.ok{background:var(--accent-soft);color:var(--good)}
+.pill.mid{background:var(--amber-soft);color:var(--amber)}
+.pill.no{background:var(--line);color:var(--muted)}
+svg{width:100%;height:auto;display:block}
+.g{stroke:var(--line);stroke-width:1}
+.above{fill:var(--amber-soft);opacity:.55}
+.ax{fill:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:11px}
+.axs{fill:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:9.5px;opacity:.8}
+.mark{stroke:var(--amber);stroke-width:1.5;stroke-dasharray:5 4}
+.marklbl{fill:var(--amber);font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600}
+.ln{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.dot{fill:var(--accent);stroke:var(--card);stroke-width:2}
+.dot.end{fill:var(--amber)}
+.val{fill:var(--ink);font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:700}
+input[type=search]{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);font:inherit;font-size:14px}
+input[type=search]:focus{outline:2px solid var(--accent);outline-offset:1px}
+.note{font-size:13px;color:var(--muted)}
+.theory{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:9px;font-size:14px}
+.theory li{padding-left:4px}
+.theory li::marker{color:var(--accent);font-family:"IBM Plex Mono",monospace;font-weight:700}
+.statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:18px}
+.stat{display:flex;flex-direction:column;gap:2px}
+.sv{font-family:Archivo,sans-serif;font-size:27px;font-weight:800;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+.sl{font-size:11.5px;color:var(--muted);line-height:1.3}
+.ctl{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ctl label{font-size:13px;color:var(--muted)}
+.ctl input[type=number]{width:78px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:inherit;font-family:"IBM Plex Mono",monospace}
+.ctl input[type=number]:focus{outline:2px solid var(--accent);outline-offset:1px}
+.findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.find{border-left:3px solid var(--accent);padding:2px 0 2px 15px}
+.find h3{margin-bottom:4px}
+.find p{margin:0;font-size:13.5px}
+code{font-family:"IBM Plex Mono",monospace;font-size:.9em;background:var(--accent-soft);color:var(--accent);padding:1px 5px;border-radius:4px}
+footer{border-top:1px solid var(--line);padding-top:20px;font-size:12.5px;color:var(--muted)}
+a{color:var(--accent)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}</style>
+<div class="wrap">
+<p style="margin:0"><a href="index.html" style="font-size:13px;color:var(--accent)">&larr; Back to the interactive explorer</a></p>
+<header>
+  <div class="eyebrow">Subclass 189 &middot; Points-Tested Stream</div>
+  <h1>Will an 85-point physicist be invited?</h1>
+  <p class="sub">A queue model built from all 24 monthly SkillSelect snapshots (Sep 2024 &ndash; Aug 2026), read straight from the
+  Qlik engine behind the Department of Employment's public EOI dashboard. Every figure here is a distinct-EOI count, not a row count.</p>
+</header>
+
+<div class="verdict">
+ <div class="vtop">
+  <div class="vmain">
+    <div class="eyebrow">Verdict &middot; conditional on a round being held</div>
+    <div class="big">1.6&times;</div>
+    <p class="sub" style="margin-top:8px">headroom over the threshold that clears 85 points. The last round gave
+    ANZSCO 2349 <b>35 invitations</b> against an 85-and-above stock of <b>22</b> &mdash; so the
+    cut-off had to fall below 85, and it did (actual 80). Re-run at <b>every one of the five historical round sizes</b>
+    using today's allocation share, an 85-point physicist <b>clears outright in all five</b>.</p>
+  </div>
+  <div class="vside">
+    <dl class="kv" style="margin:0"><dt>Allocation that clears 85</dt><dd>&ge; 22</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Last round's allocation</dt><dd>35</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Round size needed, today's share</dt><dd>~6,289</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Smallest round in the record</dt><dd>6,450</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Share could fall by</dt><dd>37%</dd></dl>
+  </div>
+ </div>
+ <div class="caveat"><b>The one way this fails.</b> 2349's share of the round would have to revert to roughly its 2024
+ level &mdash; it was 0.07% and 0.13% then, is 0.67% now, and would need to drop 37% to put 85 back on the boundary.
+ That is a policy decision, not a queue-position problem: not your score, not competitor growth, not your date of
+ effect. The other open question remains whether a round is held at all.</div>
+</div>
+
+<section>
+  <h2>An earlier figure on this page said 40&ndash;77%. Here is why it was wrong</h2>
+  <p class="sub">That number came from asking how many of the five historical allocations would have covered your
+  queue rank. Three of those five are not plausible draws for the next round &mdash; they come from a regime when
+  this occupation group received a far smaller slice.</p>
+  <div class="panel scroll"><table>
+    <thead><tr><th>Round</th><th>2349 allocation</th><th>Share of the round</th><th>Comparable to today?</th></tr></thead>
+    <tbody>
+      <tr><td class="rd">Sep 2024</td><td class="n">3</td><td class="n">0.07%</td><td class="n"><span class="pill no">stale regime</span></td></tr>
+      <tr><td class="rd">Nov 2024</td><td class="n">11</td><td class="n">0.13%</td><td class="n"><span class="pill no">stale regime</span></td></tr>
+      <tr><td class="rd">Aug 2025</td><td class="n">15</td><td class="n">0.42%</td><td class="n"><span class="pill mid">transitional</span></td></tr>
+      <tr><td class="rd">Nov 2025</td><td class="n">24</td><td class="n">0.46%</td><td class="n"><span class="pill ok">yes</span></td></tr>
+      <tr><td class="rd">Jun 2026</td><td class="n">35</td><td class="n">0.67%</td><td class="n"><span class="pill ok">yes</span></td></tr>
+    </tbody></table></div>
+  <p class="note">Treating a 0.07% share from September 2024 as an equally likely outcome for the next round is what
+  produced the pessimistic figure. Share autocorrelation on the recent transitions is <b>0.92&ndash;0.96</b>, so the
+  recent share is the forecastable quantity and the 2024 values are a different regime. The corrected reading is the
+  verdict above. This page previously showed the old number; it is retired rather than quietly amended.</p>
+</section>
+
+<section>
+  <h2>Points change, and that is what sets your place in the queue</h2>
+  <p class="sub">Nearly half this pool did not lodge at the score it now holds. The table records every version of an
+  EOI with its own validity interval, so an upgrade is directly observable &mdash; and an upgrade
+  <b>resets the date of effect</b>, which is what the queue is actually ordered on.</p>
+  <div class="panel"><div class="statrow">
+    <div class="stat"><span class="sv">47.3%</span><span class="sl">of the 189 pool has changed score</span></div>
+    <div class="stat"><span class="sv">+8.0</span><span class="sl">mean points gained, among movers</span></div>
+    <div class="stat"><span class="sv">43%</span><span class="sl">of the 85+ pool re-scored within 6 months</span></div>
+    <div class="stat"><span class="sv">~6</span><span class="sl">enter 2349's 85+ band per month</span></div>
+    <div class="stat"><span class="sv">0%</span><span class="sl">of 2349's 85+ cohort scored over a year ago</span></div>
+  </div></div>
+  <p class="note"><b>This works in your favour.</b> Someone sitting at 80 points who reaches 85 after 10 Sep 2026 takes a
+  date of effect later than yours and joins the queue <i>behind</i> you, not ahead. Because the 85+ band turns over
+  almost completely within a year, your position stops eroding the moment you lodge &mdash; it only improves as those
+  ahead are invited away or hit the two-year expiry. Of the 31 people ahead of you in 2349, every one has a date of
+  effect before 10 Sep 2026, verified directly rather than inferred from lodgement month.</p>
+</section>
+
+<section>
+  <h2>One mechanism explains every observation</h2>
+  <p class="sub">Five rounds, 181 occupations, cut-offs from 65 to 100 in a single round, a published tie-break that
+  appears to exclude recent applicants, and a ceiling that never binds &mdash; all of it follows from one rule.</p>
+  <div class="panel">
+    <ol class="theory">
+      <li><b>Each round sets an allocation per ANZSCO unit group.</b> Not the published ceiling, which is a
+      non-binding upper bound &mdash; 2349's ceiling is 500 and the largest round used 87.</li>
+      <li><b>Within a group, invitations run strictly by points descending, then date of effect ascending.</b></li>
+      <li><b>So the allocation lands on a boundary score.</b> Everything above it is fully exhausted; the boundary
+      score itself is usually rationed by date (79% of groups); everything below is untouched.</li>
+      <li><b>The published tie-break date is the boundary date at the national floor.</b> Of every score invited in
+      Jun-2026, only 65 points stops at April 2026 &mdash; every other score reaches June. That is why it does not
+      exclude a recent high-scoring applicant.</li>
+    </ol>
+    <p class="note" style="margin-top:12px"><b>Residual.</b> 13 of 58 rationed cells sit above their group's lowest
+    invited score, which strict points-then-date forbids. Cause: submission month is not date of effect. An EOI whose
+    points changed carries an old submission month but a fresh date of effect, so the exhaustion probe misreads it.
+    Confirmed directly &mdash; 2349's 85-point cell fell from 10 to 1 across the Jun-2026 round, then refilled to 13 by
+    August including a 2024-submitted EOI absent in June and July, which can only have re-entered at 85 with a 2026
+    date of effect.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Checked against the official round results</h2>
+  <p class="sub">The Department published per-occupation minimum scores for the 4 June 2026 round. Those figures were
+  not used to build this model &mdash; they are an independent answer key for cut-offs derived from raw EOI records.</p>
+  <div class="panel"><div class="statrow">
+    <div class="stat"><span class="sv">124</span><span class="sl">occupations cross-checked</span></div>
+    <div class="stat"><span class="sv">90.3%</span><span class="sl">exactly right</span></div>
+    <div class="stat"><span class="sv">99.2%</span><span class="sl">within &plusmn;5 points</span></div>
+    <div class="stat"><span class="sv">0.9755</span><span class="sl">correlation r</span></div>
+    <div class="stat"><span class="sv">+0.52</span><span class="sl">bias, points</span></div>
+  </div></div>
+  <p class="note"><b>Every one of the 12 disagreements is positive</b> (+5 in eleven cases, +10 in one) and none negative.
+  That is the signature of the single-leg filter: where the marginal invitee was a multi-leg EOI, the derived cut-off lands
+  one tier high. The method is conservative by construction &mdash; it cannot overstate a candidate's chances.
+  The round-size estimate is validated too: <b>9,761 derived against 10,000 official</b>, a 2.4% error.
+  For Physicist the model derived <b>80</b> and the Department published <b>80</b>.</p>
+</section>
+
+<section>
+  <h2>The whole model reduces to one threshold</h2>
+  <p class="sub">Within a unit group, a round invites strictly down the points order. 31 people in ANZSCO 2349
+  sit ahead of you on 85+ points &mdash; every one of them verified to hold a date of effect before 10 Sep 2026.
+  You are invited if and only if the round allocates at least that many invitations to 2349.</p>
+  <div class="panel scroll" style="margin-bottom:14px"><table>
+    <thead><tr><th>If the round is held</th><th>Ahead of you lapsed</th><th>Your rank</th><th>Allocation needed</th></tr></thead>
+    <tbody>
+     <tr><td class="rd">by 30 Sep 2026</td><td class="n">2</td><td class="n">32</td><td class="n">&ge; 32</td></tr>
+     <tr><td class="rd">by 31 Dec 2026</td><td class="n">4</td><td class="n">30</td><td class="n">&ge; 30</td></tr>
+    </tbody></table></div>
+  <div class="panel scroll"><table>
+    <thead><tr><th>Round</th><th>Allocation to 2349</th><th>Recency weight</th><th>Covers a Sep-2026 round?</th></tr></thead>
+    <tbody><tr><td class='rd'>Sep 2024</td><td class='n'>5</td><td class='n dim'>0.032</td><td class='n'><span class='pill no'>short</span></td></tr><tr><td class='rd'>Nov 2024</td><td class='n'>21</td><td class='n dim'>0.065</td><td class='n'><span class='pill no'>short</span></td></tr><tr><td class='rd'>Aug 2025</td><td class='n'>29</td><td class='n dim'>0.129</td><td class='n'><span class='pill no'>short</span></td></tr><tr><td class='rd'>Nov 2025</td><td class='n'>43</td><td class='n dim'>0.258</td><td class='n'><span class='pill ok'>covered</span></td></tr><tr><td class='rd'>Jun 2026</td><td class='n'>87</td><td class='n dim'>0.516</td><td class='n'><span class='pill ok'>covered</span></td></tr></tbody></table></div>
+  <p class="note">Allocation history <b>5 &rarr; 21 &rarr; 29 &rarr; 43 &rarr; 87</b> &mdash; monotone increasing, 17.4&times; over
+  five rounds, and 2349's share of the round grew from 0.12% to 1.67%. <b>The downside risk is not your score.</b>
+  It is a policy cut returning this stratum's allocation below 32, as in Sep-2024, Nov-2024 and Aug-2025.</p>
+</section>
+
+<section>
+  <h2>Tested on every occupation, in every round</h2>
+  <p class="sub">The same model run for all 82 unit groups across all five rounds &mdash; 315 group-rounds &mdash;
+  rather than the single round it was first checked on. Predict each group's cut-off by walking its pool from
+  the top until its allocation runs out, then compare with what the round actually did.</p>
+  <div class="panel scroll"><table>
+    <thead><tr><th>Round</th><th>Panel coverage</th><th>Groups</th><th>Exact</th><th>Within &plusmn;5</th><th>MAE (pts)</th></tr></thead>
+    <tbody>
+      <tr><td class="rd">Sep 2024</td><td class="n dim">12%</td><td class="n">63</td><td class="n"><span class="pill no">13%</span></td><td class="n">38%</td><td class="n">9.92</td></tr>
+      <tr><td class="rd">Nov 2024</td><td class="n dim">20%</td><td class="n">73</td><td class="n"><span class="pill no">15%</span></td><td class="n">45%</td><td class="n">8.70</td></tr>
+      <tr><td class="rd">Aug 2025</td><td class="n dim">69%</td><td class="n">56</td><td class="n"><span class="pill ok">88%</span></td><td class="n">96%</td><td class="n">0.80</td></tr>
+      <tr><td class="rd">Nov 2025</td><td class="n dim">81%</td><td class="n">61</td><td class="n"><span class="pill ok">75%</span></td><td class="n">100%</td><td class="n">1.23</td></tr>
+      <tr><td class="rd">Jun 2026</td><td class="n dim">98%</td><td class="n">62</td><td class="n"><span class="pill ok">85%</span></td><td class="n">98%</td><td class="n">0.81</td></tr>
+    </tbody></table></div>
+  <p class="note"><b>The model is not uniformly good, and the pattern is the point.</b> Accuracy tracks how complete
+  the panel was: correlation between panel coverage and error is <b>&minus;0.962</b>. Where the panel is complete the
+  model is <b>83% exact with a mean error of 0.95 points</b>; on the two 2024 rounds, when the dashboard had captured
+  only 12&ndash;20% of the eventual pool, it drops to 14%. The 2024 errors are all negative &mdash; with the pool
+  understated the top-down walk runs out of people too early and dives too deep, which is exactly what
+  under-coverage produces.</p>
+  <div class="panel" style="margin-top:6px"><div class="statrow">
+    <div class="stat"><span class="sv">220</span><span class="sl">group-rounds tested out of sample</span></div>
+    <div class="stat"><span class="sv">91%</span><span class="sl">within &plusmn;5 pts, latest fold</span></div>
+    <div class="stat"><span class="sv">3.84</span><span class="sl">MAE, latest fold</span></div>
+    <div class="stat"><span class="sv">1.1</span><span class="sl">pts &mdash; cost of forecasting allocation</span></div>
+    <div class="stat"><span class="sv">0.793</span><span class="sl">allocation autocorrelation</span></div>
+  </div></div>
+  <p class="note">Out-of-sample means the allocation is forecast from the previous round only, with round size taken
+  as given. The gap between knowing the allocation (MAE 4.54) and forecasting it (5.64) is just 1.1 points &mdash; the
+  ranking rule is the reliable part; the allocation is the uncertain input.</p>
+  <div class="findings" style="margin-top:14px">
+    <div class="find"><h3>A correction to an earlier figure on this page</h3>
+    <p>The first version reported &ldquo;49 of 49 occupations within &plusmn;5 points&rdquo;. That compared single-leg
+    invitations against an all-leg pool. On a consistent all-leg basis the model collapses, because the all-leg
+    minimum invited score is dragged down <b>7.3 points</b> on average (11.3 in large groups) by EOIs invited for
+    190/491. Everything above is on a consistent <b>single-leg</b> basis, the one that matched the official table.</p></div>
+    <div class="find"><h3>Two caveats about this particular occupation</h3>
+    <p>2349's allocation series is monotone increasing, but only <b>18% of groups</b> are &mdash; it is unusual, so
+    don't read the trend as typical. And its clean-step boundary is significantly associated with having a small pool
+    (p&nbsp;&lt;&nbsp;0.0001), so that favourable property is partly a small-numbers artefact.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>The mechanism: rounds are stratified by occupation, not by a single national cut-off</h2>
+  <p class="sub">Every round invites someone at 65 points, so there is no such thing as "the 189 cut-off". Each ANZSCO unit group
+  clears to its own depth. Physicists sit in <b>2349 Other Natural and Physical Science Professionals</b> &mdash; a low-volume group
+  whose cut-off has dropped 15 points in five rounds while the national floor never moved.</p>
+  <div class="panel"><svg viewBox="0 0 760 300" role="img" aria-label="Physics-stratum points cut-off by round: 95, 90, 90, 85, 80">
+<rect x="58" y="26.0" width="678" height="94.3" class="above"/><line x1="58" y1="246.0" x2="736" y2="246.0" class="g"/><text x="48" y="250.0" class="ax" text-anchor="end">65</text><line x1="58" y1="214.6" x2="736" y2="214.6" class="g"/><text x="48" y="218.6" class="ax" text-anchor="end">70</text><line x1="58" y1="183.1" x2="736" y2="183.1" class="g"/><text x="48" y="187.1" class="ax" text-anchor="end">75</text><line x1="58" y1="151.7" x2="736" y2="151.7" class="g"/><text x="48" y="155.7" class="ax" text-anchor="end">80</text><line x1="58" y1="120.3" x2="736" y2="120.3" class="g"/><text x="48" y="124.3" class="ax" text-anchor="end">85</text><line x1="58" y1="88.9" x2="736" y2="88.9" class="g"/><text x="48" y="92.9" class="ax" text-anchor="end">90</text><line x1="58" y1="57.4" x2="736" y2="57.4" class="g"/><text x="48" y="61.4" class="ax" text-anchor="end">95</text><line x1="58" y1="26.0" x2="736" y2="26.0" class="g"/><text x="48" y="30.0" class="ax" text-anchor="end">100</text><line x1="58" y1="120.3" x2="736" y2="120.3" class="mark"/><text x="732" y="112.3" class="marklbl" text-anchor="end">your 85 points</text><path d="M58.0,57.4 L227.5,88.9 L397.0,88.9 L566.5,120.3 L736.0,151.7" class="ln"/><circle cx="58.0" cy="57.4" r="4.5" class="dot"/><text x="58.0" y="43.4" class="val" text-anchor="middle">95</text><circle cx="227.5" cy="88.9" r="4.5" class="dot"/><text x="227.5" y="74.9" class="val" text-anchor="middle">90</text><circle cx="397.0" cy="88.9" r="4.5" class="dot"/><text x="397.0" y="74.9" class="val" text-anchor="middle">90</text><circle cx="566.5" cy="120.3" r="4.5" class="dot"/><text x="566.5" y="106.3" class="val" text-anchor="middle">85</text><circle cx="736.0" cy="151.7" r="6" class="dot end"/><text x="736.0" y="137.7" class="val" text-anchor="middle">80</text><text x="58.0" y="266" class="ax" text-anchor="middle">Sep 2024</text><text x="58.0" y="280" class="axs" text-anchor="middle">3 invited</text><text x="227.5" y="266" class="ax" text-anchor="middle">Nov 2024</text><text x="227.5" y="280" class="axs" text-anchor="middle">4 invited</text><text x="397.0" y="266" class="ax" text-anchor="middle">Aug 2025</text><text x="397.0" y="280" class="axs" text-anchor="middle">9 invited</text><text x="566.5" y="266" class="ax" text-anchor="middle">Nov 2025</text><text x="566.5" y="280" class="axs" text-anchor="middle">15 invited</text><text x="736.0" y="266" class="ax" text-anchor="middle">Jun 2026</text><text x="736.0" y="280" class="axs" text-anchor="middle">23 invited</text></svg>
+  <p class="note" style="margin-top:6px">Minimum points invited in unit group 2349 per round. Shaded band = scores above 85.
+  Jun 2026 went <b>below</b> your score, inviting physicists at 80.</p></div>
+</section>
+
+<section>
+  <h2>The five real rounds</h2>
+  <p class="sub">Only five months in the whole panel contain genuine 189 invitations. The other 19 months show nothing but
+  190/491 state nominations leaking through a shared status field &mdash; see the methodology note below.</p>
+  <div class="panel scroll"><table>
+   <thead><tr><th>Round</th><th>189-only invites</th><th>Est. total</th><th>To 2349</th><th>2349 stock &ge;85</th><th>2349 cut-off</th></tr></thead>
+   <tbody><tr><td class='rd'>Sep 2024</td><td class='n'>4,274</td><td class='n dim'>~7,814</td><td class='n'>5</td><td class='n'>5</td><td class='n'><span class='pill no'>95</span></td></tr><tr><td class='rd'>Nov 2024</td><td class='n'>8,230</td><td class='n dim'>~14,507</td><td class='n'>21</td><td class='n'>14</td><td class='n'><span class='pill no'>90</span></td></tr><tr><td class='rd'>Aug 2025</td><td class='n'>3,574</td><td class='n dim'>~6,705</td><td class='n'>29</td><td class='n'>62</td><td class='n'><span class='pill no'>90</span></td></tr><tr><td class='rd'>Nov 2025</td><td class='n'>5,207</td><td class='n dim'>~9,821</td><td class='n'>43</td><td class='n'>47</td><td class='n'><span class='pill ok'>85</span></td></tr><tr><td class='rd'>Jun 2026</td><td class='n'>5,198</td><td class='n dim'>~9,761</td><td class='n'>87</td><td class='n'>50</td><td class='n'><span class='pill ok'>80</span></td></tr></tbody></table></div>
+  <p class="note">Allocation to 2349 and its &ge;85 stock are both on the all-leg basis, so they are directly comparable;
+  round size is quoted single-leg with a difference-in-differences estimate of the true total.
+  The 2024 rows look self-contradictory &mdash; Nov-2024 allocated 21 against a recorded stock of 14 yet held the cut-off at 90
+  &mdash; because the panel was still filling in late 2024 and understates the true standing pool then. The backtest below is run
+  on Jun-2026 only, where coverage is complete.
+  "189-only" counts EOIs whose <i>only</i> visa leg is 189, so the invitation is unambiguously a 189 invitation.
+  "Est. total" adds multi-leg EOIs via a difference-in-differences correction against non-round months.</p>
+</section>
+
+<section>
+  <h2>Macroscopic drivers</h2>
+  <p class="sub">What moves the answer is not any one applicant's attributes but the balance between a pool growing
+  faster than it is cleared, and an allocation to small scientific occupations that has been expanding sharply.</p>
+  <div class="panel"><div class="statrow">
+    <div class="stat"><span class="sv">+4,435</span><span class="sl">net EOIs added to the 189 pool each month</span></div>
+    <div class="stat"><span class="sv">180,651</span><span class="sl">standing 189 pool, Aug 2026</span></div>
+    <div class="stat"><span class="sv">67.7%</span><span class="sl">of Jun-2026 went to 10 occupations</span></div>
+    <div class="stat"><span class="sv">17.4&times;</span><span class="sl">growth in 2349's allocation</span></div>
+    <div class="stat"><span class="sv">1.67%</span><span class="sl">2349 share of the round, up from 0.12%</span></div>
+  </div></div>
+  <div class="findings" style="margin-top:16px">
+    <div class="find"><h3>The tie-break date does not lock out a recent EOI</h3>
+    <p>June 2026's published tie-break was April 2026, which sounds fatal for a 10 Sep lodgement. It is not:
+    <b>20.2% of invitations at 90+ points went to EOIs dated after that tie-break</b>. The date binds only at the
+    marginal position within a score, not across all scores.</p></div>
+    <div class="find"><h3>EOIs expire on a hard two-year cliff</h3>
+    <p>Cohort survival runs 96% at 0&ndash;6 months, 82% at 12&ndash;18, 77% at 18&ndash;24, then collapses to
+    <b>0.8% beyond 24 months</b>. Four of the 31 people ahead of you in 2349 lapse by the end of 2026, which is
+    why your rank improves simply by waiting.</p></div>
+    <div class="find"><h3>The occupation ceiling is not the binding constraint</h3>
+    <p>ANZSCO 2349's annual ceiling is <b>500</b>, and the largest round used only <b>87</b> of it. Nothing caps this
+    group from going deeper &mdash; a downside risk this model had flagged and can now discharge.</p></div>
+  </div>
+  <p class="note">Invitations are highly concentrated: ten unit groups absorb two thirds of a round, thirty absorb 94%.
+  Being in a small, low-competition group is an advantage here &mdash; 2349's cut-off fell while the national floor stayed at 65.
+  <b>Not visible in this data:</b> annual planning levels and ministerial direction on occupation priority. Those set
+  round size and cadence, and no amount of EOI data substitutes for them.</p>
+</section>
+
+<section>
+  <h2>If you also hold 190 or 491 EOIs</h2>
+  <p class="sub">State-nominated subclasses are not points-ranked federally &mdash; a state selects against its own criteria,
+  so a queue model does not transfer. For context only, here is where physicists stand in those pools.</p>
+  <div class="panel scroll"><table>
+   <thead><tr><th>Subclass</th><th>Physicist EOIs</th><th>At 90+ pts (= 85 + nomination)</th></tr></thead>
+   <tbody>
+    <tr><td class="rd">190 State Nominated</td><td class="n">128</td><td class="n">31</td></tr>
+    <tr><td class="rd">491 Regional Nominated</td><td class="n">125</td><td class="n">44</td></tr>
+   </tbody></table></div>
+  <p class="note">A 190 nomination adds 5 points and a 491 adds 15, so an 85-point 189 profile appears at 90 and 100 in those pools.</p>
+</section>
+
+<section>
+  <h2>Look up any occupation</h2>
+  <p class="sub">The points cut-off each ANZSCO occupation actually reached in each of the five rounds, with its current
+  standing pool. Green means that round would have reached your score; set your own points below. A dash means
+  the occupation received no invitation in that round. Small number beside each cut-off is that round's invitation count.</p>
+  <div class="panel">
+    <div class="ctl">
+      <input type="search" id="q" style="flex:1;min-width:220px" placeholder="Search 181 occupations — try 'physicist', '2613', 'nurse'" aria-label="Search occupations">
+      <label for="pts">Your points</label><input type="number" id="pts" value="85" min="0" max="180" step="5" aria-label="Your points score"><label for="sz">Next round size</label><select id="sz" aria-label="Assumed size of the next round"><option value="0">5,000</option><option value="1">7,500</option><option value="2" selected>10,000</option><option value="3">12,500</option><option value="4">15,000</option></select>
+    </div>
+    <div class="scroll" style="margin-top:14px;max-height:440px;overflow-y:auto"><table id="t">
+      <thead><tr><th>Occupation</th><th>Sep 2024</th><th>Nov 2024</th><th>Aug 2025</th><th>Nov 2025</th><th>Jun 2026</th><th>Next round</th><th>Pool @85</th><th>Pool &gt;85</th></tr></thead>
+      <tbody></tbody></table></div>
+  </div>
+</section>
+
+<section>
+  <h2>Two things everyone else gets wrong about this data</h2>
+  <div class="findings">
+    <div class="find"><h3>EOI Status is recorded per EOI, not per visa leg</h3>
+    <p>Filtering <code>Visa Type = 189</code> and counting <code>INVITED</code> overstates 189 invitations by roughly 2&times;,
+    because an EOI invited for 190 still carries a 189 leg. Across the panel the three visa filters overlap ~50%. Isolating
+    single-leg EOIs is what reveals that there were five rounds, not twenty-four.</p></div>
+    <div class="find"><h3>The engine returns exact counts below 20</h3>
+    <p>The Qlik front end masks small cells, but the websocket engine underneath does not. Verified by complement differencing
+    &mdash; total minus total-excluding-the-occupation reproduced the direct figure exactly (72 = 72) down to cells of 1.</p></div>
+  </div>
+</section>
+
+<footer>
+  Source: Department of Employment and Workplace Relations SkillSelect EOI dashboard, Qlik app <code>aaac76b5</code>, snapshots
+  Sep 2024 &ndash; Aug 2026. Latest snapshot is 08/2026 and therefore predates a 10 Sep 2026 EOI. <code>Month Submitted</code> is not
+  <i>date of effect</i>: a points change resets date of effect, so same-score queue position is approximate and, for a recent
+  submission, conservative. Official round figures (4 June 2026: 10,000 invitations, per-occupation minimum scores, April 2026 tie-break,
+  next round expected by 30 September 2026) are as published by the Department of Home Affairs and republished by
+  ahclawyers.com and studynash.co; the Home Affairs page itself returned 403 to automated fetch, so treat the
+  expected round date as a secondary-source paraphrase rather than a departmental commitment.
+  Occupation ceiling for 2349 (500, FY2025-26) via immitrend.com.au. Not migration advice. Code and data:
+  <a href="https://github.com/SzeChunYiu/189-visa-invitation">github.com/SzeChunYiu/189-visa-invitation</a>
+</footer>
+</div>
+<script>
+const D=[{"o":"133111 Construction Project Manager","2024-09":[null,75,"P",247],"2024-11":[75,70,"P",411],"2025-08":[95,90,"P",10],"2025-11":[90,85,"P",78],"2026-06":[85,80,"P",281],"pool":1363,"p85":48,"pg":26,"f":[80,80,75,75,75]},{"o":"133211 Engineering Manager","2024-09":null,"2024-11":[null,90,"P",1],"2025-08":[90,90,"C",1],"2025-11":[90,85,"P",20],"2026-06":[85,80,"P",34],"pool":221,"p85":5,"pg":1,"f":[80,75,75,75,75]},{"o":"134111 Child Care Centre Manager","2024-09":[null,80,"P",3],"2024-11":[null,75,"P",1],"2025-08":null,"2025-11":[75,75,"C",2],"2026-06":[80,80,"C",2],"pool":9,"p85":0,"pg":0,"f":[75,70,70,70,70]},{"o":"134213 Primary Health Organisation Manager","2024-09":null,"2024-11":null,"2025-08":[null,90,"P",1],"2025-11":[90,90,"C",2],"2026-06":[85,80,"P",5],"pool":41,"p85":0,"pg":0,"f":[80,80,75,75,75]},{"o":"134214 Welfare Centre Manager","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":[85,85,"C",1],"2026-06":[85,85,"C",1],"pool":4,"p85":0,"pg":0,"f":[80,80,75,75,75]},{"o":"139911 Arts Administrator or Manager","2024-09":null,"2024-11":null,"2025-08":[95,90,"P",2],"2025-11":[90,85,"P",5],"2026-06":[80,80,"C",11],"pool":19,"p85":2,"pg":1,"f":[80,75,75,75,75]},{"o":"139912 Environmental Manager","2024-09":null,"2024-11":[90,90,"C",6],"2025-08":[95,90,"P",2],"2025-11":[85,85,"C",11],"2026-06":[85,80,"P",17],"pool":80,"p85":4,"pg":2,"f":[80,75,75,75,75]},{"o":"211112 Dancer or Choreographer","2024-09":null,"2024-11":[null,90,"P",1],"2025-08":null,"2025-11":null,"2026-06":[80,80,"C",4],"pool":6,"p85":0,"pg":0,"f":[80,75,75,65,65]},{"o":"211213 Musician (Instrumental)","2024-09":null,"2024-11":[null,90,"P",1],"2025-08":null,"2025-11":null,"2026-06":[90,90,"C",3],"pool":6,"p85":2,"pg":0,"f":[85,85,75,70,70]},{"o":"221111 Accountant (General)","2024-09":[null,95,"P",105],"2024-11":[95,95,"C",289],"2025-08":null,"2025-11":null,"2026-06":null,"pool":3125,"p85":410,"pg":568,"f":[null,null,null,null,null]},{"o":"221112 Management Accountant","2024-09":[100,100,"C",4],"2024-11":[100,95,"P",28],"2025-08":null,"2025-11":null,"2026-06":null,"pool":764,"p85":113,"pg":134,"f":[null,null,null,null,null]},{"o":"221113 Taxation Accountant","2024-09":[null,90,"P",41],"2024-11":[90,85,"P",133],"2025-08":null,"2025-11":null,"2026-06":null,"pool":977,"p85":176,"pg":212,"f":[null,null,null,null,null]},{"o":"221213 External Auditor","2024-09":[null,90,"P",108],"2024-11":[90,85,"P",324],"2025-08":null,"2025-11":null,"2026-06":null,"pool":1945,"p85":357,"pg":277,"f":[null,null,null,null,null]},{"o":"221214 Internal Auditor","2024-09":[95,95,"C",4],"2024-11":[90,90,"C",15],"2025-08":null,"2025-11":null,"2026-06":null,"pool":288,"p85":32,"pg":24,"f":[null,null,null,null,null]},{"o":"224111 Actuary","2024-09":[null,90,"P",5],"2024-11":[90,85,"P",31],"2025-08":[95,90,"P",35],"2025-11":[90,85,"P",65],"2026-06":[95,90,"P",15],"pool":109,"p85":21,"pg":20,"f":[90,90,85,85,85]},{"o":"224113 Statistician","2024-09":[95,90,"P",6],"2024-11":[90,90,"C",41],"2025-08":[95,90,"P",56],"2025-11":[90,85,"P",123],"2026-06":[95,90,"P",94],"pool":383,"p85":83,"pg":87,"f":[90,90,85,85,85]},{"o":"224311 Economist","2024-09":[null,90,"P",4],"2024-11":[90,90,"C",11],"2025-08":[95,90,"P",8],"2025-11":[90,85,"P",20],"2026-06":[85,80,"P",49],"pool":90,"p85":11,"pg":8,"f":[80,80,75,70,65]},{"o":"224511 Land Economist","2024-09":null,"2024-11":null,"2025-08":[90,90,"C",1],"2025-11":[85,85,"C",9],"2026-06":[85,80,"P",12],"pool":17,"p85":1,"pg":1,"f":[75,75,70,65,65]},{"o":"224512 Valuer","2024-09":[null,95,"P",1],"2024-11":[null,90,"P",3],"2025-08":[90,90,"C",3],"2025-11":[90,85,"P",9],"2026-06":[85,80,"P",23],"pool":36,"p85":1,"pg":0,"f":[75,75,70,65,65]},{"o":"224711 Management Consultant","2024-09":[null,90,"P",3],"2024-11":[90,85,"P",33],"2025-08":[95,90,"P",27],"2025-11":[90,85,"P",122],"2026-06":[85,80,"P",179],"pool":300,"p85":40,"pg":28,"f":[80,75,75,70,65]},{"o":"232111 Architect","2024-09":[null,75,"P",286],"2024-11":[75,70,"P",231],"2025-08":[110,90,"P",7],"2025-11":[90,85,"P",68],"2026-06":[90,85,"P",62],"pool":583,"p85":84,"pg":18,"f":[85,85,85,85,85]},{"o":"232112 Landscape Architect","2024-09":[null,75,"P",49],"2024-11":[75,70,"P",40],"2025-08":[null,90,"P",3],"2025-11":[90,85,"P",16],"2026-06":[90,85,"P",14],"pool":147,"p85":19,"pg":5,"f":[85,85,85,85,85]},{"o":"232212 Surveyor","2024-09":[null,95,"P",3],"2024-11":[null,90,"P",1],"2025-08":[95,95,"C",1],"2025-11":[85,85,"C",12],"2026-06":[80,80,"C",17],"pool":73,"p85":5,"pg":1,"f":[80,80,75,75,75]},{"o":"232213 Cartographer","2024-09":null,"2024-11":null,"2025-08":[90,90,"C",1],"2025-11":[90,90,"C",1],"2026-06":[85,85,"C",1],"pool":6,"p85":1,"pg":0,"f":[80,80,75,75,75]},{"o":"232214 Other Spatial Scientist","2024-09":[null,100,"P",1],"2024-11":[90,90,"C",17],"2025-08":[null,90,"P",6],"2025-11":[90,85,"P",19],"2026-06":[85,80,"P",25],"pool":66,"p85":14,"pg":0,"f":[80,80,75,75,75]},{"o":"233111 Chemical Engineer","2024-09":[null,90,"P",24],"2024-11":[90,85,"P",58],"2025-08":[95,90,"P",52],"2025-11":[90,85,"P",151],"2026-06":null,"pool":668,"p85":75,"pg":63,"f":[null,null,null,null,null]},{"o":"233112 Materials Engineer","2024-09":[null,90,"P",9],"2024-11":[90,85,"P",18],"2025-08":[95,90,"P",22],"2025-11":[90,85,"P",27],"2026-06":null,"pool":143,"p85":24,"pg":18,"f":[null,null,null,null,null]},{"o":"233211 Civil Engineer","2024-09":[95,90,"P",82],"2024-11":[90,85,"P",295],"2025-08":null,"2025-11":null,"2026-06":null,"pool":4016,"p85":534,"pg":459,"f":[null,null,null,null,null]},{"o":"233212 Geotechnical Engineer","2024-09":[null,75,"P",26],"2024-11":[75,70,"P",29],"2025-08":null,"2025-11":null,"2026-06":null,"pool":124,"p85":19,"pg":11,"f":[null,null,null,null,null]},{"o":"233213 Quantity Surveyor","2024-09":[null,75,"P",275],"2024-11":[75,70,"P",176],"2025-08":null,"2025-11":null,"2026-06":null,"pool":589,"p85":73,"pg":44,"f":[null,null,null,null,null]},{"o":"233214 Structural Engineer","2024-09":[null,75,"P",84],"2024-11":[75,70,"P",88],"2025-08":null,"2025-11":null,"2026-06":null,"pool":413,"p85":53,"pg":50,"f":[null,null,null,null,null]},{"o":"233215 Transport Engineer","2024-09":[80,75,"P",23],"2024-11":[75,70,"P",34],"2025-08":null,"2025-11":null,"2026-06":null,"pool":133,"p85":16,"pg":8,"f":[null,null,null,null,null]},{"o":"233311 Electrical Engineer","2024-09":[null,90,"P",50],"2024-11":[90,85,"P",133],"2025-08":null,"2025-11":null,"2026-06":null,"pool":2051,"p85":258,"pg":228,"f":[null,null,null,null,null]},{"o":"233411 Electronics Engineer","2024-09":[null,90,"P",28],"2024-11":[90,85,"P",99],"2025-08":[100,95,"P",13],"2025-11":null,"2026-06":[100,95,"P",9],"pool":1265,"p85":172,"pg":128,"f":[95,95,95,95,95]},{"o":"233511 Industrial Engineer","2024-09":[null,90,"P",4],"2024-11":[90,85,"P",21],"2025-08":null,"2025-11":null,"2026-06":null,"pool":370,"p85":42,"pg":51,"f":[null,null,null,null,null]},{"o":"233512 Mechanical Engineer","2024-09":[null,90,"P",102],"2024-11":[90,85,"P",323],"2025-08":null,"2025-11":null,"2026-06":null,"pool":3614,"p85":539,"pg":492,"f":[null,null,null,null,null]},{"o":"233513 Production or Plant Engineer","2024-09":[null,90,"P",12],"2024-11":[90,90,"C",36],"2025-08":null,"2025-11":null,"2026-06":null,"pool":385,"p85":42,"pg":34,"f":[null,null,null,null,null]},{"o":"233611 Mining Engineer (excluding Petroleum)","2024-09":[null,105,"P",1],"2024-11":[90,90,"C",11],"2025-08":[90,90,"C",9],"2025-11":[90,85,"P",23],"2026-06":[85,80,"P",49],"pool":167,"p85":6,"pg":5,"f":[80,75,75,75,70]},{"o":"233612 Petroleum Engineer","2024-09":[null,95,"P",5],"2024-11":[90,85,"P",17],"2025-08":[95,90,"P",2],"2025-11":[90,85,"P",16],"2026-06":[85,80,"P",48],"pool":129,"p85":10,"pg":5,"f":[80,75,75,75,70]},{"o":"233911 Aeronautical Engineer","2024-09":[null,95,"P",1],"2024-11":[90,85,"P",18],"2025-08":null,"2025-11":null,"2026-06":null,"pool":187,"p85":34,"pg":18,"f":[null,null,null,null,null]},{"o":"233912 Agricultural Engineer","2024-09":null,"2024-11":[null,90,"P",3],"2025-08":null,"2025-11":null,"2026-06":null,"pool":64,"p85":5,"pg":3,"f":[null,null,null,null,null]},{"o":"233913 Biomedical Engineer","2024-09":[null,90,"P",8],"2024-11":[90,85,"P",24],"2025-08":null,"2025-11":null,"2026-06":null,"pool":292,"p85":45,"pg":46,"f":[null,null,null,null,null]},{"o":"233914 Engineering Technologist","2024-09":[null,90,"P",81],"2024-11":[90,85,"P",169],"2025-08":null,"2025-11":null,"2026-06":null,"pool":3069,"p85":436,"pg":420,"f":[null,null,null,null,null]},{"o":"233915 Environmental Engineer","2024-09":[null,95,"P",2],"2024-11":[90,85,"P",17],"2025-08":null,"2025-11":null,"2026-06":null,"pool":202,"p85":32,"pg":39,"f":[null,null,null,null,null]},{"o":"233916 Naval Architect","2024-09":[null,95,"P",2],"2024-11":[null,90,"P",1],"2025-08":null,"2025-11":null,"2026-06":null,"pool":20,"p85":1,"pg":3,"f":[null,null,null,null,null]},{"o":"233999 Engineering Professionals nec","2024-09":[null,90,"P",15],"2024-11":[90,85,"P",39],"2025-08":null,"2025-11":null,"2026-06":null,"pool":671,"p85":125,"pg":112,"f":[null,null,null,null,null]},{"o":"234111 Agricultural Consultant","2024-09":[null,95,"P",1],"2024-11":[90,85,"P",11],"2025-08":[95,90,"P",18],"2025-11":[90,85,"P",35],"2026-06":[85,80,"P",69],"pool":354,"p85":6,"pg":8,"f":[80,80,75,75,75]},{"o":"234112 Agricultural Scientist","2024-09":[95,95,"C",7],"2024-11":[90,90,"C",18],"2025-08":[95,90,"P",23],"2025-11":[90,85,"P",31],"2026-06":[85,80,"P",58],"pool":143,"p85":13,"pg":18,"f":[80,80,75,75,75]},{"o":"234113 Forester","2024-09":null,"2024-11":[105,90,"P",4],"2025-08":[95,90,"P",4],"2025-11":[null,85,"P",2],"2026-06":[80,80,"C",2],"pool":16,"p85":2,"pg":0,"f":[80,80,75,75,75]},{"o":"234211 Chemist","2024-09":[null,95,"P",5],"2024-11":[90,90,"C",11],"2025-08":[95,90,"P",19],"2025-11":[90,85,"P",58],"2026-06":[90,85,"P",28],"pool":345,"p85":43,"pg":23,"f":[90,85,85,85,85]},{"o":"234212 Food Technologist","2024-09":[null,90,"P",4],"2024-11":[90,90,"C",17],"2025-08":[95,90,"P",18],"2025-11":[90,85,"P",62],"2026-06":[90,85,"P",46],"pool":359,"p85":38,"pg":22,"f":[90,85,85,85,85]},{"o":"234312 Environmental Consultant","2024-09":[null,95,"P",4],"2024-11":[95,90,"P",13],"2025-08":[95,90,"P",32],"2025-11":[95,85,"P",71],"2026-06":[85,80,"P",78],"pool":167,"p85":22,"pg":8,"f":[80,75,75,70,70]},{"o":"234313 Environmental Research Scientist","2024-09":[null,95,"P",2],"2024-11":[90,90,"C",6],"2025-08":[95,90,"P",14],"2025-11":[90,85,"P",22],"2026-06":[85,80,"P",27],"pool":59,"p85":9,"pg":6,"f":[80,75,75,70,70]},{"o":"234399 Environmental Scientists nec","2024-09":null,"2024-11":[null,90,"P",1],"2025-08":null,"2025-11":[85,85,"C",4],"2026-06":[85,80,"P",10],"pool":11,"p85":1,"pg":1,"f":[80,75,75,70,70]},{"o":"234412 Geophysicist","2024-09":null,"2024-11":[90,90,"C",2],"2025-08":[90,90,"C",2],"2025-11":[90,85,"P",3],"2026-06":[80,80,"C",7],"pool":16,"p85":1,"pg":2,"f":[80,80,75,70,70]},{"o":"234413 Hydrogeologist","2024-09":null,"2024-11":[90,90,"C",1],"2025-08":[90,90,"C",1],"2025-11":[90,90,"C",1],"2026-06":[80,80,"C",4],"pool":15,"p85":0,"pg":1,"f":[80,80,75,70,70]},{"o":"234511 Life Scientist (General)","2024-09":[null,90,"P",10],"2024-11":[90,90,"C",21],"2025-08":[95,90,"P",33],"2025-11":[90,85,"P",42],"2026-06":[null,95,"P",8],"pool":159,"p85":29,"pg":35,"f":[95,95,95,95,95]},{"o":"234513 Biochemist","2024-09":null,"2024-11":[90,90,"C",9],"2025-08":[95,90,"P",6],"2025-11":[85,85,"C",5],"2026-06":null,"pool":52,"p85":4,"pg":8,"f":[95,95,95,95,95]},{"o":"234514 Biotechnologist","2024-09":[95,90,"P",8],"2024-11":[90,90,"C",25],"2025-08":[95,90,"P",23],"2025-11":[90,85,"P",56],"2026-06":[95,95,"C",5],"pool":219,"p85":34,"pg":40,"f":[95,95,95,95,95]},{"o":"234516 Marine Biologist","2024-09":null,"2024-11":[90,90,"C",4],"2025-08":[90,90,"C",5],"2025-11":[85,85,"C",8],"2026-06":[100,100,"C",2],"pool":30,"p85":3,"pg":7,"f":[95,95,95,95,95]},{"o":"234517 Microbiologist","2024-09":null,"2024-11":[null,90,"P",4],"2025-08":[95,90,"P",7],"2025-11":[90,85,"P",18],"2026-06":[95,95,"C",3],"pool":159,"p85":15,"pg":13,"f":[95,95,95,95,95]},{"o":"234518 Zoologist","2024-09":[null,90,"P",1],"2024-11":[null,90,"P",1],"2025-08":[90,90,"C",2],"2025-11":[85,85,"C",4],"2026-06":null,"pool":13,"p85":5,"pg":5,"f":[95,95,95,95,95]},{"o":"234599 Life Scientists nec","2024-09":[null,95,"P",1],"2024-11":[90,90,"C",4],"2025-08":[95,95,"C",9],"2025-11":[90,85,"P",20],"2026-06":[95,95,"C",4],"pool":51,"p85":3,"pg":14,"f":[95,95,95,95,95]},{"o":"234611 Medical Laboratory Scientist","2024-09":[null,80,"P",15],"2024-11":[75,75,"C",58],"2025-08":[90,90,"C",5],"2025-11":[90,85,"P",19],"2026-06":[85,80,"P",72],"pool":276,"p85":14,"pg":4,"f":[80,80,75,75,75]},{"o":"234711 Veterinarian","2024-09":[null,95,"P",6],"2024-11":[90,85,"P",12],"2025-08":[95,90,"P",14],"2025-11":[90,85,"P",53],"2026-06":[85,80,"P",64],"pool":83,"p85":17,"pg":10,"f":[80,75,70,65,65]},{"o":"234912 Metallurgist","2024-09":null,"2024-11":[100,90,"P",4],"2025-08":[90,90,"C",5],"2025-11":[85,85,"C",5],"2026-06":[80,80,"C",10],"pool":51,"p85":3,"pg":1,"f":[85,80,75,75,70]},{"o":"234913 Meteorologist","2024-09":null,"2024-11":[null,90,"P",1],"2025-08":null,"2025-11":null,"2026-06":null,"pool":2,"p85":0,"pg":0,"f":[85,80,75,75,70]},{"o":"234914 Physicist","2024-09":[null,95,"P",3],"2024-11":[null,90,"P",4],"2025-08":[95,90,"P",9],"2025-11":[85,85,"C",15],"2026-06":[80,80,"C",23],"pool":46,"p85":9,"pg":7,"f":[85,80,75,75,70]},{"o":"234999 Natural and Physical Science Professionals nec","2024-09":null,"2024-11":[null,90,"P",2],"2025-08":[90,90,"C",1],"2025-11":[85,85,"C",4],"2026-06":[85,85,"C",2],"pool":8,"p85":1,"pg":1,"f":[85,80,75,75,70]},{"o":"241111 Early Childhood (Pre-primary School) Teacher","2024-09":[null,75,"P",261],"2024-11":[75,70,"P",590],"2025-08":[90,85,"P",365],"2025-11":[90,85,"P",247],"2026-06":null,"pool":6370,"p85":1226,"pg":246,"f":[null,null,null,null,null]},{"o":"241411 Secondary School Teacher","2024-09":[null,75,"P",87],"2024-11":[75,70,"P",144],"2025-08":[90,85,"P",52],"2025-11":[80,75,"P",280],"2026-06":[80,75,"P",308],"pool":1179,"p85":45,"pg":19,"f":[80,75,75,75,75]},{"o":"241511 Special Needs Teacher","2024-09":[null,80,"P",1],"2024-11":[null,75,"P",3],"2025-08":null,"2025-11":[null,75,"P",2],"2026-06":[80,75,"P",3],"pool":18,"p85":0,"pg":0,"f":[80,80,75,75,75]},{"o":"241599 Special Education Teachers nec","2024-09":[null,80,"P",1],"2024-11":[null,75,"P",2],"2025-08":null,"2025-11":[75,75,"C",2],"2026-06":[85,85,"C",1],"pool":7,"p85":0,"pg":0,"f":[80,80,75,75,75]},{"o":"242111 University Lecturer","2024-09":[100,90,"P",30],"2024-11":[90,90,"C",89],"2025-08":[90,85,"P",222],"2025-11":null,"2026-06":null,"pool":1199,"p85":137,"pg":217,"f":[null,null,null,null,null]},{"o":"251211 Medical Diagnostic Radiographer","2024-09":[null,75,"P",8],"2024-11":[85,75,"P",19],"2025-08":[80,80,"C",22],"2025-11":[80,75,"P",27],"2026-06":[80,80,"C",29],"pool":72,"p85":1,"pg":1,"f":[75,75,75,75,75]},{"o":"251212 Medical Radiation Therapist","2024-09":null,"2024-11":[75,75,"C",2],"2025-08":[80,80,"C",1],"2025-11":[90,90,"C",2],"2026-06":[null,80,"P",2],"pool":12,"p85":0,"pg":0,"f":[75,75,75,75,75]},{"o":"251214 Sonographer","2024-09":[null,80,"P",2],"2024-11":[85,75,"P",5],"2025-08":[80,80,"C",20],"2025-11":[75,75,"C",21],"2026-06":[85,85,"C",1],"pool":8,"p85":0,"pg":0,"f":[75,75,75,75,75]},{"o":"251411 Optometrist","2024-09":[null,80,"P",5],"2024-11":[75,75,"C",4],"2025-08":[80,80,"C",4],"2025-11":[80,75,"P",2],"2026-06":[80,80,"C",6],"pool":19,"p85":1,"pg":1,"f":[80,80,75,75,75]},{"o":"251912 Orthotist or Prosthetist","2024-09":[null,80,"P",1],"2024-11":[75,75,"C",1],"2025-08":null,"2025-11":null,"2026-06":null,"pool":6,"p85":0,"pg":0,"f":[null,null,null,null,null]},{"o":"252111 Chiropractor","2024-09":[null,80,"P",3],"2024-11":[75,75,"C",4],"2025-08":null,"2025-11":[85,85,"C",1],"2026-06":[85,80,"P",12],"pool":92,"p85":2,"pg":0,"f":[80,75,75,75,75]},{"o":"252112 Osteopath","2024-09":null,"2024-11":[null,75,"P",1],"2025-08":null,"2025-11":null,"2026-06":[80,80,"C",3],"pool":5,"p85":0,"pg":0,"f":[80,75,75,75,75]},{"o":"252411 Occupational Therapist","2024-09":[null,75,"P",49],"2024-11":[75,75,"C",79],"2025-08":[85,80,"P",51],"2025-11":[80,75,"P",71],"2026-06":[80,75,"P",56],"pool":216,"p85":9,"pg":2,"f":[80,75,75,75,75]},{"o":"252511 Physiotherapist","2024-09":[null,75,"P",65],"2024-11":[75,75,"C",121],"2025-08":[85,80,"P",97],"2025-11":[80,75,"P",116],"2026-06":[80,75,"P",99],"pool":292,"p85":20,"pg":7,"f":[80,75,75,75,70]},{"o":"252611 Podiatrist","2024-09":[null,80,"P",3],"2024-11":[75,75,"C",4],"2025-08":[80,80,"C",3],"2025-11":[80,75,"P",4],"2026-06":[80,75,"P",6],"pool":14,"p85":0,"pg":0,"f":[80,75,75,75,70]},{"o":"252711 Audiologist","2024-09":[null,75,"P",17],"2024-11":[75,75,"C",23],"2025-08":[80,80,"C",11],"2025-11":[80,75,"P",15],"2026-06":[80,75,"P",19],"pool":72,"p85":1,"pg":1,"f":[75,75,70,70,65]},{"o":"252712 Speech Pathologist","2024-09":[80,80,"C",16],"2024-11":[75,75,"C",14],"2025-08":[85,80,"P",33],"2025-11":[80,75,"P",15],"2026-06":[80,80,"C",57],"pool":70,"p85":6,"pg":1,"f":[75,75,70,70,65]},{"o":"253111 General Practitioner","2024-09":[null,75,"P",104],"2024-11":[75,75,"C",102],"2025-08":[85,80,"P",176],"2025-11":[80,75,"P",140],"2026-06":[80,75,"P",182],"pool":324,"p85":29,"pg":10,"f":[80,75,75,70,65]},{"o":"253311 Specialist Physician (General Medicine)","2024-09":[null,80,"P",1],"2024-11":[null,75,"P",1],"2025-08":[90,80,"P",3],"2025-11":[80,80,"C",3],"2026-06":[80,80,"C",2],"pool":11,"p85":1,"pg":1,"f":[80,75,75,75,70]},{"o":"253312 Cardiologist","2024-09":[null,80,"P",1],"2024-11":null,"2025-08":[80,80,"C",1],"2025-11":[80,80,"C",2],"2026-06":[80,80,"C",1],"pool":3,"p85":0,"pg":0,"f":[80,75,75,75,70]},{"o":"253314 Medical Oncologist","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":[80,80,"C",1],"2026-06":null,"pool":1,"p85":0,"pg":0,"f":[80,75,75,75,70]},{"o":"253316 Gastroenterologist","2024-09":[null,85,"P",2],"2024-11":null,"2025-08":null,"2025-11":null,"2026-06":[85,85,"C",1],"pool":3,"p85":1,"pg":0,"f":[80,75,75,75,70]},{"o":"253317 Intensive Care Specialist","2024-09":[null,85,"P",1],"2024-11":null,"2025-08":[80,80,"C",3],"2025-11":[80,80,"C",2],"2026-06":[80,80,"C",1],"pool":2,"p85":0,"pg":0,"f":[80,75,75,75,70]},{"o":"253318 Neurologist","2024-09":null,"2024-11":[75,75,"C",1],"2025-08":[80,80,"C",2],"2025-11":[80,80,"C",1],"2026-06":null,"pool":1,"p85":0,"pg":0,"f":[80,75,75,75,70]},{"o":"253321 Paediatrician","2024-09":[null,80,"P",2],"2024-11":[null,75,"P",1],"2025-08":[85,85,"C",1],"2025-11":[80,80,"C",1],"2026-06":[80,80,"C",2],"pool":9,"p85":0,"pg":0,"f":[80,75,75,75,70]},{"o":"253324 Thoracic Medicine Specialist","2024-09":null,"2024-11":[75,75,"C",2],"2025-08":[null,80,"P",1],"2025-11":[80,80,"C",1],"2026-06":[95,95,"C",1],"pool":1,"p85":0,"pg":0,"f":[80,75,75,75,70]},{"o":"253399 Specialist Physicians nec","2024-09":null,"2024-11":[80,80,"C",1],"2025-08":null,"2025-11":null,"2026-06":[80,80,"C",1],"pool":2,"p85":0,"pg":0,"f":[80,75,75,75,70]},{"o":"253411 Psychiatrist","2024-09":[null,80,"P",2],"2024-11":[80,80,"C",2],"2025-08":[80,80,"C",3],"2025-11":[80,75,"P",4],"2026-06":[85,85,"C",2],"pool":5,"p85":0,"pg":0,"f":[75,75,75,70,70]},{"o":"253511 Surgeon (General)","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":[80,80,"C",1],"2026-06":null,"pool":1,"p85":0,"pg":0,"f":[100,85,85,80,80]},{"o":"253514 Orthopaedic Surgeon","2024-09":null,"2024-11":[95,75,"P",2],"2025-08":[85,85,"C",1],"2025-11":[85,85,"C",1],"2026-06":[85,85,"C",1],"pool":3,"p85":1,"pg":0,"f":[100,85,85,80,80]},{"o":"253518 Urologist","2024-09":[null,80,"P",1],"2024-11":null,"2025-08":null,"2025-11":null,"2026-06":[null,100,"P",1],"pool":2,"p85":0,"pg":1,"f":[100,85,85,80,80]},{"o":"253521 Vascular Surgeon","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":[null,75,"P",1],"2026-06":null,"pool":0,"p85":0,"pg":0,"f":[100,85,85,80,80]},{"o":"253912 Emergency Medicine Specialist","2024-09":[85,80,"P",9],"2024-11":[75,75,"C",10],"2025-08":[85,80,"P",12],"2025-11":[80,75,"P",10],"2026-06":[80,80,"C",10],"pool":22,"p85":2,"pg":2,"f":[80,75,75,70,70]},{"o":"253913 Obstetrician and Gynaecologist","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":[null,75,"P",1],"2026-06":null,"pool":8,"p85":0,"pg":0,"f":[80,75,75,70,70]},{"o":"253914 Ophthalmologist","2024-09":[null,85,"P",1],"2024-11":null,"2025-08":[80,80,"C",1],"2025-11":null,"2026-06":[80,80,"C",1],"pool":0,"p85":0,"pg":0,"f":[80,75,75,70,70]},{"o":"253917 Diagnostic and Interventional Radiologist","2024-09":[80,80,"C",2],"2024-11":[80,80,"C",2],"2025-08":[85,85,"C",2],"2025-11":[85,85,"C",2],"2026-06":null,"pool":5,"p85":1,"pg":0,"f":[80,75,75,70,70]},{"o":"253999 Medical Practitioners nec","2024-09":[null,75,"P",84],"2024-11":[75,75,"C",70],"2025-08":[85,80,"P",133],"2025-11":[80,75,"P",107],"2026-06":[80,75,"P",133],"pool":245,"p85":32,"pg":8,"f":[80,75,75,70,70]},{"o":"254111 Midwife","2024-09":[null,75,"P",11],"2024-11":[75,75,"C",9],"2025-08":[85,80,"P",16],"2025-11":[80,75,"P",15],"2026-06":[80,80,"C",14],"pool":44,"p85":1,"pg":1,"f":[80,80,75,75,75]},{"o":"254411 Nurse Practitioner","2024-09":[null,85,"P",1],"2024-11":[100,100,"C",1],"2025-08":[85,85,"C",2],"2025-11":null,"2026-06":null,"pool":4,"p85":0,"pg":0,"f":[80,75,75,75,75]},{"o":"254412 Registered Nurse (Aged Care)","2024-09":[80,75,"P",29],"2024-11":[75,70,"P",64],"2025-08":[85,80,"P",76],"2025-11":[80,75,"P",158],"2026-06":[80,75,"P",162],"pool":802,"p85":17,"pg":2,"f":[80,75,75,75,75]},{"o":"254413 Registered Nurse (Child and Family Health)","2024-09":[null,80,"P",2],"2024-11":[80,75,"P",4],"2025-08":[80,80,"C",2],"2025-11":[75,75,"C",3],"2026-06":[80,80,"C",3],"pool":6,"p85":0,"pg":1,"f":[80,75,75,75,75]},{"o":"254414 Registered Nurse (Community Health)","2024-09":null,"2024-11":[75,75,"C",5],"2025-08":[85,80,"P",8],"2025-11":[80,75,"P",8],"2026-06":[80,75,"P",7],"pool":49,"p85":3,"pg":0,"f":[80,75,75,75,75]},{"o":"254415 Registered Nurse (Critical Care and Emergency)","2024-09":[null,75,"P",30],"2024-11":[75,70,"P",64],"2025-08":[85,80,"P",51],"2025-11":[80,75,"P",80],"2026-06":[80,75,"P",78],"pool":710,"p85":11,"pg":3,"f":[80,75,75,75,75]},{"o":"254416 Registered Nurse (Developmental Disability)","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":null,"2026-06":[80,80,"C",2],"pool":2,"p85":0,"pg":0,"f":[80,75,75,75,75]},{"o":"254417 Registered Nurse (Disability and Rehabilitation)","2024-09":[null,80,"P",1],"2024-11":[75,75,"C",3],"2025-08":[80,80,"C",2],"2025-11":[80,75,"P",6],"2026-06":[80,80,"C",6],"pool":48,"p85":0,"pg":0,"f":[80,75,75,75,75]},{"o":"254418 Registered Nurse (Medical)","2024-09":[null,75,"P",36],"2024-11":[75,70,"P",69],"2025-08":[85,80,"P",55],"2025-11":[80,75,"P",87],"2026-06":[80,75,"P",92],"pool":672,"p85":11,"pg":2,"f":[80,75,75,75,75]},{"o":"254421 Registered Nurse (Medical Practice)","2024-09":[null,80,"P",1],"2024-11":[80,75,"P",3],"2025-08":[85,80,"P",4],"2025-11":[80,75,"P",9],"2026-06":[80,75,"P",11],"pool":51,"p85":2,"pg":0,"f":[80,75,75,75,75]},{"o":"254422 Registered Nurse (Mental Health)","2024-09":[null,75,"P",10],"2024-11":[75,75,"C",23],"2025-08":[85,80,"P",31],"2025-11":[80,75,"P",41],"2026-06":[80,75,"P",41],"pool":146,"p85":4,"pg":2,"f":[80,75,75,75,75]},{"o":"254423 Registered Nurse (Perioperative)","2024-09":[null,75,"P",8],"2024-11":[75,75,"C",22],"2025-08":[85,80,"P",19],"2025-11":[80,75,"P",47],"2026-06":[80,75,"P",31],"pool":196,"p85":1,"pg":1,"f":[80,75,75,75,75]},{"o":"254424 Registered Nurse (Surgical)","2024-09":[null,75,"P",13],"2024-11":[75,75,"C",37],"2025-08":[85,80,"P",26],"2025-11":[80,75,"P",48],"2026-06":[80,75,"P",33],"pool":297,"p85":6,"pg":0,"f":[80,75,75,75,75]},{"o":"254425 Registered Nurse (Paediatrics)","2024-09":[null,80,"P",6],"2024-11":[75,70,"P",15],"2025-08":[85,80,"P",13],"2025-11":[80,75,"P",14],"2026-06":[80,80,"C",15],"pool":89,"p85":6,"pg":0,"f":[80,75,75,75,75]},{"o":"254499 Registered Nurses nec","2024-09":[null,75,"P",174],"2024-11":[75,70,"P",512],"2025-08":[85,80,"P",626],"2025-11":[80,75,"P",876],"2026-06":[80,75,"P",912],"pool":3340,"p85":101,"pg":26,"f":[80,75,75,75,75]},{"o":"261111 ICT Business Analyst","2024-09":[null,95,"P",36],"2024-11":[100,95,"P",262],"2025-08":null,"2025-11":null,"2026-06":null,"pool":4266,"p85":577,"pg":1203,"f":[null,null,null,null,null]},{"o":"261112 Systems Analyst","2024-09":[null,100,"P",16],"2024-11":[null,95,"P",77],"2025-08":null,"2025-11":null,"2026-06":null,"pool":3007,"p85":450,"pg":919,"f":[null,null,null,null,null]},{"o":"261211 Multimedia Specialist","2024-09":[null,90,"P",7],"2024-11":[90,85,"P",40],"2025-08":null,"2025-11":[95,90,"P",34],"2026-06":[100,95,"P",20],"pool":291,"p85":44,"pg":120,"f":[95,95,95,95,95]},{"o":"261311 Analyst Programmer","2024-09":[100,90,"P",69],"2024-11":[90,85,"P",215],"2025-08":null,"2025-11":null,"2026-06":null,"pool":3379,"p85":553,"pg":1219,"f":[null,null,null,null,null]},{"o":"261312 Developer Programmer","2024-09":[null,100,"P",26],"2024-11":[100,95,"P",161],"2025-08":null,"2025-11":null,"2026-06":null,"pool":3844,"p85":572,"pg":1025,"f":[null,null,null,null,null]},{"o":"261313 Software Engineer","2024-09":[null,100,"P",47],"2024-11":[100,95,"P",257],"2025-08":null,"2025-11":null,"2026-06":null,"pool":5177,"p85":709,"pg":1241,"f":[null,null,null,null,null]},{"o":"261399 Software and Applications Programmers nec","2024-09":[null,90,"P",24],"2024-11":[90,85,"P",110],"2025-08":null,"2025-11":null,"2026-06":null,"pool":2541,"p85":374,"pg":981,"f":[null,null,null,null,null]},{"o":"262112 ICT Security Specialist","2024-09":[null,100,"P",8],"2024-11":[95,95,"C",170],"2025-08":null,"2025-11":null,"2026-06":null,"pool":1631,"p85":223,"pg":407,"f":[null,null,null,null,null]},{"o":"263111 Computer Network and Systems Engineer","2024-09":[null,100,"P",19],"2024-11":[100,95,"P",100],"2025-08":null,"2025-11":null,"2026-06":null,"pool":2042,"p85":260,"pg":500,"f":[null,null,null,null,null]},{"o":"263311 Telecommunications Engineer","2024-09":[null,90,"P",20],"2024-11":[90,85,"P",60],"2025-08":null,"2025-11":[95,90,"P",24],"2026-06":[100,95,"P",11],"pool":614,"p85":82,"pg":64,"f":[95,95,95,90,90]},{"o":"263312 Telecommunications Network Engineer","2024-09":[null,90,"P",4],"2024-11":[95,85,"P",10],"2025-08":null,"2025-11":[95,90,"P",5],"2026-06":[null,95,"P",2],"pool":159,"p85":19,"pg":20,"f":[95,95,95,90,90]},{"o":"271111 Barrister","2024-09":null,"2024-11":null,"2025-08":[95,95,"C",1],"2025-11":[90,90,"C",2],"2026-06":[80,80,"C",2],"pool":8,"p85":1,"pg":0,"f":[85,80,80,80,80]},{"o":"271311 Solicitor","2024-09":[95,90,"P",15],"2024-11":[90,85,"P",66],"2025-08":[95,90,"P",60],"2025-11":[90,85,"P",163],"2026-06":[85,80,"P",240],"pool":348,"p85":42,"pg":16,"f":[80,75,70,65,65]},{"o":"272311 Clinical Psychologist","2024-09":[null,85,"P",1],"2024-11":[90,75,"P",2],"2025-08":[85,85,"C",2],"2025-11":[80,80,"C",4],"2026-06":[80,80,"C",4],"pool":7,"p85":0,"pg":2,"f":[75,75,70,65,65]},{"o":"272313 Organisational Psychologist","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":[80,80,"C",1],"2026-06":[80,80,"C",1],"pool":1,"p85":0,"pg":0,"f":[75,75,70,65,65]},{"o":"272399 Psychologists nec","2024-09":[80,80,"C",19],"2024-11":[75,75,"C",24],"2025-08":[90,85,"P",8],"2025-11":[80,75,"P",36],"2026-06":[80,75,"P",46],"pool":69,"p85":4,"pg":2,"f":[75,75,70,65,65]},{"o":"272511 Social Worker","2024-09":[85,75,"P",83],"2024-11":[75,70,"P",123],"2025-08":[90,85,"P",67],"2025-11":[80,75,"P",284],"2026-06":[80,75,"P",277],"pool":737,"p85":33,"pg":5,"f":[75,75,75,75,70]},{"o":"312211 Civil Engineering Draftsperson","2024-09":[null,75,"P",287],"2024-11":[75,70,"P",497],"2025-08":[95,90,"P",4],"2025-11":[90,85,"P",109],"2026-06":null,"pool":2676,"p85":240,"pg":52,"f":[null,null,null,null,null]},{"o":"312212 Civil Engineering Technician","2024-09":[null,75,"P",73],"2024-11":[75,70,"P",149],"2025-08":[null,90,"P",3],"2025-11":[90,85,"P",64],"2026-06":null,"pool":1279,"p85":137,"pg":88,"f":[null,null,null,null,null]},{"o":"312311 Electrical Engineering Draftsperson","2024-09":null,"2024-11":null,"2025-08":[90,90,"C",1],"2025-11":[85,85,"C",5],"2026-06":[85,80,"P",4],"pool":50,"p85":5,"pg":1,"f":[85,80,75,75,70]},{"o":"312312 Electrical Engineering Technician","2024-09":null,"2024-11":[null,90,"P",1],"2025-08":[null,90,"P",5],"2025-11":[90,85,"P",24],"2026-06":[85,80,"P",74],"pool":194,"p85":24,"pg":22,"f":[85,80,75,75,70]},{"o":"313212 Telecommunications Field Engineer","2024-09":null,"2024-11":[90,85,"P",2],"2025-08":null,"2025-11":[null,95,"P",1],"2026-06":null,"pool":84,"p85":7,"pg":12,"f":[null,null,null,null,null]},{"o":"313213 Telecommunications Network Planner","2024-09":null,"2024-11":[null,90,"P",2],"2025-08":null,"2025-11":[null,90,"P",2],"2026-06":null,"pool":273,"p85":14,"pg":8,"f":[null,null,null,null,null]},{"o":"313214 Telecommunications Technical Officer or Technologist","2024-09":null,"2024-11":[null,90,"P",1],"2025-08":null,"2025-11":[95,95,"C",1],"2026-06":null,"pool":100,"p85":6,"pg":7,"f":[null,null,null,null,null]},{"o":"321111 Automotive Electrician","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":[null,85,"P",1],"2026-06":[80,80,"C",5],"pool":30,"p85":0,"pg":1,"f":[80,80,80,75,75]},{"o":"321211 Motor Mechanic (General)","2024-09":[null,90,"P",3],"2024-11":[90,90,"C",9],"2025-08":null,"2025-11":null,"2026-06":null,"pool":1083,"p85":65,"pg":42,"f":[null,null,null,null,null]},{"o":"321212 Diesel Motor Mechanic","2024-09":[null,90,"P",1],"2024-11":[null,95,"P",1],"2025-08":null,"2025-11":null,"2026-06":null,"pool":63,"p85":2,"pg":2,"f":[null,null,null,null,null]},{"o":"322211 Sheetmetal Trades Worker","2024-09":null,"2024-11":[null,70,"P",1],"2025-08":null,"2025-11":null,"2026-06":null,"pool":2,"p85":0,"pg":0,"f":[null,null,null,null,null]},{"o":"322311 Metal Fabricator","2024-09":[null,75,"P",8],"2024-11":[75,75,"C",8],"2025-08":null,"2025-11":[85,85,"C",2],"2026-06":[85,80,"P",7],"pool":78,"p85":0,"pg":0,"f":[80,80,75,75,75]},{"o":"322313 Welder (First Class)","2024-09":[80,80,"C",16],"2024-11":[75,70,"P",33],"2025-08":[90,90,"C",1],"2025-11":[90,85,"P",5],"2026-06":[85,80,"P",50],"pool":255,"p85":4,"pg":6,"f":[80,80,75,75,75]},{"o":"323211 Fitter (General)","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":[null,85,"P",2],"2026-06":[80,80,"C",8],"pool":83,"p85":3,"pg":0,"f":[80,80,75,75,75]},{"o":"323214 Metal Machinist (First Class)","2024-09":null,"2024-11":[null,90,"P",1],"2025-08":null,"2025-11":null,"2026-06":null,"pool":27,"p85":0,"pg":0,"f":[80,80,75,75,75]},{"o":"324111 Panelbeater","2024-09":null,"2024-11":null,"2025-08":[null,90,"P",1],"2025-11":null,"2026-06":[80,80,"C",3],"pool":9,"p85":1,"pg":0,"f":[80,80,70,65,65]},{"o":"331111 Bricklayer","2024-09":[null,65,"P",32],"2024-11":[70,65,"P",6],"2025-08":[65,65,"C",48],"2025-11":[65,65,"C",42],"2026-06":[70,65,"P",59],"pool":94,"p85":1,"pg":0,"f":[70,65,65,65,65]},{"o":"331112 Stonemason","2024-09":[null,70,"P",1],"2024-11":null,"2025-08":[65,65,"C",2],"2025-11":[75,75,"C",1],"2026-06":[null,65,"P",3],"pool":3,"p85":0,"pg":0,"f":[70,65,65,65,65]},{"o":"331211 Carpenter and Joiner","2024-09":[null,70,"P",9],"2024-11":[null,75,"P",1],"2025-08":[65,65,"C",17],"2025-11":[65,65,"C",13],"2026-06":[65,65,"C",31],"pool":42,"p85":1,"pg":0,"f":[65,65,65,65,65]},{"o":"331212 Carpenter","2024-09":[null,65,"P",236],"2024-11":[70,65,"P",89],"2025-08":[70,65,"P",386],"2025-11":[65,65,"C",318],"2026-06":[70,65,"P",350],"pool":459,"p85":4,"pg":4,"f":[65,65,65,65,65]},{"o":"331213 Joiner","2024-09":[null,65,"P",3],"2024-11":null,"2025-08":[65,65,"C",4],"2025-11":[70,65,"P",2],"2026-06":[65,65,"C",3],"pool":1,"p85":0,"pg":0,"f":[65,65,65,65,65]},{"o":"332211 Painting Trades Worker","2024-09":[null,65,"P",214],"2024-11":[70,65,"P",60],"2025-08":[75,70,"P",96],"2025-11":[75,70,"P",90],"2026-06":null,"pool":530,"p85":6,"pg":3,"f":[null,null,null,null,null]},{"o":"333111 Glazier","2024-09":[null,65,"P",3],"2024-11":null,"2025-08":[65,65,"C",8],"2025-11":[65,65,"C",6],"2026-06":[75,65,"P",3],"pool":6,"p85":0,"pg":0,"f":[75,75,65,65,65]},{"o":"333211 Fibrous Plasterer","2024-09":[null,65,"P",1],"2024-11":null,"2025-08":[65,65,"C",2],"2025-11":null,"2026-06":[70,70,"C",3],"pool":6,"p85":0,"pg":0,"f":[75,70,70,70,65]},{"o":"333212 Solid Plasterer","2024-09":[null,65,"P",4],"2024-11":[75,75,"C",1],"2025-08":[65,65,"C",8],"2025-11":[65,65,"C",2],"2026-06":[70,65,"P",8],"pool":25,"p85":0,"pg":0,"f":[75,70,70,70,65]},{"o":"333411 Wall and Floor Tiler","2024-09":[null,65,"P",34],"2024-11":[70,65,"P",11],"2025-08":[65,65,"C",53],"2025-11":[65,65,"C",38],"2026-06":[70,65,"P",45],"pool":73,"p85":1,"pg":0,"f":[70,70,65,65,65]},{"o":"334111 Plumber (General)","2024-09":[70,65,"P",10],"2024-11":[70,65,"P",7],"2025-08":[65,65,"C",27],"2025-11":[65,65,"C",26],"2026-06":[70,65,"P",18],"pool":21,"p85":0,"pg":0,"f":[65,65,65,65,65]},{"o":"334112 Airconditioning and Mechanical Services Plumber","2024-09":[null,65,"P",12],"2024-11":[70,70,"C",3],"2025-08":[65,65,"C",22],"2025-11":[65,65,"C",15],"2026-06":[70,65,"P",10],"pool":18,"p85":0,"pg":1,"f":[65,65,65,65,65]},{"o":"334113 Drainer","2024-09":[null,75,"P",1],"2024-11":null,"2025-08":null,"2025-11":null,"2026-06":[65,65,"C",2],"pool":1,"p85":0,"pg":0,"f":[65,65,65,65,65]},{"o":"334114 Gasfitter","2024-09":[null,65,"P",1],"2024-11":null,"2025-08":[65,65,"C",4],"2025-11":[65,65,"C",1],"2026-06":[70,70,"C",1],"pool":3,"p85":0,"pg":0,"f":[65,65,65,65,65]},{"o":"334115 Roof Plumber","2024-09":[null,65,"P",2],"2024-11":null,"2025-08":[65,65,"C",4],"2025-11":[70,70,"C",3],"2026-06":[65,65,"C",3],"pool":5,"p85":0,"pg":0,"f":[65,65,65,65,65]},{"o":"341111 Electrician (General)","2024-09":[null,65,"P",50],"2024-11":[70,65,"P",15],"2025-08":[65,65,"C",74],"2025-11":[65,65,"C",56],"2026-06":[70,65,"P",50],"pool":99,"p85":1,"pg":0,"f":[70,65,65,65,65]},{"o":"341112 Electrician (Special Class)","2024-09":[null,70,"P",1],"2024-11":null,"2025-08":null,"2025-11":null,"2026-06":null,"pool":1,"p85":0,"pg":0,"f":[70,65,65,65,65]},{"o":"341113 Lift Mechanic","2024-09":[null,65,"P",2],"2024-11":[null,65,"P",1],"2025-08":null,"2025-11":null,"2026-06":[80,80,"C",1],"pool":8,"p85":0,"pg":0,"f":[70,65,65,65,65]},{"o":"342111 Airconditioning and Refrigeration Mechanic","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":null,"2026-06":[80,80,"C",1],"pool":22,"p85":0,"pg":0,"f":[80,80,80,80,75]},{"o":"342313 Electronic Equipment Trades Worker","2024-09":null,"2024-11":null,"2025-08":[110,110,"C",1],"2025-11":[110,85,"P",7],"2026-06":[80,80,"C",13],"pool":124,"p85":2,"pg":1,"f":[80,75,75,75,75]},{"o":"342314 Electronic Instrument Trades Worker (General)","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":[null,85,"P",1],"2026-06":[85,80,"P",2],"pool":34,"p85":1,"pg":0,"f":[80,75,75,75,75]},{"o":"342315 Electronic Instrument Trades Worker (Special Class)","2024-09":null,"2024-11":null,"2025-08":null,"2025-11":[null,85,"P",1],"2026-06":[80,80,"C",3],"pool":26,"p85":0,"pg":0,"f":[80,75,75,75,75]},{"o":"351311 Chef","2024-09":[null,90,"P",4],"2024-11":[90,85,"P",56],"2025-08":null,"2025-11":null,"2026-06":null,"pool":3511,"p85":211,"pg":186,"f":[null,null,null,null,null]},{"o":"394111 Cabinetmaker","2024-09":[null,65,"P",19],"2024-11":[70,70,"C",7],"2025-08":null,"2025-11":null,"2026-06":[85,80,"P",4],"pool":76,"p85":4,"pg":0,"f":[85,85,85,80,80]},{"o":"399111 Boat Builder and Repairer","2024-09":null,"2024-11":[null,90,"P",1],"2025-08":[null,90,"P",1],"2025-11":[90,90,"C",1],"2026-06":[80,80,"C",3],"pool":4,"p85":0,"pg":0,"f":[75,75,70,65,65]},{"o":"399112 Shipwright","2024-09":[null,105,"P",1],"2024-11":null,"2025-08":null,"2025-11":null,"2026-06":null,"pool":0,"p85":0,"pg":0,"f":[75,75,70,65,65]},{"o":"452316 Tennis Coach","2024-09":null,"2024-11":null,"2025-08":[95,95,"C",1],"2025-11":[85,85,"C",2],"2026-06":[85,85,"C",3],"pool":9,"p85":2,"pg":0,"f":[85,85,75,75,75]}],R=["2024-09", "2024-11", "2025-08", "2025-11", "2026-06"];
+const tb=document.querySelector("#t tbody"),q=document.getElementById("q"),pts=document.getElementById("pts");
+let PTS=85, SZ=2;
+function cell(c){
+  if(!c) return "<td class='n dim'>&mdash;</td>";
+  const [cleared,boundary,state,n]=c;
+  let k,lab;
+  if(cleared!==null && PTS>=cleared){k="ok";lab="in";}
+  else if(PTS>=boundary){k="mid";lab="date";}
+  else {k="no";lab="out";}
+  const shown = (cleared!==null && PTS>=cleared) ? cleared : boundary;
+  return `<td class='n'><span class='pill ${k}' title='lowest fully cleared ${cleared===null?"none":cleared}, boundary ${boundary} (${state==="C"?"cleared":"rationed"}), ${n} invited'>${shown}</span><span class='dim' style='font-size:11px'> ${lab}</span></td>`;}
+function fcell(r){
+  const v=r.f&&r.f[SZ];
+  if(v===null||v===undefined) return "<td class='n dim' title='no invitation last round, so no share to forecast from'>&mdash;</td>";
+  const k = PTS>v?"ok" : (PTS===v?"mid":"no");
+  const lab = PTS>v?"in" : (PTS===v?"edge":"out");
+  return `<td class='n'><span class='pill ${k}'>${v}</span><span class='dim' style='font-size:11px'> ${lab}</span></td>`;}
+function render(f){
+  tb.innerHTML=D.filter(r=>r.o.toLowerCase().includes(f)).map(r=>
+    `<tr><td class='rd'>${r.o}</td>${R.map(k=>cell(r[k])).join("")}${fcell(r)}<td class='n'>${r.p85}</td><td class='n'>${r.pg}</td></tr>`).join("")
+    || "<tr><td colspan='9' class='dim' style='padding:18px'>No occupation matches that search.</td></tr>";}
+q.addEventListener("input",e=>render(e.target.value.toLowerCase().trim()));
+pts.addEventListener("input",e=>{PTS=+e.target.value||0;render(q.value.toLowerCase().trim());});
+document.getElementById("sz").addEventListener("change",e=>{SZ=+e.target.value;render(q.value.toLowerCase().trim());});
+q.value="physicist";render("physicist");
+</script>

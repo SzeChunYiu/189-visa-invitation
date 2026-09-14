@@ -1,7 +1,7 @@
 """Render docs/index.html from the extracted CSV/JSON artefacts."""
 import pandas as pd, json, pathlib, html
 D=pathlib.Path(__file__).resolve().parent.parent/"data"
-OUT=pathlib.Path(__file__).resolve().parent.parent/"docs"/"index.html"
+OUT=pathlib.Path(__file__).resolve().parent.parent/"docs"/"findings.html"
 ROUNDS=["2024-09","2024-11","2025-08","2025-11","2026-06"]
 LBL={"2024-09":"Sep 2024","2024-11":"Nov 2024","2025-08":"Aug 2025","2025-11":"Nov 2025","2026-06":"Jun 2026"}
 occ=pd.read_csv(D/"cutoff_by_occupation.csv")
@@ -147,11 +147,12 @@ footer{border-top:1px solid var(--line);padding-top:20px;font-size:12.5px;color:
 a{color:var(--accent)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}"""
 
-HTML=f"""<title>189 Invitation Odds</title>
+HTML=f"""<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>189 Invitation Odds</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>{CSS}</style>
 <div class="wrap">
+<p style="margin:0"><a href="index.html" style="font-size:13px;color:var(--accent)">&larr; Back to the interactive explorer</a></p>
 <header>
   <div class="eyebrow">Subclass 189 &middot; Points-Tested Stream</div>
   <h1>Will an 85-point physicist be invited?</h1>
