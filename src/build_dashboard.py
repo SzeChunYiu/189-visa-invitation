@@ -18,8 +18,10 @@ _pl=_pl[_pl.OccGroup=="2349 Other Natural and Physical Science Professionals"]
 POOL=[int(_pl[(_pl.AsAt==PRIOR[r])&(_pl.Score>=85)].n.sum()) for r in ROUNDS]  # all-leg, matches ALLOC basis
 gm=json.load(open(D/"global_model.json")); fw=json.load(open(D/"forward_model.json"))
 cal=json.load(open(D/"calibration_official.json"))
+mob=json.load(open(D/"mobility.json"))
 calrows=pd.read_csv(D/"calibration_official.csv")
 SEP=fw["rank_by_date"]["by 30 Sep 2026"]; DEC=fw["rank_by_date"]["by 31 Dec 2026"]
+ALLOC=[fw["alloc_hist"][r] for r in ROUNDS]
 p190=pd.read_csv(D/"phys_190_491.csv").fillna(0)
 p190=p190[p190.Score.astype(str).str.fullmatch(r"\d+")]; p190["Score"]=p190.Score.astype(int)
 def st190(v):
@@ -165,6 +167,7 @@ HTML=f"""<title>189 Invitation Odds</title>
   <div class="vside">
     <dl class="kv" style="margin:0"><dt>Rank in ANZSCO 2349, Sep 2026</dt><dd>{SEP['rank']}</dd></dl>
     <dl class="kv" style="margin:0"><dt>Rank after Dec 2026 lapses</dt><dd>{DEC['rank']}</dd></dl>
+    <dl class="kv" style="margin:0"><dt>189 pool that has re-scored</dt><dd>{mob['pct_changed']}%</dd></dl>
     <dl class="kv" style="margin:0"><dt>Invitations to 2349, last round</dt><dd>{ALLOC[-1]}</dd></dl>
     <dl class="kv" style="margin:0"><dt>Official cut-off for Physicist, Jun 2026</dt><dd>80</dd></dl>
     <dl class="kv" style="margin:0"><dt>Model vs official, 124 occupations</dt><dd>{100*cal['exact']/cal['n']:.0f}% exact</dd></dl>
@@ -175,6 +178,25 @@ HTML=f"""<title>189 Invitation Odds</title>
  <b>What this model still cannot tell you</b> is whether a round is held, or how large it is &mdash; both are set by migration
  planning levels, not by the pool.</div>
 </div>
+
+<section>
+  <h2>Points change, and that is what sets your place in the queue</h2>
+  <p class="sub">Nearly half this pool did not lodge at the score it now holds. The table records every version of an
+  EOI with its own validity interval, so an upgrade is directly observable &mdash; and an upgrade
+  <b>resets the date of effect</b>, which is what the queue is actually ordered on.</p>
+  <div class="panel"><div class="statrow">
+    <div class="stat"><span class="sv">{mob['pct_changed']}%</span><span class="sl">of the 189 pool has changed score</span></div>
+    <div class="stat"><span class="sv">+8.0</span><span class="sl">mean points gained, among movers</span></div>
+    <div class="stat"><span class="sv">43%</span><span class="sl">of the 85+ pool re-scored within 6 months</span></div>
+    <div class="stat"><span class="sv">~{mob['entry_rate_2349']:.0f}</span><span class="sl">enter 2349's 85+ band per month</span></div>
+    <div class="stat"><span class="sv">0%</span><span class="sl">of 2349's 85+ cohort scored over a year ago</span></div>
+  </div></div>
+  <p class="note"><b>This works in your favour.</b> Someone sitting at 80 points who reaches 85 after 10 Sep 2026 takes a
+  date of effect later than yours and joins the queue <i>behind</i> you, not ahead. Because the 85+ band turns over
+  almost completely within a year, your position stops eroding the moment you lodge &mdash; it only improves as those
+  ahead are invited away or hit the two-year expiry. Of the 31 people ahead of you in 2349, every one has a date of
+  effect before 10 Sep 2026, verified directly rather than inferred from lodgement month.</p>
+</section>
 
 <section>
   <h2>One mechanism explains every observation</h2>
@@ -220,9 +242,9 @@ HTML=f"""<title>189 Invitation Odds</title>
 
 <section>
   <h2>The whole model reduces to one threshold</h2>
-  <p class="sub">Within a unit group, a round invites strictly down the points order. {fw['total_ahead']} people in ANZSCO 2349
-  sit ahead of you on 85+ points. You are invited if and only if the round allocates at least that many invitations
-  to 2349 &mdash; a threshold that <b>falls over time</b> as EOIs ahead of you hit the two-year expiry.</p>
+  <p class="sub">Within a unit group, a round invites strictly down the points order. {fw['ahead_now']} people in ANZSCO 2349
+  sit ahead of you on 85+ points &mdash; every one of them verified to hold a date of effect before 10 Sep 2026.
+  You are invited if and only if the round allocates at least that many invitations to 2349.</p>
   <div class="panel scroll" style="margin-bottom:14px"><table>
     <thead><tr><th>If the round is held</th><th>Ahead of you lapsed</th><th>Your rank</th><th>Allocation needed</th></tr></thead>
     <tbody>

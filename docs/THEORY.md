@@ -46,6 +46,11 @@ Confirmed directly in 2349's 85-point cell: it fell from 10 to 1 across the Jun-
 August — including a 2024-submitted EOI absent from both the June and July snapshots, which can only have re-entered
 at 85 points with a 2026 date of effect.
 
+An attempt to fix it by re-running the whole saturation test on `%EOIPBDateFrom` was **discarded**: aggregated
+across snapshots that field is not snapshot-restricted and produced dates of effect later than their own snapshot
+in 79.6% of cells. See [MOBILITY.md](MOBILITY.md). Restricted to a single snapshot it is clean, and that is the
+only form used.
+
 This residual does not affect the applicant's case: every EOI in the 08/2026 snapshot has a date of effect on or
 before 31 Aug 2026, hence still ahead of a 10 Sep lodgement. It does mean per-cell date comparisons carry
 measurement error, and the expiry clock runs from **submission** date, not date of effect.

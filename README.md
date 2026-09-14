@@ -13,6 +13,7 @@ built from the complete 24-month panel behind the public SkillSelect EOI dashboa
 |---|---|
 | **README.md** (this file) | Headline results and how to reproduce |
 | [docs/THEORY.md](docs/THEORY.md) | The one mechanism that explains every observation |
+| [docs/MOBILITY.md](docs/MOBILITY.md) | Points upgrades, date of effect, and queue position |
 | [docs/METHODOLOGY.md](docs/METHODOLOGY.md) | The three data traps and how each was defeated |
 | [docs/MODEL.md](docs/MODEL.md) | Model spec, assumptions, and what it cannot do |
 | [docs/VALIDATION.md](docs/VALIDATION.md) | External + internal validation, and open questions |
@@ -46,10 +47,14 @@ ranged from **65 to 100**.
 (11 above 85 points, 20 at 85 with earlier dates). They are invited iff the next round allocates ≥32 invitations
 to 2349. Allocation history: **5 → 21 → 29 → 43 → 87** — the last two rounds clear it, the first three do not.
 
-P(invited | a round is held) = **40–77%** for a round by 30 Sep 2026, rising to **60–90%** if it slips past
-December — because EOIs ahead lapse at the two-year mark while anyone reaching 85 points later takes a
-later date of effect and queues behind. The binding uncertainty is round *occurrence* and *size*; the downside
-risk is a policy cut to this stratum, not the applicant's score.
+P(invited | a round is held) = **40–77%**, stable across round timing. Only the two largest allocations 2349
+has ever received (43, 87) clear rank 32; the three smaller ones (5, 21, 29) do not. The binding uncertainty is
+round *occurrence* and *size*; the downside risk is a policy cut to this stratum, not the applicant's score.
+
+**7. Nearly half the pool re-scores.** 47.3% of 189 EOIs changed score over their life (mean +8.0 points), and
+43% of everyone now at 85+ acquired those points within six months. A points change **resets the date of effect**,
+so upgraders join the back of their new band — which is why a lodged position stops eroding. All 31 EOIs ahead in
+2349 were verified to hold a date of effect before 10 Sep 2026.
 
 **6. Validated against the official round results.** Derived per-occupation cut-offs match the Department's
 published 4 June 2026 table on **112 of 124 occupations exactly (90.3%)**, 99.2% within ±5 points, r = 0.9755.
@@ -86,5 +91,7 @@ Every hypercube asserts `fetched rows == qSize.qcy`, so silent truncation fails 
 | `src/step10_saturation.py` | Newest/oldest submission date per cell, for the saturation test |
 | `src/saturation_model.py` | Resolves every cell into CLEARED / PARTIAL / UNTOUCHED |
 | `src/build_database.py` | Builds the coherent per-occupation database |
+| `src/step11_dateofeffect.py` | Probes the SCD interval columns for the true date of effect |
+| `src/step13_mobility.py` / `mobility_model.py` | Points-upgrade rates and their effect on queue position |
 
 Not migration advice.

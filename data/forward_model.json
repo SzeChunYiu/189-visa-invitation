@@ -1,7 +1,7 @@
 {
  "rank_by_date": {
   "by 30 Sep 2026": {
-   "rank": 30,
+   "rank": 32,
    "covered": [
     false,
     false,
@@ -13,31 +13,19 @@
    "p_recency": 0.774
   },
   "by 31 Dec 2026": {
-   "rank": 28,
+   "rank": 30,
    "covered": [
     false,
     false,
-    true,
+    false,
     true,
     true
    ],
-   "p_unweighted": 0.6,
-   "p_recency": 0.903
+   "p_unweighted": 0.4,
+   "p_recency": 0.774
   },
   "by 31 Mar 2027": {
-   "rank": 27,
-   "covered": [
-    false,
-    false,
-    true,
-    true,
-    true
-   ],
-   "p_unweighted": 0.6,
-   "p_recency": 0.903
-  },
-  "by 30 Jun 2027": {
-   "rank": 26,
+   "rank": 29,
    "covered": [
     false,
     false,
@@ -56,7 +44,8 @@
   "2025-11": 43,
   "2026-06": 87
  },
- "total_ahead": 31,
+ "ahead_now": 31,
+ "entry_rate": 6.5,
  "weights": [
   0.032,
   0.065,
@@ -74,5 +63,25 @@
   "official_total": 10000,
   "tie_break": "2026-04",
   "next_round": "2026-09-30"
+ },
+ "mobility": {
+  "pool": 88268,
+  "changed": 41768,
+  "pct_changed": 47.3,
+  "dist": {
+   "0": 46500,
+   "15": 3613,
+   "5": 25101,
+   "10": 10908,
+   "20": 1495,
+   "30": 134,
+   "25": 466,
+   "35": 40,
+   "40": 7,
+   "50": 2,
+   "45": 2
+  },
+  "entry_rate_2349": 6.5,
+  "rank_sep": 34
  }
 }
