@@ -25,6 +25,8 @@ print(f"  the clearest channel by which the 189 pool could grow faster than it h
 print(f"  gone regional have fewer places to aim at. The model reads the pool from the panel, so a surge would")
 print(f"  show up in the next snapshots rather than being predicted here.")
 json.dump(dict(places=PLACES,ratio=round(ratio,3),projected_invitations=round(proj),
+  inv_by_round=INV, py={"2025-26":PY2025_26,"2024-25":PY2024_25},
+  inv_2025_26=tot,
   per_round={str(n):round(proj/n) for n in (2,3,4)},
   regional_cut={"2025-26":33000,"2026-27":14110},
   nominated={"2025-26":33000,"2026-27":35500},

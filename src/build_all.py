@@ -15,6 +15,7 @@ STEPS = [
     ("pages",      "build_pages.py"),
     ("worked",     "build_worked.py"),
     ("paper",      "build_paper.py"),
+    ("claims",     "claims.py"),      # every prose number traceable to the bundle
     ("audit",      "audit.py"),
 ]
 

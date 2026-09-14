@@ -7,7 +7,7 @@ Two rules this builder enforces on itself:
     num(), which fails loudly on a missing key, so the text cannot drift from the
     data the way a hand-written figure silently does.
 """
-import json, pathlib, sys, csv, html
+import json, pathlib, sys, csv, html, re
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from dash_css import CSS
@@ -24,6 +24,18 @@ with open(R / "data" / "validation_oos_singleleg.csv") as fh:
              for r in csv.DictReader(fh) if r.get("pred") and r.get("actual")]
 
 _used = []
+_emitted = set()          # the exact strings that reached the prose
+
+
+def _rec(sv):
+    for tok in re.findall(r"\d[\d,]*(?:\.\d+)?", str(sv)):
+        _emitted.add(tok); _emitted.add(tok.replace(",", ""))
+    return sv
+
+
+def v(value, fmt="{}"):
+    """A number the builder derives rather than reads. Recorded like num()."""
+    return _rec(fmt.format(value))
 
 
 def num(path, fmt="{}"):
@@ -38,7 +50,7 @@ def num(path, fmt="{}"):
                 raise KeyError(f"bundle has no {path} (stopped at {k!r})")
             cur = cur[k]
     _used.append(path)
-    return fmt.format(cur)
+    return _rec(fmt.format(cur))
 
 
 def pct(path, dp=0):
@@ -46,11 +58,11 @@ def pct(path, dp=0):
     for k in path.split("."):
         cur = cur[int(k)] if isinstance(cur, list) else cur[k]
     _used.append(path)
-    return f"{cur*100:.{dp}f}%"
+    return _rec(f"{cur*100:.{dp}f}%")
 
 
 FIG_ORDER = ["pool_shape", "shares", "mechanism", "cutoff_curves", "residuals",
-             "doe_bands", "policy", "roundsize", "surface", "tiers",
+             "doe_bands", "policy", "quota_chain", "roundsize", "surface", "tiers",
              "calibration", "folds", "official", "horizon", "movement"]
 FIGN = {k: i + 1 for i, k in enumerate(FIG_ORDER)}
 _drawn = []
@@ -159,9 +171,9 @@ are published exactly.</p>
 <h3>Scope</h3>
 <div class="tablewrap"><table class="pt">
 <tr><th>Quantity</th><th>Value</th></tr>
-<tr><td>Occupation groups modelled</td><td class="n">{NGROUPS}</td></tr>
-<tr><td>Rounds in the record</td><td class="n">{len(B['rounds'])}</td></tr>
-<tr><td>Held-out group-rounds used for validation</td><td class="n">{OOS['n']}</td></tr>
+<tr><td>Occupation groups modelled</td><td class="n">{v(NGROUPS)}</td></tr>
+<tr><td>Rounds in the record</td><td class="n">{v(len(B["rounds"]))}</td></tr>
+<tr><td>Held-out group-rounds used for validation</td><td class="n">{v(OOS['n'])}</td></tr>
 <tr><td>Residuals behind the uncertainty model</td><td class="n">{num('unc.n')}</td></tr>
 <tr><td>Legislative points floor</td><td class="n">{num('floor')}</td></tr>
 </table></div>
@@ -185,7 +197,7 @@ and older rounds describe a policy that no longer applies.</p>
 
 {fig("shares", F.fig_shares(B),
      f"Share of a round by unit group, largest first. The top 20 of "
-     f"{sum(1 for g in B['groups'].values() if g['share'] > 0)} groups with a share take most "
+     f"{v(sum(1 for g in B['groups'].values() if g['share'] > 0))} groups with a share take most "
      "of a round, which is the single biggest reason the same score gives very different odds "
      "in different occupations.")}
 
@@ -320,6 +332,27 @@ how unevenly past rounds have been sized. Combining them gives a median of
      f"to {num('policy.places.2026-27', '{:,}')} places, which is what sets the scale of the "
      "distribution below.")}
 
+<h3>How the quota becomes a round size</h3>
+
+<p>The annual planning level does not set the round size directly, because not every
+invitation becomes a visa: some lapse, some are refused, some applicants take another
+pathway. The bridge is the number of invitations issued per place, and it can be measured
+for exactly one programme year — 2025&#8211;26, where {num('policy.inv_2025_26', '{:,}')}
+invitations were issued against {num('policy.places.2025-26', '{:,}')} places, a ratio of
+{num('policy.ratio')}.</p>
+
+{fig("quota_chain", F.fig_quota_chain(B),
+     f"Published places, through the measured invitations-per-place ratio, to the invitations "
+     f"implied for 2026-27 and what those mean per round. Every box is published or observed "
+     "except the last, which is the product of the two before it.")}
+
+<p><b>A correlation between round size and the annual quota cannot be estimated from this
+record.</b> Planning levels are published for two years; the invitation panel covers two
+programme years, and only one of them has both a published level and a complete set of rounds.
+One paired observation does not support a correlation, and none is claimed. What the model
+uses is the ratio above applied to the next year's published level — a mechanism, not a
+fitted relationship.</p>
+
 {fig("roundsize", F.fig_roundsize(B),
      f"The round-size distribution. The bumps are real: they come from the discrete "
      f"question of how many rounds remain in the programme year, each implying a different "
@@ -342,9 +375,9 @@ chapter("zero", "Exclusion of occupation groups", "Chapter 8", f"""
 <p class="lede">The largest single risk for many occupations is not a high cut-off. It is
 that the group is passed over completely.</p>
 
-<p>At the 2025&#8211;26 programme boundary, {len(B['sw']['switched_off'])}
+<p>At the 2025&#8211;26 programme boundary, {v(len(B['sw']['switched_off']))}
 of the largest groups stopped receiving invitations outright — together
-{sum(x['pool'] for x in B['sw']['switched_off']):,} people. Their pools did not shrink and
+{v(sum(x['pool'] for x in B['sw']['switched_off']), '{:,}')} people. Their pools did not shrink and
 their scores did not fall. The allocation simply stopped.</p>
 
 <p>This matches a four-tier prioritisation model released under freedom of information. Tested
@@ -428,15 +461,15 @@ and not the unknowable size.</p>
 
 <div class="tablewrap"><table class="pt">
 <tr><th>Round forecast</th><th>Using</th><th>n</th><th>Exact</th><th>Within 5</th><th>MAE</th><th>Bias</th></tr>
-{"".join(f'<tr><td>{f["round"]}</td><td>{f["trained_on"]}</td><td class="n">{f["n"]}</td>'
-         f'<td class="n">{f["exact"]*100:.0f}%</td><td class="n">{f["within5"]*100:.0f}%</td>'
-         f'<td class="n">{f["mae"]:.2f}</td><td class="n">{f["bias"]:+.2f}</td></tr>'
+{"".join(f'<tr><td>{f["round"]}</td><td>{f["trained_on"]}</td><td class="n">{v(f["n"])}</td>'
+         f'<td class="n">{v(f["exact"]*100, "{:.0f}")}%</td><td class="n">{v(f["within5"]*100, "{:.0f}")}%</td>'
+         f'<td class="n">{v(f["mae"], "{:.2f}")}</td><td class="n">{v(f["bias"], "{:+.2f}")}</td></tr>'
          for f in B["val"]["folds"])}
-<tr><td><b>All folds</b></td><td>—</td><td class="n"><b>{B['val']['oos']['n']}</b></td>
-    <td class="n"><b>{B['val']['oos']['exact']*100:.0f}%</b></td>
-    <td class="n"><b>{B['val']['oos']['within5']*100:.0f}%</b></td>
-    <td class="n"><b>{B['val']['oos']['mae']:.2f}</b></td>
-    <td class="n"><b>{B['val']['oos']['bias']:+.2f}</b></td></tr>
+<tr><td><b>All folds</b></td><td>—</td><td class="n"><b>{v(B['val']['oos']['n'])}</b></td>
+    <td class="n"><b>{v(B['val']['oos']['exact']*100, "{:.0f}")}%</b></td>
+    <td class="n"><b>{v(B['val']['oos']['within5']*100, "{:.0f}")}%</b></td>
+    <td class="n"><b>{v(B['val']['oos']['mae'], "{:.2f}")}</b></td>
+    <td class="n"><b>{v(B['val']['oos']['bias'], "{:+.2f}")}</b></td></tr>
 </table></div>
 
 {fig("calibration", F.fig_calibration(VROWS, OOS),
@@ -512,7 +545,7 @@ modelled, and both are largely absorbed by the horizon correction above.</li>
 
 {fig("horizon", F.fig_horizon(B),
      f"Error against how old the pool snapshot is. A snapshot from the month before a round "
-     f"predicts it almost exactly (MAE {B['horizon_series']['1']['mae']:.2f}); by six months "
+     f"predicts it almost exactly (MAE {v(B['horizon_series']['1']['mae'], '{:.2f}')}); by six months "
      f"out it has degraded several-fold. Lag 0 is excluded because that snapshot is published "
      "after the round it would be predicting.")}
 
@@ -678,6 +711,7 @@ const S={{occ:null,pts:85,doe:null,szi:2}};
 assert _drawn == sorted(_drawn) == list(range(1, len(_drawn) + 1)), \
     f"figures emitted out of order: {_drawn}"
 (R / "docs" / "findings.html").write_text(page)
+(R / "data" / "paper_numbers.json").write_text(json.dumps(sorted(_emitted)))
 print(f"wrote docs/findings.html  ({len(page)/1024:.0f} KB, {len(CH)} chapters, "
       f"{page.count('<figure')} figures, {page.count('class=\"eq\"')} equations)")
 print(f"  bundle values read into the prose: {len(_used)}")

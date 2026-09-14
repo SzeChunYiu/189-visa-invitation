@@ -646,3 +646,46 @@ def fig_movement(B):
     return f.svg("How far a cut-off moves from one round to the next",
                  "The cut-off rarely repeats: it usually shifts by one five-point band, and "
                  "more often down than up.")
+
+
+# ---------------------------------------------------------------- Figure: quota chain
+def fig_quota_chain(B):
+    """Published places to expected round size, with the one measured link in between."""
+    p = B["policy"]
+    f = Fig(560, 268, ml=16, mr=16, mt=58, mb=56)
+    inv = p["inv_by_round"]
+    py = p["py"]["2025-26"]
+    steps = [
+        (f"{p['places']['2025-26']:,}", "places, 2025-26", "published", DEEMPH),
+        (f"{p['inv_2025_26']:,}", "invitations issued", f"{len(py)} rounds, observed", SERIES),
+        (f"{p['ratio']:.2f}x", "invitations per place", "the measured link", BRAND),
+        (f"{p['places']['2026-27']:,}", "places, 2026-27", "published", DEEMPH),
+        (f"{p['projected_invitations']:,}", "invitations implied", "places x the link", BRAND),
+    ]
+    bw = f.pw / len(steps)
+    for i, (val, lab, sub, col) in enumerate(steps):
+        x = f.ml + i * bw
+        f.rect(x + 5, f.mt, bw - 10, 66, col, rx=10,
+               tip=f"{lab}: {val} ({sub})")
+        f.text(x + bw / 2, f.mt + 29, val, 17, CARD, "middle", "700")
+        f.text(x + bw / 2, f.mt + 47, lab, 9, CARD, "middle")
+        f.text(x + bw / 2, f.mt + 82, sub, 9, MUTED, "middle")
+        if i < len(steps) - 1:
+            ax = x + bw - 5
+            f.text(ax, f.mt + 34, "→" if i != 2 else "÷", 13, MUTED, "middle", "700")
+    # what the projection then implies per round, the quantity the model needs
+    y = f.mt + 108
+    f.text(f.ml + 6, y, "across the rounds still expected:", 10, MUTED, "start", "700")
+    per = p["per_round"]
+    for j, k in enumerate(sorted(per, key=int)):
+        bx = f.ml + 6 + j * (f.pw / 3)
+        f.text(bx, y + 24, f"{per[k]:,}", 15, INK, "start", "700")
+        f.text(bx, y + 38, f"if {k} rounds remain", 9, MUTED, "start")
+    f.text(f.ml + 6, f.mt - 38,
+           "A correlation between round size and the annual quota cannot be estimated:", 10, INK, "start", "700")
+    f.text(f.ml + 6, f.mt - 24,
+           "only one programme year has both a published level and a complete round record.", 10, MUTED, "start")
+    return f.svg("From the published quota to an expected round size",
+                 "The quota sets the scale of a round through one measured quantity: how many "
+                 "invitations the Department issues per place. That ratio comes from the single "
+                 "programme year where both numbers are known.")
