@@ -47,10 +47,16 @@ def pick(*titles):
     assert not missing, f"no card titled {missing}; have {order}"
     return [cards[t] for t in titles]
 
+# Each page needs exactly one h1. The shared header lost its heading when the question
+# headline was removed, which left two pages with none at all.
+H1={"index.html":None,                         # the verdict block carries its own
+    "landscape.html":"Every occupation, compared",
+    "policy.html":"Programme settings and the groups cut off"}
+
 PAGES={
  "index.html":   dict(title="Will you be invited? · SkillSelect 189",
                       parts=[filters,verdict]+pick("Your chance vs round size","Forecast cut-off by round size",
-                       "Past rounds","Who is ahead",
+                       "From the cut-off to your chance","Past rounds","Who is ahead",
                        "What the people at each score hold","Your place in the queue",
                        "Every score band",
                        "This occupation, round by round")),
@@ -84,7 +90,9 @@ window.__saveState=function(){try{localStorage.setItem(k,JSON.stringify({occ:S.o
 '''
 for fn,cfg in PAGES.items():
     hd=head.replace("<title>SkillSelect 189 Explorer</title>",f"<title>{cfg['title']}</title>")
+    h1=H1.get(fn)
     page=hd+'<a class="skip" href="#results">Skip to result</a>\n<div class="wrap">\n'+nav_html(fn)+"\n"+hb+"\n"
+    if h1: page+=f'<h1 class="sr-only">{h1}</h1>\n'
     page+="\n".join(cfg["parts"])+"\n"+foot+"\n</div>\n"+tail
     page=page.replace("const S={occ:","/*STATE*/\nconst S={occ:")
     page=page.replace("initCombo();render();", STATE.strip()+"\ninitCombo();render();\nif(window.__saveState)__saveState();")
