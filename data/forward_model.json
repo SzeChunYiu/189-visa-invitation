@@ -1,59 +1,54 @@
 {
- "pool": [
-  [
-   105,
-   2
-  ],
-  [
-   100,
-   3
-  ],
-  [
-   95,
-   3
-  ],
-  [
-   90,
-   3
-  ],
-  [
-   85,
-   20
-  ],
-  [
-   80,
-   18
-  ],
-  [
-   75,
-   52
-  ],
-  [
-   70,
-   48
-  ],
-  [
-   65,
-   63
-  ],
-  [
-   60,
-   11
-  ],
-  [
-   55,
-   6
-  ],
-  [
-   50,
-   6
-  ],
-  [
-   40,
-   1
-  ]
- ],
- "rank": 32,
+ "rank_by_date": {
+  "by 30 Sep 2026": {
+   "rank": 30,
+   "covered": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ],
+   "p_unweighted": 0.4,
+   "p_recency": 0.774
+  },
+  "by 31 Dec 2026": {
+   "rank": 28,
+   "covered": [
+    false,
+    false,
+    true,
+    true,
+    true
+   ],
+   "p_unweighted": 0.6,
+   "p_recency": 0.903
+  },
+  "by 31 Mar 2027": {
+   "rank": 27,
+   "covered": [
+    false,
+    false,
+    true,
+    true,
+    true
+   ],
+   "p_unweighted": 0.6,
+   "p_recency": 0.903
+  },
+  "by 30 Jun 2027": {
+   "rank": 26,
+   "covered": [
+    false,
+    false,
+    true,
+    true,
+    true
+   ],
+   "p_unweighted": 0.6,
+   "p_recency": 0.903
+  }
+ },
  "alloc_hist": {
   "2024-09": 5,
   "2024-11": 21,
@@ -61,20 +56,23 @@
   "2025-11": 43,
   "2026-06": 87
  },
- "covered": [
-  false,
-  false,
-  false,
-  true,
-  true
- ],
- "p_unweighted": 0.4,
- "p_recency": 0.774,
+ "total_ahead": 31,
  "weights": [
   0.032,
   0.065,
   0.129,
   0.258,
   0.516
- ]
+ ],
+ "calibration": {
+  "n": 124,
+  "exact": 112,
+  "within5": 123,
+  "mae": 0.52,
+  "bias": 0.52,
+  "r": 0.9755,
+  "official_total": 10000,
+  "tie_break": "2026-04",
+  "next_round": "2026-09-30"
+ }
 }

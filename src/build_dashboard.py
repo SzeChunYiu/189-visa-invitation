@@ -17,6 +17,9 @@ _pl["Score"]=_pl.Score.astype(int); _pl["n"]=_pl.n.fillna(0)
 _pl=_pl[_pl.OccGroup=="2349 Other Natural and Physical Science Professionals"]
 POOL=[int(_pl[(_pl.AsAt==PRIOR[r])&(_pl.Score>=85)].n.sum()) for r in ROUNDS]  # all-leg, matches ALLOC basis
 gm=json.load(open(D/"global_model.json")); fw=json.load(open(D/"forward_model.json"))
+cal=json.load(open(D/"calibration_official.json"))
+calrows=pd.read_csv(D/"calibration_official.csv")
+SEP=fw["rank_by_date"]["by 30 Sep 2026"]; DEC=fw["rank_by_date"]["by 31 Dec 2026"]
 p190=pd.read_csv(D/"phys_190_491.csv").fillna(0)
 p190=p190[p190.Score.astype(str).str.fullmatch(r"\d+")]; p190["Score"]=p190.Score.astype(int)
 def st190(v):
@@ -46,13 +49,12 @@ xlab="".join(f'<text x="{X(i):.1f}" y="{H-MB+20}" class="ax" text-anchor="middle
 chart=f'''<svg viewBox="0 0 {W} {H}" role="img" aria-label="Physics-stratum points cut-off by round: 95, 90, 90, 85, 80">
 {band}{grid}{line85}<path d="{path}" class="ln"/>{dots}{xlab}</svg>'''
 
-ALLOC=[fw["alloc_hist"][r] for r in ROUNDS]; RANK=fw["rank"]; COV=fw["covered"]; WTS=fw["weights"]
+ALLOC=[fw["alloc_hist"][r] for r in ROUNDS]; RANK=SEP["rank"]; COV=SEP["covered"]; WTS=fw["weights"]
 thr="".join(
  f"<tr><td class='rd'>{LBL[r]}</td><td class='n'>{ALLOC[i]}</td>"
  f"<td class='n dim'>{WTS[i]:.3f}</td>"
  f"<td class='n'><span class='pill {'ok' if COV[i] else 'no'}'>{'covered' if COV[i] else 'short'}</span></td></tr>"
  for i,r in enumerate(ROUNDS))
-poolrows="".join(f"<tr><td class='rd'>{sc}</td><td class='n'>{n}</td></tr>" for sc,n in fw["pool"] if sc>=75)
 rows="".join(
  f"<tr><td class='rd'>{LBL[r]}</td><td class='n'>{SIZE[r]:,}</td><td class='n dim'>~{EST[r]:,}</td>"
  f"<td class='n'>{ALLOC[i]}</td><td class='n'>{POOL[i]}</td>"
@@ -153,31 +155,57 @@ HTML=f"""<title>189 Invitation Odds</title>
 <div class="verdict">
  <div class="vtop">
   <div class="vmain">
-    <div class="eyebrow">Probability of invitation</div>
+    <div class="eyebrow">Probability of invitation &middot; conditional on a round being held</div>
     <div class="big">40&ndash;77%</div>
-    <p class="sub" style="margin-top:8px"><b>Conditional on a round being held.</b> 40% weights all five
-    observed rounds equally and so ignores the trend &mdash; treat it as a floor. 77% halves the weight of each
-    older round (2<sup>&minus;age</sup>). The allocation trend is monotone increasing and points above 77%.</p>
+    <p class="sub" style="margin-top:8px">for a round held by <b>30 Sep 2026</b> &mdash; rising to
+    <b>60&ndash;90%</b> if it slips past December. The lower bound of each band weights all five observed rounds
+    equally and so ignores the trend; the upper bound halves the weight of each older round.</p>
   </div>
   <div class="vside">
-    <dl class="kv" style="margin:0"><dt>Your rank in unit group 2349</dt><dd>{RANK}</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Rank in ANZSCO 2349, Sep 2026</dt><dd>{SEP['rank']}</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Rank after Dec 2026 lapses</dt><dd>{DEC['rank']}</dd></dl>
     <dl class="kv" style="margin:0"><dt>Invitations to 2349, last round</dt><dd>{ALLOC[-1]}</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Rounds that would have covered you</dt><dd>2 of 5</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Physicists at 85 pts ahead of you</dt><dd>{int(phys.pool_85)}</dd></dl>
-    <dl class="kv" style="margin:0"><dt>Mechanism backtest accuracy</dt><dd>&plusmn;5 pts on 49/49</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Official cut-off for Physicist, Jun 2026</dt><dd>80</dd></dl>
+    <dl class="kv" style="margin:0"><dt>Model vs official, 124 occupations</dt><dd>{100*cal['exact']/cal['n']:.0f}% exact</dd></dl>
   </div>
  </div>
- <div class="caveat"><b>What this model cannot tell you:</b> whether a round happens, or how big it is. Both are set by
- migration planning levels, not by the pool. Five rounds in 24 months is the entire evidence base for cadence &mdash; too thin for a dated forecast.</div>
+ <div class="caveat"><b>Waiting helps you.</b> Your rank can only fall: anyone reaching 85 points after 10 Sep 2026 takes a
+ later date of effect and queues behind you, while those ahead of you lapse at the two-year mark or are invited away.
+ <b>What this model still cannot tell you</b> is whether a round is held, or how large it is &mdash; both are set by migration
+ planning levels, not by the pool.</div>
 </div>
 
 <section>
+  <h2>Checked against the official round results</h2>
+  <p class="sub">The Department published per-occupation minimum scores for the 4 June 2026 round. Those figures were
+  not used to build this model &mdash; they are an independent answer key for cut-offs derived from raw EOI records.</p>
+  <div class="panel"><div class="statrow">
+    <div class="stat"><span class="sv">{cal['n']}</span><span class="sl">occupations cross-checked</span></div>
+    <div class="stat"><span class="sv">{100*cal['exact']/cal['n']:.1f}%</span><span class="sl">exactly right</span></div>
+    <div class="stat"><span class="sv">{100*cal['within5']/cal['n']:.1f}%</span><span class="sl">within &plusmn;5 points</span></div>
+    <div class="stat"><span class="sv">{cal['r']}</span><span class="sl">correlation r</span></div>
+    <div class="stat"><span class="sv">{cal['bias']:+.2f}</span><span class="sl">bias, points</span></div>
+  </div></div>
+  <p class="note"><b>Every one of the 12 disagreements is positive</b> (+5 in eleven cases, +10 in one) and none negative.
+  That is the signature of the single-leg filter: where the marginal invitee was a multi-leg EOI, the derived cut-off lands
+  one tier high. The method is conservative by construction &mdash; it cannot overstate a candidate's chances.
+  The round-size estimate is validated too: <b>9,761 derived against 10,000 official</b>, a 2.4% error.
+  For Physicist the model derived <b>80</b> and the Department published <b>80</b>.</p>
+</section>
+
+<section>
   <h2>The whole model reduces to one threshold</h2>
-  <p class="sub">Within a unit group, a round invites strictly down the points order. You sit at rank <b>{RANK}</b> in
-  ANZSCO 2349 &mdash; 11 people above 85 points, and 20 at 85 points whose EOIs predate 10 Sep 2026. So you are invited
-  if and only if the next round allocates at least <b>{RANK}</b> invitations to 2349.</p>
+  <p class="sub">Within a unit group, a round invites strictly down the points order. {fw['total_ahead']} people in ANZSCO 2349
+  sit ahead of you on 85+ points. You are invited if and only if the round allocates at least that many invitations
+  to 2349 &mdash; a threshold that <b>falls over time</b> as EOIs ahead of you hit the two-year expiry.</p>
+  <div class="panel scroll" style="margin-bottom:14px"><table>
+    <thead><tr><th>If the round is held</th><th>Ahead of you lapsed</th><th>Your rank</th><th>Allocation needed</th></tr></thead>
+    <tbody>
+     <tr><td class="rd">by 30 Sep 2026</td><td class="n">2</td><td class="n">{SEP['rank']}</td><td class="n">&ge; {SEP['rank']}</td></tr>
+     <tr><td class="rd">by 31 Dec 2026</td><td class="n">4</td><td class="n">{DEC['rank']}</td><td class="n">&ge; {DEC['rank']}</td></tr>
+    </tbody></table></div>
   <div class="panel scroll"><table>
-    <thead><tr><th>Round</th><th>Allocation to 2349</th><th>Recency weight</th><th>Covers rank {RANK}?</th></tr></thead>
+    <thead><tr><th>Round</th><th>Allocation to 2349</th><th>Recency weight</th><th>Covers a Sep-2026 round?</th></tr></thead>
     <tbody>{thr}</tbody></table></div>
   <p class="note">Allocation history <b>5 &rarr; 21 &rarr; 29 &rarr; 43 &rarr; 87</b> &mdash; monotone increasing, 17.4&times; over
   five rounds, and 2349's share of the round grew from 0.12% to 1.67%. <b>The downside risk is not your score.</b>
@@ -236,6 +264,19 @@ HTML=f"""<title>189 Invitation Odds</title>
     <div class="stat"><span class="sv">17.4&times;</span><span class="sl">growth in 2349's allocation</span></div>
     <div class="stat"><span class="sv">1.67%</span><span class="sl">2349 share of the round, up from 0.12%</span></div>
   </div></div>
+  <div class="findings" style="margin-top:16px">
+    <div class="find"><h3>The tie-break date does not lock out a recent EOI</h3>
+    <p>June 2026's published tie-break was April 2026, which sounds fatal for a 10 Sep lodgement. It is not:
+    <b>20.2% of invitations at 90+ points went to EOIs dated after that tie-break</b>. The date binds only at the
+    marginal position within a score, not across all scores.</p></div>
+    <div class="find"><h3>EOIs expire on a hard two-year cliff</h3>
+    <p>Cohort survival runs 96% at 0&ndash;6 months, 82% at 12&ndash;18, 77% at 18&ndash;24, then collapses to
+    <b>0.8% beyond 24 months</b>. Four of the 31 people ahead of you in 2349 lapse by the end of 2026, which is
+    why your rank improves simply by waiting.</p></div>
+    <div class="find"><h3>The occupation ceiling is not the binding constraint</h3>
+    <p>ANZSCO 2349's annual ceiling is <b>500</b>, and the largest round used only <b>87</b> of it. Nothing caps this
+    group from going deeper &mdash; a downside risk this model had flagged and can now discharge.</p></div>
+  </div>
   <p class="note">Invitations are highly concentrated: ten unit groups absorb two thirds of a round, thirty absorb 94%.
   Being in a small, low-competition group is an advantage here &mdash; 2349's cut-off fell while the national floor stayed at 65.
   <b>Not visible in this data:</b> annual planning levels and ministerial direction on occupation priority. Those set
@@ -272,7 +313,7 @@ HTML=f"""<title>189 Invitation Odds</title>
 </section>
 
 <section>
-  <h2>Two things everyone else gets wrong about this dashboard</h2>
+  <h2>Two things everyone else gets wrong about this data</h2>
   <div class="findings">
     <div class="find"><h3>EOI Status is recorded per EOI, not per visa leg</h3>
     <p>Filtering <code>Visa Type = 189</code> and counting <code>INVITED</code> overstates 189 invitations by roughly 2&times;,
@@ -288,7 +329,11 @@ HTML=f"""<title>189 Invitation Odds</title>
   Source: Department of Employment and Workplace Relations SkillSelect EOI dashboard, Qlik app <code>aaac76b5</code>, snapshots
   Sep 2024 &ndash; Aug 2026. Latest snapshot is 08/2026 and therefore predates a 10 Sep 2026 EOI. <code>Month Submitted</code> is not
   <i>date of effect</i>: a points change resets date of effect, so same-score queue position is approximate and, for a recent
-  submission, conservative. Not migration advice. Code and data:
+  submission, conservative. Official round figures (4 June 2026: 10,000 invitations, per-occupation minimum scores, April 2026 tie-break,
+  next round expected by 30 September 2026) are as published by the Department of Home Affairs and republished by
+  ahclawyers.com and studynash.co; the Home Affairs page itself returned 403 to automated fetch, so treat the
+  expected round date as a secondary-source paraphrase rather than a departmental commitment.
+  Occupation ceiling for 2349 (500, FY2025-26) via immitrend.com.au. Not migration advice. Code and data:
   <a href="https://github.com/SzeChunYiu/189-visa-invitation">github.com/SzeChunYiu/189-visa-invitation</a>
 </footer>
 </div>

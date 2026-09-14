@@ -14,6 +14,7 @@ built from the complete 24-month panel behind the public SkillSelect EOI dashboa
 | **README.md** (this file) | Headline results and how to reproduce |
 | [docs/METHODOLOGY.md](docs/METHODOLOGY.md) | The three data traps and how each was defeated |
 | [docs/MODEL.md](docs/MODEL.md) | Model spec, assumptions, and what it cannot do |
+| [docs/VALIDATION.md](docs/VALIDATION.md) | External + internal validation, and open questions |
 | [docs/DATA.md](docs/DATA.md) | Source, field dictionary, extraction inventory |
 
 ## Headline results
@@ -38,14 +39,15 @@ ranged from **65 to 100**.
 (11 above 85 points, 20 at 85 with earlier dates). They are invited iff the next round allocates ≥32 invitations
 to 2349. Allocation history: **5 → 21 → 29 → 43 → 87** — the last two rounds clear it, the first three do not.
 
-P(invited | a round is held) = **40%** unweighted (a floor that ignores the trend) to **77%** recency-weighted
-(2^−age). The allocation trend is monotone increasing and argues above 77%. The binding uncertainty is round
-*occurrence* and *size*, which this data cannot predict; the downside risk is a policy cut to this stratum,
-not the applicant's score.
+P(invited | a round is held) = **40–77%** for a round by 30 Sep 2026, rising to **60–90%** if it slips past
+December — because EOIs ahead lapse at the two-year mark while anyone reaching 85 points later takes a
+later date of effect and queues behind. The binding uncertainty is round *occurrence* and *size*; the downside
+risk is a policy cut to this stratum, not the applicant's score.
 
-**5. The mechanism is validated out of sample.** Ranking each occupation's pool by points and allocating top-down
-predicts the Jun-2026 cut-off **within ±5 points for 49 of 49 occupations** (r = 0.941, MAE 2.86, bias +2.9 pts —
-real rounds go deeper than predicted, so the estimate is conservative).
+**5. Validated against the official round results.** Derived per-occupation cut-offs match the Department's
+published 4 June 2026 table on **112 of 124 occupations exactly (90.3%)**, 99.2% within ±5 points, r = 0.9755.
+Physicist: derived 80, official 80. Every disagreement is positive, so the method cannot overstate a
+candidate's odds. Round size: 9,761 derived vs 10,000 official (2.4%). See [VALIDATION.md](docs/VALIDATION.md).
 
 ## Reproduce
 
@@ -53,7 +55,7 @@ real rounds go deeper than predicted, so the estimate is conservative).
 pip install -r requirements.txt
 python src/step3_core.py && python src/step4.py && python src/step5_occ.py && python src/step6.py
 python src/model.py && python src/model2.py && python src/cutoff_table.py
-python src/global_model.py && python src/forward_model.py
+python src/global_model.py && python src/calibrate_official.py && python src/forward_model.py
 python src/build_dashboard.py
 ```
 
@@ -69,6 +71,9 @@ Every hypercube asserts `fetched rows == qSize.qcy`, so silent truncation fails 
 | `src/test_suppress.py` | Engine returns exact sub-20 counts (complement differencing) |
 | `src/test_drift.py` / `test_drift2.py` | `Score` on an INVITED row is the score at invitation |
 | `src/global_model.py` | Out-of-sample backtest + conservation check + macro drivers |
-| `src/forward_model.py` | Applies the validated mechanism to the next round |
+| `src/forward_model.py` | Applies the validated mechanism to the next round, with EOI expiry |
+| `src/calibrate_official.py` | Cross-checks derived cut-offs against the official round table |
+| `src/step8_tiebreak.py` | Tests whether the tie-break date binds at every score |
+| `src/step9_queue.py` | Queue by submission month + cohort survival for the expiry model |
 
 Not migration advice.

@@ -29,7 +29,8 @@ For these the invitation is unambiguously a 189 invitation. Validated by the par
 **Result.** The 189-only series is *exactly zero* in 19 of 24 months and large in five. That
 is what exposes the real round calendar. Total round size is then recovered by attributing
 multi-leg invitations with a difference-in-differences correction against non-round months
-(baseline multi/no-189 ratio = 0.306).
+(baseline multi/no-189 ratio = 0.306). **This correction is externally validated: it estimates 9,761 for the
+Jun-2026 round against an official 10,000, a 2.4% error.**
 
 ## Trap 2 — rows are versions, not EOIs
 

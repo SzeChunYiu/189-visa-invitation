@@ -1,53 +1,49 @@
-"""Apply the backtested pool-rank mechanism forward to the next round, for 85 pts in ANZSCO 2349."""
+"""Applies the externally-calibrated mechanism forward: rank vs allocation, with EOI expiry."""
 import pandas as pd, numpy as np, json, pathlib, os
 os.chdir(pathlib.Path(__file__).resolve().parent.parent/"data")
+EOI_DATE=pd.Timestamp("2026-09-10")           # applicant's EOI date of effect
 G="2349 Other Natural and Physical Science Professionals"
 def num(df,c="Score"):
     df=df[df[c].astype(str).str.fullmatch(r"\d+")].copy(); df[c]=df[c].astype(int); return df
-pool=num(pd.read_csv("pool189_occ_score.csv")); pool["n"]=pool.n.fillna(0)
-pg=pool[(pool.OccGroup==G)&(pool.AsAt=="08/2026")][["Score","n"]].sort_values("Score",ascending=False)
-pg=pg[pg.n>0]
-alloc_hist=json.load(open("alloc_2349_allleg.json"))
-A=list(alloc_hist.values())
-print("### 2349 pool entering the next round (snapshot 08/2026, all 189 legs)")
-cum=0
-for _,r in pg.iterrows():
-    cum+=r.n; print(f"   {int(r.Score):>4} pts : {int(r.n):>4}   cumulative from top: {int(cum):>4}")
-above=pg[pg.Score>85].n.sum(); at=pg[pg.Score==85].n.sum()
-print(f"\n   competitors strictly above 85 : {above:.0f}")
-print(f"   competitors at exactly 85     : {at:.0f}  (all dated before a 10-Sep-2026 EOI)")
-print(f"   => applicant's rank           : ~{above+at+1:.0f}")
-print(f"\n### allocation history to 2349 (all-leg): {A}")
+q=num(pd.read_csv("q2349.csv")); q["n"]=q.n.fillna(0)
+q=q[q.SubMonth.astype(str).str.match(r"\d{4}-\d{2}")]
+ahead=q[q.Score>=85].copy()
+ahead["lapse"]=pd.to_datetime(ahead.SubMonth+"-01")+pd.DateOffset(years=2)
+alloc=json.load(open("alloc_2349_allleg.json")); A=list(alloc.values())
+cal=json.load(open("calibration_official.json"))
 
-BIAS=2.86  # backtest mean signed error: model predicts HIGHER than actual, so it is conservative
-print(f"### backtested mechanism: cut-off = score at which cumulative pool reaches the allocation")
-print(f"    (validated out-of-sample on 49 occupations: 100% within +/-5 pts, r=0.941, bias {BIAS:+.2f} pts)\n")
-def cutoff(alloc):
-    c=0
-    for _,r in pg.iterrows():
-        prev=c; c+=r.n
-        if c>=alloc: return int(r.Score),(alloc-prev)/r.n
-    return int(pg.Score.min()),1.0
-RANK=int(above+at+1)
-print(f"### THE MODEL REDUCES TO ONE THRESHOLD")
-print(f"    The applicant sits at rank {RANK} in unit group 2349 (11 above 85 pts, 20 at 85 pts dated earlier).")
-print(f"    A points-ranked round invites them iff the allocation to 2349 reaches {RANK}.\n")
-print(f"  {'round':<10}{'alloc to 2349':>15}{'covers rank '+str(RANK)+'?':>20}")
-ROUNDS=list(alloc_hist.keys())
-cov=[]
-for rd,a in alloc_hist.items():
-    ok=a>=RANK; cov.append(ok)
-    print(f"  {rd:<10}{a:>15}{('YES' if ok else 'no'):>20}")
-w=np.array([2.0**(-(len(cov)-1-i)) for i in range(len(cov))]); w/=w.sum()
-p_rec=float(w[np.array(cov)].sum()); p_unw=float(np.mean(cov))
-print(f"\n  unweighted over 5 rounds      : {p_unw:.1%}   (ignores the trend entirely - a floor)")
-print(f"  recency-weighted (2^-age)     : {p_rec:.1%}   (halves the weight of each older round)")
-print(f"  allocation trend 5->21->29->43->87 is monotone increasing (17.4x over 5 rounds);")
-print(f"  a trend extrapolation puts the next allocation far above {RANK}, implying a figure above {p_rec:.0%}.")
-print(f"\n  ==> HEADLINE: P(invited | a round is held) = {p_unw:.0%}-{p_rec:.0%}, central {p_rec:.0%}")
-print(f"      Downside risk is NOT the applicant's score - it is a policy cut to this stratum's allocation")
-print(f"      back below {RANK}, as in Sep-2024 (5), Nov-2024 (21) and Aug-2025 (29).")
-json.dump(dict(pool=[[int(r.Score),int(r.n)] for _,r in pg.iterrows()],rank=RANK,alloc_hist=alloc_hist,
-               covered=[bool(c) for c in cov],p_unweighted=round(p_unw,3),p_recency=round(p_rec,3),
-               weights=[round(float(x),3) for x in w]),open("forward_model.json","w"),indent=1)
+print("="*98)
+print("RANK vs ALLOCATION, with EOI expiry  (ANZSCO 2349, 85 points, EOI dated 10 Sep 2026)")
+print("="*98)
+print(f"\n  Externally calibrated against the official 4-Jun-2026 round: {cal['exact']}/{cal['n']} occupations exact "
+      f"({100*cal['exact']/cal['n']:.1f}%), r={cal['r']}, bias {cal['bias']:+.2f} pts.")
+print(f"  Every calibration error is POSITIVE, so the derived cut-off never overstates the applicant's odds.\n")
+print(f"  {'if the round is held':<24}{'ahead lapsed':>14}{'rank':>7}{'allocation needed':>19}")
+dates=[("by 30 Sep 2026","2026-09-30"),("by 31 Dec 2026","2026-12-31"),
+       ("by 31 Mar 2027","2027-03-31"),("by 30 Jun 2027","2027-06-30")]
+ranks={}
+for lbl,d in dates:
+    d=pd.Timestamp(d); gone=ahead[ahead.lapse<=d].n.sum(); r=int(ahead.n.sum()-gone+1)
+    ranks[lbl]=r
+    print(f"  {lbl:<24}{gone:>14,.0f}{r:>7}{('>= '+str(r)):>19}")
+print(f"\n  NOTE: the applicant's rank can only FALL over time. Anyone entering or re-scoring to 85 points after")
+print(f"  10 Sep 2026 takes a later date of effect and queues BEHIND them, while those ahead lapse or are invited.")
+
+print("\n"+"="*98); print("PROBABILITY"); print("="*98)
+print(f"  allocation to 2349 by round: {A}   (all-leg, contamination-corrected)")
+w=np.array([2.0**(-(len(A)-1-i)) for i in range(len(A))]); w/=w.sum()
+out={}
+print(f"\n  {'round timing':<20}{'rank':>6}{'rounds covering it':>21}{'unweighted':>12}{'recency-wtd':>13}")
+for lbl,_ in dates:
+    r=ranks[lbl]; cov=np.array([a>=r for a in A])
+    pu,pr=float(cov.mean()),float(w[cov].sum())
+    out[lbl]=dict(rank=r,covered=[bool(c) for c in cov],p_unweighted=round(pu,3),p_recency=round(pr,3))
+    print(f"  {lbl:<20}{r:>6}{f'{cov.sum()} of {len(A)}':>21}{pu:>11.0%}{pr:>13.0%}")
+print(f"\n  recency weights: {[round(float(x),3) for x in w]}  (2^-age; arbitrary kernel over n=5, stated so it can be discounted)")
+print(f"\n  ==> If a round is held in the next few months: P(invited) = "
+      f"{out['by 30 Sep 2026']['p_unweighted']:.0%}-{out['by 30 Sep 2026']['p_recency']:.0%}"
+      f"; if it slips past December: {out['by 31 Dec 2026']['p_unweighted']:.0%}-{out['by 31 Dec 2026']['p_recency']:.0%}.")
+print(f"  Downside risk is a policy cut to this stratum's allocation, not the applicant's score.")
+json.dump(dict(rank_by_date=out,alloc_hist=alloc,total_ahead=int(ahead.n.sum()),
+               weights=[round(float(x),3) for x in w],calibration=cal),open("forward_model.json","w"),indent=1)
 print("\n  -> forward_model.json written")
