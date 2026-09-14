@@ -186,12 +186,12 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:11.5px;color:
 footer a{color:var(--brand)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
-<a class="skip" href="#results">Skip to your result</a>
+<a class="skip" href="#results">Skip to result</a>
 <div class="wrap">
 <header>
   <div>
     <div class="eyebrow">Subclass 189 &middot; Points-Tested Stream</div>
-    <h1>Where do you stand in the 189 queue?</h1>
+    <h1>Will you be invited?</h1>
   </div>
   <div style="text-align:right">
     <div class="eyebrow">Pool snapshot Aug 2026 &middot; 5 rounds</div>
@@ -201,13 +201,13 @@ footer a{color:var(--brand)}
 
 <div class="filters">
   <div class="f combo">
-    <label for="occ">Your occupation (ANZSCO)</label>
-    <input id="occ" type="text" autocomplete="off" placeholder="Type to search 199 occupations&hellip;" aria-label="Occupation">
+    <label for="occ">Occupation</label>
+    <input id="occ" type="text" autocomplete="off" placeholder="Search 199 occupations" aria-label="Occupation">
     <div class="opts" id="opts" role="listbox"></div>
   </div>
   <div class="f"><label for="pts">Your points</label>
     <input id="pts" type="number" value="85" min="0" max="180" step="5" aria-label="Your points score"></div>
-  <div class="f"><label for="doe">EOI submitted / last updated <span style="opacity:.7">(optional)</span></label>
+  <div class="f"><label for="doe">EOI date <span style="opacity:.7">(optional)</span></label>
     <input id="doe" type="month" min="2024-07" max="2026-12" aria-label="Month your EOI was submitted or last changed"></div>
 
 </div>
@@ -225,8 +225,8 @@ footer a{color:var(--brand)}
   <div class="vside" id="vside"></div>
 </div>
 
-<div class="card"><div class="chead"><h2>Your chance, against how many they invite</h2>
-  <span class="eyebrow" id="h8n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n1" aria-label="Explain this panel" data-note="n1">?</button></div>
+<div class="card"><div class="chead"><h2>Your chance vs round size</h2>
+  <span class="eyebrow" id="h8n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n1" aria-label="Explain" data-note="n1">?</button></div>
   <p class="takeaway" id="t8"></p>
   <div class="movestrip" id="mv"></div>
   <div class="chartwrap"><svg id="c8" viewBox="0 0 586 268" role="img" aria-labelledby="c8t">
@@ -236,56 +236,56 @@ footer a{color:var(--brand)}
 <div class="tiles" id="tiles"></div>
 
 <div class="grid2">
-  <div class="card"><div class="chead"><h2>Would you have got in before?</h2>
-    <span class="eyebrow" id="h1n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n2" aria-label="Explain this panel" data-note="n2">?</button></div>
+  <div class="card"><div class="chead"><h2>Past rounds</h2>
+    <span class="eyebrow" id="h1n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n2" aria-label="Explain" data-note="n2">?</button></div>
     <p class="takeaway" id="t1"></p>
     <div class="chartwrap"><svg id="c1" viewBox="0 0 520 220" role="img" aria-labelledby="c1t"><title id="c1t">Minimum points invited, by round</title></svg></div>
     <p class="note" id="n2" hidden>Height = lowest score that got in. <span style="color:var(--good)">&#9679;</span> you'd be in &middot;
     <span style="color:var(--warn)">&#9679;</span> your date decides &middot;
     <span style="color:var(--crit)">&#9679;</span> not reached. Dot size and the number below = invitations to this
     occupation that round.</p></div>
-      <div class="card"><div class="chead"><h2>How many people are ahead of you</h2>
-    <span class="eyebrow" id="h4n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n3" aria-label="Explain this panel" data-note="n3">?</button></div>
+      <div class="card"><div class="chead"><h2>Who is ahead</h2>
+    <span class="eyebrow" id="h4n"></span><button class="q" type="button" aria-expanded="false" aria-controls="n3" aria-label="Explain" data-note="n3">?</button></div>
     <p class="takeaway" id="t4"></p>
     <div class="chartwrap"><svg id="c4" viewBox="0 0 520 220" role="img" aria-labelledby="c4t"><title id="c4t">Queue position within the unit group</title></svg></div>
     <p class="note" id="n3" hidden>Blue = people counted from the top score down. Green dashed = invitations the last round gave out.
     <b>Red dot below the green line &rarr; they reach you.</b></p></div>
 </div>
 
-<div class="card"><div class="chead"><h2>Every score band, and who is ahead of you</h2>
-  <span class="eyebrow" id="hbn"></span><button class="q" type="button" aria-expanded="false" aria-controls="n4" aria-label="Explain this panel" data-note="n4">?</button></div>
-  <div class="scroll"><table id="bt"><thead><tr><th>Points</th><th>In your occupation</th>
-    <th>In your unit group</th><th>Running total ahead</th><th>Standing vs you</th>
+<div class="card"><div class="chead"><h2>Every score band</h2>
+  <span class="eyebrow" id="hbn"></span><button class="q" type="button" aria-expanded="false" aria-controls="n4" aria-label="Explain" data-note="n4">?</button></div>
+  <div class="scroll"><table id="bt"><thead><tr><th>Points</th><th>This occupation</th>
+    <th>Unit group</th><th>Cumulative ahead</th><th>vs you</th>
     <th>Chance</th></tr></thead><tbody></tbody></table></div>
   <p class="note" id="n4" hidden>What another 5 or 10 points would buy. Chance uses the same definition as the headline.
   &ldquo;Reaches it&rdquo; is judged at the likely round size.</p></div>
 
-<div class="card"><div class="chead"><h2>Why some occupations get nothing at all</h2>
+<div class="card"><div class="chead"><h2>Occupations cut off since 2025</h2>
   <span class="eyebrow" id="hswn"></span></div>
   <p class="takeaway" id="tsw"></p>
   <div class="scroll"><table id="swt"><thead><tr><th>Occupation group</th><th>Waiting</th>
     <th>Sep 24</th><th>Nov 24</th><th>Aug 25</th><th>Nov 25</th><th>Jun 26</th></tr></thead><tbody></tbody></table></div>
   </div>
 
-<div class="card"><div class="chead"><h2>Policy: the 2026&ndash;27 program</h2>
-  <span class="eyebrow">published planning levels</span><button class="q" type="button" aria-expanded="false" aria-controls="n5" aria-label="Explain this panel" data-note="n5">?</button></div>
+<div class="card"><div class="chead"><h2>2026&ndash;27 program</h2>
+  <span class="eyebrow">published planning levels</span><button class="q" type="button" aria-expanded="false" aria-controls="n5" aria-label="Explain" data-note="n5">?</button></div>
   <div class="scroll"><table id="pt"><thead><tr><th>Category</th><th>2025&ndash;26</th><th>2026&ndash;27</th><th>Change</th></tr></thead><tbody></tbody></table></div>
   <p class="note" data-role="pnote" id="n5" hidden></p></div>
 
 <div class="grid2">
-  <div class="card"><div class="chead"><h2>The whole landscape</h2>
+  <div class="card"><div class="chead"><h2>All occupations &times; all rounds</h2>
     <select id="hmsort" aria-label="Sort the landscape" style="font:inherit;font-size:11.5px;padding:4px 7px;
       border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--body)">
-      <option value="cut">sort: cut-off, lowest first</option>
-      <option value="alloc">sort: invitations, most first</option>
-      <option value="name">sort: ANZSCO code</option></select><button class="q" type="button" aria-expanded="false" aria-controls="n6" aria-label="Explain this panel" data-note="n6">?</button></div>
+      <option value="cut">by cut-off</option>
+      <option value="alloc">by invitations</option>
+      <option value="name">by code</option></select><button class="q" type="button" aria-expanded="false" aria-controls="n6" aria-label="Explain" data-note="n6">?</button></div>
     <div class="hm"><svg id="c6" viewBox="0 0 520 1420" role="img" aria-labelledby="c6t"><title id="c6t">Cut-off by unit group and round</title></svg></div>
     <div class="legend"><span>lowest points invited</span>
       <span class="ramp"><span style="background:var(--r1)"></span><span style="background:var(--r2)"></span><span style="background:var(--r3)"></span><span style="background:var(--r4)"></span><span style="background:var(--r5)"></span><span style="background:var(--r6)"></span><span style="background:var(--r7)"></span></span>
       <span>65 &rarr; 100+</span><span><i style="background:var(--deemph)"></i>no invitation</span></div>
     <p class="note" id="n6" hidden>Darker = higher score needed. A dot = no invitations. Click a row to load that group.</p></div>
-  <div class="card"><div class="chead"><h2>Why some occupations need more points</h2>
-    <span class="eyebrow">Jun 2026 round</span><button class="q" type="button" aria-expanded="false" aria-controls="n7" aria-label="Explain this panel" data-note="n7">?</button></div>
+  <div class="card"><div class="chead"><h2>Competition drives the score</h2>
+    <span class="eyebrow">Jun 2026 round</span><button class="q" type="button" aria-expanded="false" aria-controls="n7" aria-label="Explain" data-note="n7">?</button></div>
     <p class="takeaway" id="t7"></p>
     <div class="chartwrap"><svg id="c7" viewBox="0 0 520 312" role="img" aria-labelledby="c7t"><title id="c7t">Pool size against cut-off</title></svg></div>
     <p class="note" id="n7" hidden>One dot per occupation group. Left&ndash;right is <b>how many people are queuing for each invitation
@@ -295,21 +295,21 @@ footer a{color:var(--brand)}
     small one with few.</p></div>
 </div>
 
-<div class="card"><div class="chead"><h2>Round by round</h2><span class="eyebrow">the record for this occupation</span><button class="q" type="button" aria-expanded="false" aria-controls="n8" aria-label="Explain this panel" data-note="n8">?</button></div>
+<div class="card"><div class="chead"><h2>This occupation, round by round</h2><span class="eyebrow">the record for this occupation</span><button class="q" type="button" aria-expanded="false" aria-controls="n8" aria-label="Explain" data-note="n8">?</button></div>
   <div class="scroll"><table id="rt"><thead><tr><th>Round</th><th>Invited</th><th>Fully cleared to</th>
     <th>Boundary score</th><th>Boundary</th><th>Would you have been invited?</th></tr></thead><tbody></tbody></table></div>
   <p class="note" id="n8" hidden><b>Fully cleared to</b> is the lowest score at which every single EOI was invited. At or above it
   you are in regardless of date. On a rationed boundary, your date of effect decides.</p></div>
 
-<div class="card"><div class="chead"><h2>Every occupation at your score</h2>
+<div class="card"><div class="chead"><h2>All occupations at your score</h2>
   <span style="display:flex;gap:12px;align-items:center">
     <span class="eyebrow" id="allN"></span>
     <button id="dl" style="font:inherit;font-size:11.5px;padding:5px 10px;border:1px solid var(--line);
-      border-radius:7px;background:var(--paper);color:var(--brand);cursor:pointer">Download source data (CSV)</button>
-  </span><button class="q" type="button" aria-expanded="false" aria-controls="n9" aria-label="Explain this panel" data-note="n9">?</button></div>
+      border-radius:7px;background:var(--paper);color:var(--brand);cursor:pointer">Download CSV</button>
+  </span><button class="q" type="button" aria-expanded="false" aria-controls="n9" aria-label="Explain" data-note="n9">?</button></div>
   <div class="scroll" style="max-height:420px;overflow-y:auto"><table id="at"><thead><tr><th>Occupation</th>
     <th>Pool</th><th>At your score</th><th>Sep 24</th><th>Nov 24</th><th>Aug 25</th><th>Nov 25</th><th>Jun 26</th>
-    <th>Next round</th></tr></thead><tbody></tbody></table></div>
+    <th>Forecast</th></tr></thead><tbody></tbody></table></div>
   <p class="note" id="n9" hidden>Sorted by pool size. Click a row to load that occupation above. The CSV carries every figure
   behind this page for all 199 occupations at your current score and round size &mdash; the same numbers the
   charts are drawn from.</p></div>
@@ -438,7 +438,7 @@ function chartRounds(o,pts){
     const nl=el("text",{x:X(i),y:H-MB+47,class:"tick","text-anchor":"middle"});
     nl.textContent=r.n?fmt(r.n):"";s.appendChild(nl);});
   const yl=el("text",{x:ML-7,y:MT-8,class:"tick","text-anchor":"end"});yl.textContent="pts";s.appendChild(yl);
-  const nl2=el("text",{x:ML-7,y:H-MB+47,class:"tick","text-anchor":"end"});nl2.textContent="invited";s.appendChild(nl2);
+  const nl2=el("text",{x:ML-7,y:H-MB+47,class:"tick","text-anchor":"end"});nl2.textContent="invites";s.appendChild(nl2);
   panel(s,"a");
 }
 /* ---------- chart 4: the mechanism itself - cumulative queue vs allocation ---------- */
@@ -489,7 +489,7 @@ function chartQueue(g,pts){
       const q=el("text",{x:X(i),y:H-MB+15,class:"tick","text-anchor":"middle"});q.textContent=k;s.appendChild(q);}
     const hit=el("rect",{x:X(i)-8,y:MT,width:16,height:ph,class:"hit"});
     hover(hit,"<b>"+fmt(step[i].cum)+"</b><span>EOIs at "+k+" points or above</span>");s.appendChild(hit);});
-  axisTitle(s,W,H,MB,"points score, highest first","people ahead of you (running total)");panel(s,"d");
+  axisTitle(s,W,H,MB,"points, highest first","people ahead (cumulative)");panel(s,"d");
 }
 /* ---------- chart 5: forecast matrix (score x round size) ---------- */
 const SCORES=[120,115,110,105,100,95,90,85,80,75,70,65];
@@ -596,10 +596,10 @@ function chartScatter(selG,pts){
       "</span><span>"+fmt(p.pool)+" waiting &middot; "+fmt(p.al)+" invited &middot; cut-off "+p.cut+"</span>");
     c.addEventListener("click",()=>{const f=OCCS.find(o=>B.occ[o].g===p.gk);
       if(f){S.occ=f;$("occ").value=f;render();window.scrollTo({top:0,behavior:"smooth"});}});});
-  axisTitle(s,W,H,MB,"people waiting for each invitation","lowest score that got in");
+  axisTitle(s,W,H,MB,"people per invitation","lowest score invited");
   panel(s,"g");
   const nt=el("text",{x:(ML+W-MR)/2,y:H-MB+50,class:"tick","text-anchor":"middle","font-style":"italic"});
-  nt.textContent="further right = more competition for each place";s.appendChild(nt);
+  nt.textContent="right = more competition";s.appendChild(nt);
 }
 
 
@@ -697,13 +697,11 @@ function policyTable(){
       else td.textContent=c;tr.appendChild(td);});
     tb.appendChild(tr);});
   const nt=document.querySelector('[data-role="pnote"]'); if(!nt) return;
-  nt.innerHTML="The 189 program grew <b>"+((P.places["2026-27"]/P.places["2025-26"]-1)*100).toFixed(1)+
-    "%</b>. Across 2025&ndash;26 the Department issued <b>"+P.ratio.toFixed(2)+
-    "</b> invitations per place (not every invitation becomes a visa), so "+fmt(P.places["2026-27"])+
-    " places implies roughly <b>"+fmt(P.projected_invitations)+"</b> invitations in 2026&ndash;27 &mdash; about <b>"+
-    fmt(P.per_round["3"])+"</b> per round at the observed cadence of three rounds a year. That is why 10,000 is the "+
-    "default scenario above. Regional was cut 57%, which this model does not predict but is the clearest route by "+
-    "which the 189 pool could swell faster than it has: it would appear in later snapshots, not in today's forecast.";
+  nt.innerHTML="189 grew <b>+"+((P.places["2026-27"]/P.places["2025-26"]-1)*100).toFixed(0)+
+    "%</b>. At <b>"+P.ratio.toFixed(2)+"</b> invitations per place, "+fmt(P.places["2026-27"])+
+    " places &rarr; ~<b>"+fmt(P.projected_invitations)+"</b> invitations, ~<b>"+fmt(P.per_round["3"])+
+    "</b> per round over three rounds. Regional fell 57% &mdash; the likeliest route to a bigger 189 pool, "+
+    "visible only in later snapshots.";
 }
 
 /* ---------- chance against round size: the whole function, not five samples ---------- */
@@ -748,7 +746,7 @@ function chartProb(g,pts){
   const bx0=X(B.meta.round_min), bx1=X(B.meta.round_max);
   s.appendChild(el("rect",{x:bx0,y:MT,width:bx1-bx0,height:ph,fill:"var(--series)","fill-opacity":".07"}));
   const bl=el("text",{x:(bx0+bx1)/2,y:MT-5,class:"tick","text-anchor":"middle"});
-  bl.textContent="every round on record";s.appendChild(bl);
+  bl.textContent="observed range";s.appendChild(bl);
   /* context: the same curve 5 points below and above, so the value of more points is visible */
   const curve=sc=>{const a=[];for(let v=S0;v<=S1;v+=200){const p=pClear(cutoffAt(g,v),sc);
     if(p!==null)a.push([v,p]);}return a;};
@@ -779,7 +777,7 @@ function chartProb(g,pts){
     s.appendChild(el("path",{d:dd,fill:"var(--brand)","fill-opacity":".16",stroke:"var(--brand)",
       "stroke-width":1,"stroke-opacity":".45"}));
     const dl=el("text",{x:ML+4,y:MT+ph-hband-6,class:"tick","text-anchor":"start",fill:"var(--brand)"});
-    dl.textContent="how likely each round size is";s.appendChild(dl);}
+    dl.textContent="likely round sizes";s.appendChild(dl);}
   /* the policy-implied central case */
   const cen=B.policy?B.policy.per_round["3"]:10000;
   const cp=pClear(cutoffAt(g,cen),pts);
@@ -790,7 +788,7 @@ function chartProb(g,pts){
     lab.textContent=Math.round(cp*100)+"%";s.appendChild(lab);}
   const cl=el("text",{x:X(cen)-7,y:MT+10,fill:"var(--brand)","font-size":"10","font-weight":"650",
     "text-anchor":"end"});
-  cl.textContent="planning levels imply";s.appendChild(cl);
+  cl.textContent="planning levels";s.appendChild(cl);
   [2000,5000,8000,11000,14000,17000,20000].forEach(v=>{
     const q=el("text",{x:X(v),y:H-MB+15,class:"tick","text-anchor":"middle"});
     q.textContent=(v/1000)+"k";s.appendChild(q);});
@@ -801,7 +799,7 @@ function chartProb(g,pts){
     const hit=el("rect",{x:X(v)-4,y:MT,width:8,height:ph,class:"hit"});
     hover(hit,"<b>"+Math.round(p*100)+"% chance</b><span>if the round invites "+fmt(v)+
       "</span><span>cut-off would be about "+c+" points</span>");s.appendChild(hit);}
-  axisTitle(s,W,H,MB,"how many people the next round invites","your chance of an invitation");
+  axisTitle(s,W,H,MB,"invitations in the round","chance of an invitation");
   panel(s,"h");
 }
 /* ---------- every round-size case, side by side ---------- */
@@ -822,8 +820,7 @@ function takeaways(o,g,pts,size){
   const inv=o.rounds.filter(r=>verdictFor(r,pts).k==="good").length;
   const dated=o.rounds.filter(r=>verdictFor(r,pts).k==="warn").length;
   say("t1", inv>=3?"good":inv>0?"warn":"crit",
-    "<b>"+inv+" of the last 5 rounds</b> would have invited you at "+pts+" points"+
-    (dated?", and <b>"+dated+"</b> would have come down to your date":"")+".");
+    "<b>"+inv+" of 5</b> past rounds would have invited you"+(dated?", <b>"+dated+"</b> on date":"")+".");
   const fc=g?g.fc[S.szi]:null, P=pClear(fc,pts);
   say("t2", P===null?"":P>=.8?"good":P>=.5?"warn":"crit",
     P===null ? "This occupation got no invitations last round, so there is nothing to forecast from."
@@ -832,28 +829,27 @@ function takeaways(o,g,pts,size){
   const my=Math.round(pts/5)*5, same=o.dist[my]||0, above=Object.keys(o.dist).map(Number).filter(k=>k>my)
     .reduce((a,k)=>a+o.dist[k],0);
   say("t3","", same===0 && above===0
-    ? "Nobody is currently waiting in this occupation at your score or above."
-    : "<b>"+fmt(same)+"</b> "+(same===1?"person is":"people are")+" waiting on exactly your score in this occupation, and <b>"+
-      fmt(above)+"</b> "+(above===1?"is":"are")+" on a higher one.");
+    ? "Nobody waiting at your score or above."
+    : "<b>"+fmt(same)+"</b> on your score, <b>"+fmt(above)+"</b> above it, in this occupation.");
   const ge=g?Object.keys(g.dist).map(Number).filter(k=>k>=my).reduce((a,k)=>a+g.dist[k],0):0;
   const al=g?g.alloc[g.alloc.length-1]:0;
   say("t4", al>=ge?"good":"crit",
-    "<b>"+fmt(ge)+"</b> ahead of you &middot; last round invited <b>"+fmt(al)+"</b> &mdash; "+
+    "<b>"+fmt(ge)+"</b> ahead &middot; last round invited <b>"+fmt(al)+"</b> &mdash; "+
     (al>=ge?"<b>reaches you</b>.":"<b>stops short</b>."));
   const need=g?B.sizes.find((sz,i)=>{const p=pClear(g.fc[i],pts);return p!==null&&p>=.8;}):null;
   say("t5","", need
-    ? "Reading your row: you are comfortably in once the round reaches about <b>"+fmt(need)+"</b> invitations."
-    : "Reading your row: no round size in this range gets you comfortably in at <b>"+pts+"</b> points.");
+    ? "Comfortably in above <b>"+fmt(need)+"</b> invitations."
+    : "No round size in range gets you comfortably in at <b>"+pts+"</b>.");
   const gp=g?Object.values(g.dist).reduce((a,b)=>a+b,0):0;
   if(g&&al>0){const ratio=gp/al;
     const all=Object.keys(B.groups).map(k=>{const G=B.groups[k],p=Object.values(G.dist).reduce((a,b)=>a+b,0),
       a2=G.alloc[G.alloc.length-1];return (p&&a2)?p/a2:null;}).filter(v=>v!==null).sort((a,b)=>a-b);
     const pct=Math.round(100*all.filter(v=>v<ratio).length/all.length);
     say("t7", pct<=33?"good":pct<=66?"warn":"crit",
-      "In your occupation group about <b>"+ratio.toFixed(1)+" people</b> are queuing for every invitation. That is "+
+      "<b>"+ratio.toFixed(1)+" people per invitation</b> in your group &mdash; "+
       (pct<=33?"<b>less competitive than most</b>":pct<=66?"<b>about average</b>":"<b>more competitive than most</b>")+
-      " &mdash; the "+pct+"th percentile of all occupations.");}
-  else say("t7","","This occupation group received no invitations in the last round.");
+      " ("+pct+"th percentile).");}
+  else say("t7","","No invitations to this group last round.");
 }
 
 /* ---------- how the cut-off moves between rounds ---------- */
@@ -907,11 +903,10 @@ function switchTable(){
     tr.appendChild(td);tb.appendChild(tr);}
   const hs=$("hswn"); if(hs) hs.textContent=B.sw.switched_off.length+" groups, "+fmt(B.sw.people_affected)+" people";
   say("tsw","crit",
-    "<b>"+B.sw.switched_off.length+" occupation groups</b> holding <b>"+fmt(B.sw.people_affected)+
-    "</b> people &mdash; <b>60% of the whole 189 pool</b> &mdash; stopped receiving invitations at the 2025&ndash;26 "+
-    "program year. An FOI'd Home Affairs paper from May 2025 sets out a four-tier priority model that matches: "+
-    "Tier 4 gets <b>"+(B.tiers?B.tiers.by_tier[4].per_1000.toFixed(1):"1.3")+"</b> invitations per 1,000 waiting "+
-    "against <b>"+(B.tiers?B.tiers.by_tier[2].per_1000.toFixed(0):"117")+"</b> for Tier 2.");
+    "<b>60% of the pool</b> gets nothing. "+B.sw.switched_off.length+" groups, "+fmt(B.sw.people_affected)+
+    " people, cut off since 2025&ndash;26 &mdash; matching an FOI'd Home Affairs tier model "+
+    "(Tier 4: <b>"+(B.tiers?B.tiers.by_tier[4].per_1000.toFixed(1):"1.3")+"</b> invites per 1,000; Tier 2: <b>"+
+    (B.tiers?B.tiers.by_tier[2].per_1000.toFixed(0):"117")+"</b>).");
 }
 const TIERNAMES={1:"Tier 1 — highest priority (health)",2:"Tier 2 — government priority (teaching, social work)",3:"Tier 3 — broad skills mix (engineers, trades, sciences)",4:"Tier 4 — oversupplied (accounting, ICT, chefs)"};
 function tierLabel(gk){
@@ -930,16 +925,19 @@ function render(){
   const v=fcVerdict(fc,pts);
   const P=pMarginal(g,pts,o.g), Pc=pClear(fc,pts), bb=pBand(fc);
   chartProb(g,pts);probTakeaway(g,pts);moveStrip();
-  const band = P===null?null:(P>=.8?"good":P>=.5?"warn":"crit");
+  const band = P===null?null:(P>=.8?"good":P>=.6?"good":P>=.4?"warn":"crit");
   $("flag").className="vflag "+(band||"crit");
-  $("flag").textContent = P===null ? "✕ No forecast available"
-    : (P>=.8?"✓ Likely invited":P>=.5?"! Could go either way":"✕ Unlikely at this score");
+  $("flag").textContent = P===null ? "✕ No forecast"
+    : P>=.8 ? "✓ Likely invited"
+    : P>=.6 ? "✓ Favourable, not certain"
+    : P>=.4 ? "! Could go either way"
+    : "✕ Unlikely at this score";
   $("hero").textContent = P===null ? "—" : Math.round(P*100)+"%";
   $("vsub").innerHTML = P===null
     ? "This occupation received no invitations in the most recent round, so there is no allocation share to forecast from. The round-by-round record below still applies."
-    : "chance of an invitation at <b>"+pts+" points</b> in <b>"+o.g+"</b>, averaged over how big the next round is "+
-      "likely to be and discounted by a <b>"+Math.round(pZero(o.g)*100)+"%</b> chance this occupation group is "+
-      "skipped entirely. <b>If</b> a round is held &mdash; that part cannot be predicted.";
+    : "at <b>"+pts+" points</b> in <b>"+o.g+"</b>. Averaged over likely round sizes, less a <b>"+
+      Math.round(pZero(o.g)*100)+"%</b> chance this group is skipped. Assumes a round is held &mdash; that is "+
+      "the one thing no model can predict.";
   const ge=g?Object.keys(g.dist).map(Number).filter(k=>k>=pts).reduce((a,k)=>a+g.dist[k],0):0;
   const al=g?g.alloc[g.alloc.length-1]:0;
   const ratio=ge>0?al/ge:0;
@@ -947,12 +945,12 @@ function render(){
   $("mleft").textContent="last round allocated "+fmt(al)+" to this group";
   $("mright").textContent=fmt(ge)+" sit at "+pts+"+ · "+(ge>0?ratio.toFixed(2)+"×":"—");
   $("vside").innerHTML="";
-  const rows=[["At the likely round size",Pc===null?"—":Math.round(Pc*100)+"%"],
+  const rows=[["At likely round size",Pc===null?"—":Math.round(Pc*100)+"%"],
     ["Forecast cut-off",fc===null?"—":fc+" pts (80% "+bb[0]+"–"+bb[1]+")"],
-    ["Likely next round",fmt(B.rs.q50)+" ("+fmt(B.rs.q10)+"–"+fmt(B.rs.q90)+")"],
+    ["Likely round size",fmt(B.rs.q50)+" ("+fmt(B.rs.q10)+"–"+fmt(B.rs.q90)+")"],
     ["Ahead of you in "+o.g,fmt(ge)],
-    ["Risk this group gets nothing",Math.round(pZero(o.g)*100)+"%"],
-    ["Priority tier (FOI model)",tierLabel(o.g)]];
+    ["Risk of no invitations",Math.round(pZero(o.g)*100)+"%"],
+    ["Priority tier",tierLabel(o.g)]];
   rows.forEach(([k,val])=>{const dl=document.createElement("dl");dl.className="kv";
     const dt=document.createElement("dt");dt.textContent=k;const dd=document.createElement("dd");dd.textContent=val;
     dl.appendChild(dt);dl.appendChild(dd);$("vside").appendChild(dl);});

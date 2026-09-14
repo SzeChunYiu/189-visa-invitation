@@ -1,0 +1,24 @@
+{
+ "M0 persistence (incumbent)": {
+  "n": 155,
+  "exact": 0.471,
+  "within5": 0.8452,
+  "mae": 3.7419,
+  "bias": 1.2903
+ },
+ "M1 tier x pool": {
+  "n": 171,
+  "exact": 0.2865,
+  "within5": 0.731,
+  "mae": 5.3801,
+  "bias": 3.5088
+ },
+ "M2 blend of the two": {
+  "n": 159,
+  "exact": 0.5031,
+  "within5": 0.8868,
+  "mae": 3.2075,
+  "bias": 1.4465
+ },
+ "best": "M2 blend of the two"
+}
