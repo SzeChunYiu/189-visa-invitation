@@ -567,7 +567,7 @@ function chartTierRate(g,gk){
 /* ---------- chart 11: how big the next round is ---------- */
 function chartRoundSize(){
   const s=$("c11"); if(!s) return; clear(s);
-  const W=560,H=188,ML=20,MR=20,MT=18,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=200,ML=72,MR=20,MT=18,MB=58,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   if(!B.rs) return;
   const grid=B.rs.grid, dens=B.rs.dens, mx=Math.max(...dens);
@@ -591,6 +591,21 @@ function chartRoundSize(){
     t.textContent=fmt(N);s.appendChild(t);
     const t2=el("text",{x:X(N),y:H-MB+31,class:"tick","text-anchor":"middle"});
     t2.textContent=lab;s.appendChild(t2);});
+  /* the rounds that have actually happened, so the curve reads as a forecast rather
+     than as a histogram of history */
+  if(B.policy&&B.policy.inv_by_round){
+    const obs=Object.entries(B.policy.inv_by_round);
+    obs.forEach(([rd,N])=>{
+      if(N<grid[0]||N>grid[grid.length-1]) return;
+      s.appendChild(el("circle",{cx:X(N),cy:MT+ph+7,r:3.4,fill:"var(--muted)",
+        stroke:"var(--card)","stroke-width":1.5}));
+      hover(s.lastChild,"<b>"+fmt(N)+" invitations</b><span>"+(RL[rd]||rd)+", actual</span>");});
+    const ol=el("text",{x:ML,y:MT+ph+11,class:"tick","text-anchor":"end"});
+    ol.textContent="rounds so far";s.appendChild(ol);
+  }
+  const fl=el("text",{x:ML,y:MT+10,class:"tick","text-anchor":"start",fill:"var(--brand)",
+    "font-weight":"700"});
+  fl.textContent="forecast for the next round";s.appendChild(fl);
   const h=$("h11n"); if(h) h.textContent="all occupations together";
   /* the derivation goes behind the (?), with the numbers it actually used */
   const nb=$("n11");
@@ -606,7 +621,7 @@ function chartRoundSize(){
 /* ---------- chart 12: what your group gets out of it ---------- */
 function chartGroupShare(g,gk){
   const s=$("c12"); if(!s) return; clear(s);
-  const W=560,H=188,ML=52,MR=64,MT=18,MB=52,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=200,ML=52,MR=116,MT=26,MB=52,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   if(!g) return;
   const grid=B.rs.grid;
@@ -642,6 +657,26 @@ function chartGroupShare(g,gk){
     stroke:"var(--card)","stroke-width":2});
   s.appendChild(dot);
   hover(dot,"<b>"+fmt(am)+" places</b><span>at the most likely round of "+fmt(B.rs.q50)+"</span>");
+  /* the marginal the reader actually wants: how many places, once round size is
+     averaged out. Drawn on the right, against the same y-axis. */
+  const pd=placesDist(g);
+  if(pd){
+    const mw=46, bx=ML+pw+6;
+    pd.vals.forEach((v,i)=>{
+      const wd=mw*pd.dens[i]/pd.max, yy=Y(v);
+      s.appendChild(el("rect",{x:bx,y:yy-1.6,width:Math.max(0.6,wd),height:3.2,rx:1,
+        fill:"var(--brand)","fill-opacity":.5}));});
+    [["p90",pd.p90],["p50",pd.p50],["p10",pd.p10]].forEach(([k,v])=>{
+      s.appendChild(el("line",{x1:bx,y1:Y(v),x2:bx+mw,y2:Y(v),
+        stroke:k==="p50"?"var(--ink)":"var(--muted)","stroke-width":k==="p50"?1.6:1,
+        "stroke-dasharray":k==="p50"?"0":"3 2"}));
+      const t=el("text",{x:bx+mw+4,y:Y(v)+3.5,class:k==="p50"?"vlab":"tick",
+        "text-anchor":"start"});
+      t.textContent=fmt(v);s.appendChild(t);});
+    const ml=el("text",{x:bx,y:MT-6,class:"tick","text-anchor":"start",fill:"var(--brand)",
+      "font-weight":"700"});
+    ml.textContent="places, all sizes";s.appendChild(ml);
+  }
   const aLoM=Math.round(g.share_lo*B.rs.q50*B.meta.fr),
         aHiM=Math.round(g.share_hi*B.rs.q50*B.meta.fr);
   const t=el("text",{x:X(B.rs.q50)+9,y:Y(am)-11,class:"vlab","text-anchor":"start",fill:"var(--brand)"});
@@ -882,7 +917,7 @@ function chartRounds(o,pts){
 /* ---------- chart 4: the mechanism itself - cumulative queue vs allocation ---------- */
 function chartQueue(g,pts){
   const s=$("c4"); if(!s) return; clear(s);
-  const W=560,H=220,ML=46,MR=60,MT=16,MB=42,pw=W-ML-MR,ph=H-MT-MB;
+  const W=560,H=230,ML=46,MR=78,MT=16,MB=42,pw=W-ML-MR,ph=H-MT-MB;
   frame(s,W,H);
   if(!g){const t=el("text",{x:W/2,y:H/2,class:"tick","text-anchor":"middle"});
     t.textContent="No unit-group data.";s.appendChild(t);return;}
@@ -924,8 +959,29 @@ function chartQueue(g,pts){
   /* allocation reference: where the last round stopped */
   const ay=Y(alloc);
   s.appendChild(el("line",{x1:ML,y1:ay,x2:W-MR,y2:ay,stroke:"var(--good)","stroke-width":1.5,"stroke-dasharray":"5 4"}));
-  const at=el("text",{x:W-MR+4,y:ay+3.5,fill:"var(--good)","font-size":"9.5","font-weight":"650"});
-  at.textContent=fmt(alloc)+" invited";s.appendChild(at);
+  /* the round that has not happened: places forecast for this group, with its range */
+  const pdq=placesDist(g);
+  if(pdq){
+    s.appendChild(el("rect",{x:ML,y:Y(pdq.p90),width:pw,height:Math.max(1,Y(pdq.p10)-Y(pdq.p90)),
+      fill:"var(--brand)","fill-opacity":".10"}));
+    s.appendChild(el("line",{x1:ML,y1:Y(pdq.p50),x2:W-MR,y2:Y(pdq.p50),stroke:"var(--brand)",
+      "stroke-width":1.5,"stroke-dasharray":"5 4"}));
+  }
+  /* last round and next round can sit a few places apart, so their labels are pushed
+     apart before being drawn rather than left to overlap */
+  const marks=[{y:ay,txt:fmt(alloc)+" last round",col:"var(--good)",w:"650",sub:null}];
+  if(pdq) marks.push({y:Y(pdq.p50),txt:fmt(pdq.p50)+" forecast",col:"var(--brand)",w:"700",
+                      sub:fmt(pdq.p10)+"\u2013"+fmt(pdq.p90)});
+  marks.sort((a,b)=>a.y-b.y);
+  for(let i=1;i<marks.length;i++)
+    if(marks[i].y-marks[i-1].y<(marks[i-1].sub?24:13)) marks[i].y=marks[i-1].y+(marks[i-1].sub?24:13);
+  const drop=Math.max(0,marks[marks.length-1].y+(marks[marks.length-1].sub?12:0)-(MT+ph));
+  marks.forEach(m=>{
+    const t=el("text",{x:W-MR+4,y:m.y-drop+3.5,fill:m.col,"font-size":"9.5","font-weight":m.w});
+    t.textContent=m.txt;s.appendChild(t);
+    if(m.sub){const t2=el("text",{x:W-MR+4,y:m.y-drop+14,class:"tick","text-anchor":"start"});
+      t2.textContent=m.sub;s.appendChild(t2);}
+  });
   /* the reader's position */
   const my=Math.round(pts/5)*5, mi=keys.indexOf(my);
   const aboveAll = my>keys[0];

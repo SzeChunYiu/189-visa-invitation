@@ -472,6 +472,28 @@ function pZero(gk){
   return rec.last_alloc>0 ? B.zr.p_zero_given_prev_nonzero : B.zr.p_zero_given_prev_zero;
 }
 /* Marginal over round size, THEN discounted by the chance the group is skipped entirely. */
+/* The round-size distribution, pushed through equation 1 into a distribution of PLACES
+   for one group. This is the quantity a reader actually wants out of step 2, and the
+   line alone never stated it. */
+function placesDist(g){
+  if(!g||g.share<=0) return null;
+  const by={}; let w=0;
+  B.rs.grid.forEach((N,i)=>{
+    const pl=Math.round(g.share*N*B.meta.fr), d=B.rs.dens[i];
+    by[pl]=(by[pl]||0)+d; w+=d;});
+  if(w<=0) return null;
+  const vals=Object.keys(by).map(Number).sort((a,b)=>a-b);
+  let m=0; vals.forEach(v=>m+=v*by[v]/w);
+  let c=0, q={};
+  vals.forEach(v=>{c+=by[v]/w;
+    if(q.p10===undefined&&c>=.10) q.p10=v;
+    if(q.p50===undefined&&c>=.50) q.p50=v;
+    if(q.p90===undefined&&c>=.90) q.p90=v;});
+  let sd=0; vals.forEach(v=>sd+=by[v]/w*(v-m)*(v-m));
+  return {vals:vals, dens:vals.map(v=>by[v]/w), mean:m, sd:Math.sqrt(sd),
+          p10:q.p10, p50:q.p50, p90:q.p90, max:Math.max(...vals.map(v=>by[v]/w))};
+}
+
 /* The chance of an invitation AT ONE ROUND SIZE - the same quantity as the headline,
    just not yet averaged over sizes. Anything the page labels "your chance" must use
    this: pClear alone omits the skip risk and reads well over ten points too high. */
