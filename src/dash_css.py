@@ -104,6 +104,15 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;color:var(--ink);font-weight:650;
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 17px 12px;box-shadow:var(--shadow)}
 .chead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.lev{margin:0 0 12px}
+.lrow{display:grid;grid-template-columns:150px 1fr 38px 1fr 38px;gap:8px;align-items:center;margin-bottom:5px}
+.llab{font-size:11.5px;color:var(--body)}
+.lbar{height:9px;border-radius:999px;background:var(--line);overflow:hidden}
+.lbar i{display:block;height:100%;background:var(--series);border-radius:999px}
+.lbar.dim i{background:var(--deemph)}
+.lval{font-size:10.5px;color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
+.lval.dim{color:var(--muted)}
+@media(max-width:640px){.lrow{grid-template-columns:110px 1fr 34px}.lrow .lbar.dim,.lrow .lval.dim{display:none}}
 .movestrip{margin:0 0 12px}
 .mbar{display:flex;height:16px;border-radius:5px;overflow:hidden;gap:2px}
 .mbar>div{display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;color:#fff}

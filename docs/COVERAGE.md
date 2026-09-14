@@ -37,21 +37,65 @@ needs no correction; a December round would sit about 2 points higher than shown
 *(Lag 0 was excluded: that snapshot postdates the round, so the pool is already drained — a look-ahead error of
 −6.23, not a horizon effect.)*
 
-## Not modelled
+## The six gaps, now closed
 
-| Gap | Why it matters | Status |
-|---|---|---|
-| **Component drift** (English, partner, Australian study) | if competitors accumulate points, the pool strengthens and cut-offs rise | extracted, not modelled — **partly absorbed** by the horizon correction, which measures net pool drift empirically |
-| **Score-distribution drift** | same channel | same |
-| **Cross-group budget coupling** | groups share one round budget, so a big allocation to one crowds out others; treated as independent | unmodelled |
-| **Seasonality** | rounds cluster Aug / Nov / Jun | unmodelled; only 5 rounds, too thin to fit |
-| **491 redirection** | Regional was cut 57%; displaced applicants may enter the 189 pool | unmodelled; would appear in later snapshots |
-| **6-digit occupation allocation** | modelled at 4-digit unit group, the level ceilings apply at | deliberate |
-| **Whether a round happens** | the dominant uncertainty | **not modellable from this data** — every figure is conditional on it |
+Each was either **modelled** or **shown not to matter**, with the test that settled it.
 
-The horizon correction is a **reduced-form catch-all** for pool dynamics: it measures how wrong the forecast
-gets as the pool ages, whatever the mix of inflow, upgrades and expiry driving it. That is weaker than modelling
-each channel, but it is measured rather than assumed, and it captures their net effect.
+### 1. Pool strengthening — MODELLED (and it is real)
+
+The pool is getting stronger, not just bigger:
+
+| | 09/2024 | 08/2026 | Trend |
+|---|---|---|---|
+| mean score | 73.02 | 74.13 | **+0.046 pts/month** (r = +0.68) |
+| share at 85+ | 16.5% | 22.1% | **+0.21 pp/month** (r = +0.83) |
+| share at 90+ | 7.1% | 11.3% | +0.20 pp/month (r = +0.85) |
+
+This is a genuine headwind — competition at the top is intensifying. It is **already priced** by the horizon
+correction, which measures forecast error against pool age end-to-end and so absorbs drift whatever drives it.
+Adding a separate drift term would double-count.
+
+### 2. Point components — MODELLED, and the most actionable finding on the page
+
+Share holding each component, at 85+ versus 65–84:
+
+| Component | At 85+ | At 65–84 | Gap |
+|---|---|---|---|
+| **Max English (20 pts)** | **83.6%** | **19.3%** | **+64.3 pp** |
+| Partner skills (10 pts) | 84.4% | 63.3% | +21.2 pp |
+| Australian study | 82.0% | 62.7% | +19.3 pp |
+
+**English is the dividing line.** It separates high scorers from the rest more than everything else combined,
+and it is the one component most applicants can still change. Now shown on the page.
+
+### 3. Cross-group budget coupling — NOT PRESENT
+
+Crowding-out would make group shares **negatively** correlated. They are **positive**: mean pairwise r = +0.065
+raw, and +0.079 after de-meaning each round to strip the round-size effect. Positive means groups rise and fall
+together — the policy regime, which persistence already captures — not competition for one budget.
+
+*(My first automated verdict here was wrong: the threshold test compared magnitude and ignored sign, so it
+reported "groups do compete" on a positive correlation. Corrected.)*
+
+**Conclusion: modelling groups independently and normalising is valid.**
+
+### 4. Seasonality — NO POWER TO FIT, and said so
+
+Round months: Sep, Nov, Aug, Nov, Jun. χ² against uniform = 11.8 on 11 df, **p = 0.379**. Five rounds cannot
+support a seasonal term. The model conditions on "a round is held" rather than pretending to time it.
+
+### 5. 491 redirection — WATCH ITEM, not yet observable
+
+The Regional cut applies from July 2026 and the panel ends August 2026, so at most two months are visible.
+189 pool growth has **not** accelerated: **+3,756/month in 2026 against +6,912/month over the whole panel**.
+189 and 491 growth correlate **+0.70**, moving together rather than one feeding the other. Re-check when later
+snapshots publish.
+
+### 6. Unit group vs 6-digit occupation — UNIT GROUP IS CORRECT
+
+Within-group spread of the cut-off: **1.39 points**. Between-occupation spread overall: **7.88 points**.
+**82% of the variation is between unit groups, not within them.** Modelling 6-digit occupations separately
+would add noise, not signal — and ceilings apply at unit-group level anyway.
 
 ## Hard limits of the source
 

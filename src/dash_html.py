@@ -67,6 +67,7 @@ HTML = r"""<meta charset="utf-8">
 
 <div class="card"><div class="chead"><h2>Every score band</h2>
   <span class="eyebrow" id="hbn"></span><button class="q" type="button" aria-expanded="false" aria-controls="n4" aria-label="Explain" data-note="n4">?</button></div>
+  <div class="lev" id="lev"></div>
   <div class="scroll"><table id="bt"><thead><tr><th>Points</th><th>This occupation</th>
     <th>Unit group</th><th>Cumulative ahead</th><th>vs you</th>
     <th>Chance</th></tr></thead><tbody></tbody></table></div>
@@ -724,6 +725,24 @@ function tierLabel(gk){
   const per=B.tiers.by_tier&&B.tiers.by_tier[t];
   return "Tier "+t+(per?" · "+per.per_1000.toFixed(0)+" per 1,000 waiting":"");
 }
+/* ---------- what separates a high-scoring profile ---------- */
+function levers(){
+  const box=$("lev"); if(!box) return;
+  const L=[["Max English (20 pts)",83.6,19.3],["Partner skills (10 pts)",84.4,63.3],["Australian study",82.0,62.7]];
+  box.innerHTML="";
+  L.forEach(([lab,hi,lo])=>{
+    const d=document.createElement("div");d.className="lrow";
+    d.innerHTML='<span class="llab">'+lab+'</span>'+
+      '<span class="lbar"><i style="width:'+hi+'%"></i></span><span class="lval">'+hi.toFixed(0)+'%</span>'+
+      '<span class="lbar dim"><i style="width:'+lo+'%"></i></span><span class="lval dim">'+lo.toFixed(0)+'%</span>';
+    box.appendChild(d);});
+  const c=document.createElement("p");c.className="note";c.hidden=false;
+  c.style.cssText="margin:6px 0 0;font-size:11px";
+  c.innerHTML="Share holding each component, <b>at 85+</b> vs <b>65&ndash;84</b>. English is the dividing line. "+
+    "The pool is also strengthening: share at 85+ is up <b>"+
+    (B.drift?((B.drift.share85_end-B.drift.share85_start)*100).toFixed(1):"5.6")+" points</b> over 24 months.";
+  box.appendChild(c);
+}
 /* ---------- render ---------- */
 function render(){
   const o=B.occ[S.occ]; if(!o) return;
@@ -779,7 +798,7 @@ function render(){
   chartRounds(o,pts);chartQueue(g,pts);
   chartLandscape(o.g,pts);chartScatter(o.g,pts);
   takeaways(o,g,pts,size);
-  bandTable(o,g,pts);switchTable();policyTable();
+  bandTable(o,g,pts);levers();switchTable();policyTable();
   
   const tb=document.querySelector("#rt tbody");tb.innerHTML="";
   o.rounds.forEach(r=>{const v2=verdictFor(r,pts);const tr=document.createElement("tr");
